@@ -9,23 +9,31 @@
 <body>
   <div id="game">
     <h1>MEMEOPOLY</h1>
-    <p class="subtitle">Build your meme empire.</p>
+    <p class="subtitle">Roll posts. Build eras. Raid rivals. Collect memes.</p>
 
-    <div id="stats">
-      <div>Coins: <span id="coins">5000</span></div>
-      <div>Followers: <span id="followers">0</span></div>
-      <div>Hype: <span id="hype">0</span>/100</div>
-      <div>Posts: <span id="posts">30</span></div>
+    <div id="topBar">
+      <div>Coins<br><span id="coins">0</span></div>
+      <div>Fans<br><span id="followers">0</span></div>
+      <div>Posts<br><span id="posts">0</span></div>
+      <div>Hype<br><span id="hype">0</span>/100</div>
     </div>
 
-    <div id="diceBox">🎲 Roll: <span id="dice">0</span></div>
-
-    <button id="postBtn">POST</button>
-    <button id="upgradeBtn">UPGRADE CURRENT CHANNEL</button>
-
-    <div id="message">Tap POST to start.</div>
+    <div id="eraBox">
+      <h2 id="eraName">Era</h2>
+      <div id="progressText">0/25 upgrades</div>
+      <div id="progressBar"><div id="progressFill"></div></div>
+    </div>
 
     <div id="board"></div>
+
+    <div id="dicePanel">
+      <div id="diceIcon">🎲</div>
+      <div id="diceText">Tap POST</div>
+      <button id="postBtn">POST</button>
+      <button id="upgradeBtn">BUILD / UPGRADE</button>
+    </div>
+
+    <div id="landmarks"></div>
 
     <h2>Activity</h2>
     <div id="log"></div>
