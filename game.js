@@ -1,22 +1,3 @@
-const board = [
-  { type: "GO", icon: "🚀", name: "Go Viral" },
-  { type: "COINS", icon: "💵", name: "Ad Money" },
-  { type: "ATTACK", icon: "⚔️", name: "Cancel Strike" },
-  { type: "LANDMARK", icon: "🏠", name: "Bedroom Setup" },
-  { type: "CARD", icon: "🃏", name: "Meme Pack" },
-  { type: "RAID", icon: "💰", name: "Algorithm Raid" },
-  { type: "LANDMARK", icon: "🎤", name: "Cheap Mic" },
-  { type: "HYPE", icon: "⚡", name: "Hype Boost" },
-  { type: "ATTACK", icon: "💀", name: "Shadowban" },
-  { type: "LANDMARK", icon: "💻", name: "Gaming PC" },
-  { type: "COINS", icon: "🤝", name: "Sponsor Deal" },
-  { type: "RAID", icon: "🏦", name: "Follower Heist" },
-  { type: "LANDMARK", icon: "💡", name: "Ring Light" },
-  { type: "EVENT", icon: "🔥", name: "Viral Event" },
-  { type: "ATTACK", icon: "📉", name: "Rival Strike" },
-  { type: "LANDMARK", icon: "🏢", name: "Meme Studio" }
-];
-
 const eras = [
   "Bedroom Meme Era",
   "Vine House Era",
@@ -25,17 +6,54 @@ const eras = [
   "Meme HQ Era"
 ];
 
+const board = [
+  { type:"GO", icon:"🚀", name:"Go Viral" },
+  { type:"COINS", icon:"💵", name:"Ad Revenue" },
+  { type:"RAID", icon:"💰", name:"Algorithm Raid" },
+  { type:"CARD", icon:"🃏", name:"Meme Pack" },
+
+  { type:"LANDMARK", icon:"🏠", name:"Bedroom Setup" },
+
+  { type:"ATTACK", icon:"⚔️", name:"Cancel Strike" },
+
+  { type:"LANDMARK", icon:"🎤", name:"Cheap Mic" },
+
+  { type:"HYPE", icon:"⚡", name:"Hype Boost" },
+
+  { type:"LANDMARK", icon:"💻", name:"Gaming PC" },
+
+  { type:"EVENT", icon:"🔥", name:"Viral Event" },
+
+  { type:"LANDMARK", icon:"💡", name:"Ring Light" },
+
+  { type:"RAID", icon:"🏦", name:"Follower Heist" },
+
+  { type:"LANDMARK", icon:"🏢", name:"Meme Studio" },
+
+  { type:"ATTACK", icon:"💀", name:"Shadowban" },
+
+  { type:"COINS", icon:"🤝", name:"Sponsor Deal" },
+
+  { type:"EVENT", icon:"🎁", name:"Bonus Event" }
+];
+
 let landmarks = [
-  { name: "Bedroom Setup", icon: "🏠", level: 0 },
-  { name: "Cheap Mic", icon: "🎤", level: 0 },
-  { name: "Gaming PC", icon: "💻", level: 0 },
-  { name: "Ring Light", icon: "💡", level: 0 },
-  { name: "Meme Studio", icon: "🏢", level: 0 }
+  { name:"Bedroom Setup", level:0 },
+  { name:"Cheap Mic", level:0 },
+  { name:"Gaming PC", level:0 },
+  { name:"Ring Light", level:0 },
+  { name:"Meme Studio", level:0 }
 ];
 
 const memeCards = [
-  "Doge", "Pepe", "Side Eye Cat", "NPC Streamer",
-  "Crying Laughing Guy", "Sigma Baby", "Ohio Boss", "Viral Rat"
+  "Doge",
+  "Pepe",
+  "NPC Streamer",
+  "Side Eye Cat",
+  "Sigma Baby",
+  "Ohio Boss",
+  "Viral Rat",
+  "Distracted Boyfriend"
 ];
 
 let position = 0;
@@ -47,333 +65,396 @@ let era = 0;
 let cards = [];
 let rolling = false;
 
-function money(n) {
-  return Math.floor(n).toLocaleString();
-}
-
-function log(text) {
+function log(text){
   const box = document.getElementById("log");
   box.innerHTML += `<div>${text}</div>`;
   box.scrollTop = box.scrollHeight;
 }
 
-function updateUI() {
-  document.getElementById("coins").innerText = money(coins);
-  document.getElementById("followers").innerText = money(followers);
+function updateUI(){
+  document.getElementById("coins").innerText = Math.floor(coins).toLocaleString();
+  document.getElementById("followers").innerText = Math.floor(followers).toLocaleString();
   document.getElementById("posts").innerText = posts;
   document.getElementById("hype").innerText = hype;
 
-  const totalLevels = landmarks.reduce((sum, l) => sum + l.level, 0);
-  const maxLevels = landmarks.length * 5;
-  const percent = (totalLevels / maxLevels) * 100;
+  const total = landmarks.reduce((s,l)=>s+l.level,0);
+  const max = 25;
 
-  document.getElementById("eraName").innerText = eras[era] || "Ultimate Meme Empire";
-  document.getElementById("progressText").innerText = `${totalLevels}/${maxLevels} upgrades`;
-  document.getElementById("progressFill").style.width = `${percent}%`;
+  document.getElementById("eraName").innerText =
+    eras[Math.min(era, eras.length-1)];
+
+  document.getElementById("progressText").innerText =
+    `${total}/${max} upgrades`;
+
+  document.getElementById("progressFill").style.width =
+    `${(total/max)*100}%`;
 }
 
-function renderBoard() {
+function renderBoard(){
+
+  const order = [
+    0,1,2,3,
+    11,null,null,4,
+    10,null,null,5,
+    9,8,7,6
+  ];
+
   const boardDiv = document.getElementById("board");
   boardDiv.innerHTML = "";
 
-  board.forEach((tile, index) => {
+  order.forEach(index=>{
+
     const div = document.createElement("div");
 
+    if(index === null){
+      div.style.background = "transparent";
+      div.style.border = "none";
+      boardDiv.appendChild(div);
+      return;
+    }
+
+    const tile = board[index];
+
     let cls = "tile";
-    if (index === position) cls += " player";
-    if (tile.type === "LANDMARK") cls += " landmarkTile";
-    if (["GO", "COINS", "HYPE"].includes(tile.type)) cls += " goodTile";
-    if (["ATTACK"].includes(tile.type)) cls += " badTile";
-    if (["RAID", "CARD", "EVENT"].includes(tile.type)) cls += " specialTile";
+
+    if(tile.type === "LANDMARK") cls += " landmark";
+    if(tile.type === "COINS" || tile.type === "GO" || tile.type === "HYPE") cls += " good";
+    if(tile.type === "ATTACK") cls += " bad";
+    if(tile.type === "RAID" || tile.type === "CARD" || tile.type === "EVENT") cls += " special";
+
+    if(index === position) cls += " player";
 
     div.className = cls;
 
-    if (tile.type === "LANDMARK") {
-      const lm = landmarks.find(l => l.name === tile.name);
-      div.innerText = `${tile.icon}\n${tile.name}\nLv ${lm.level}/5`;
-    } else {
-      div.innerText = `${tile.icon}\n${tile.name}`;
+    let levelText = "";
+
+    if(tile.type === "LANDMARK"){
+      const lm = landmarks.find(l=>l.name===tile.name);
+      levelText = `\nLv ${lm.level}/5`;
     }
 
+    div.innerHTML = `
+      ${tile.icon}<br>
+      ${tile.name}
+      ${levelText}
+      ${index===position ? '<div class="token">😂</div>' : ''}
+    `;
+
     boardDiv.appendChild(div);
+
   });
+
 }
 
-function renderLandmarks() {
+function renderLandmarks(){
+
   const box = document.getElementById("landmarks");
   box.innerHTML = "";
 
-  landmarks.forEach(lm => {
-    const cost = getUpgradeCost(lm.level);
+  landmarks.forEach(l=>{
+
     const div = document.createElement("div");
-    div.className = "landmark";
+    div.className = "landmarkCard";
 
     div.innerHTML = `
-      <div class="landmarkTop">
-        <span>${lm.icon} ${lm.name}</span>
-        <span>Lv ${lm.level}/5</span>
-      </div>
-      <div class="miniBar">
-        <div class="miniFill" style="width:${(lm.level / 5) * 100}%"></div>
-      </div>
-      <div style="margin-top:6px;color:#cbd5e1;">
-        ${lm.level >= 5 ? "Complete" : "Next upgrade: " + money(cost) + " coins"}
+      <b>${l.name}</b>
+      <div>Level ${l.level}/5</div>
+      <div class="smallBar">
+        <div class="smallFill" style="width:${l.level*20}%"></div>
       </div>
     `;
 
     box.appendChild(div);
+
   });
+
 }
 
-function getUpgradeCost(level) {
-  return 600 + level * 900 + era * 1500;
+function upgradeCost(level){
+  return 500 + (level * 1000) + (era * 1500);
 }
 
-function setDiceText(text) {
-  document.getElementById("diceText").innerText = text;
-}
+function upgradeCheapest(){
 
-function upgradeLandmark(name) {
-  const lm = landmarks.find(l => l.name === name);
-  if (!lm) return;
+  const available =
+    landmarks.filter(l=>l.level<5);
 
-  if (lm.level >= 5) {
-    log(`✅ ${name} is already complete.`);
-    return;
-  }
-
-  const cost = getUpgradeCost(lm.level);
-
-  if (coins < cost) {
-    log(`❌ Need ${money(cost)} coins to upgrade ${name}.`);
-    return;
-  }
-
-  coins -= cost;
-  lm.level += 1;
-  followers += lm.level * 400;
-  hype += 8;
-
-  log(`🏗️ Built ${name} to Level ${lm.level}.`);
-  checkEraComplete();
-}
-
-function upgradeCheapestLandmark() {
-  const available = landmarks.filter(l => l.level < 5);
-
-  if (available.length === 0) {
+  if(!available.length){
     checkEraComplete();
     return;
   }
 
-  available.sort((a, b) => getUpgradeCost(a.level) - getUpgradeCost(b.level));
-  upgradeLandmark(available[0].name);
-}
+  available.sort(
+    (a,b)=>upgradeCost(a.level)-upgradeCost(b.level)
+  );
 
-function checkEraComplete() {
-  const complete = landmarks.every(l => l.level >= 5);
+  const lm = available[0];
 
-  if (!complete) return;
+  const cost = upgradeCost(lm.level);
 
-  era += 1;
-  coins += 8000;
-  followers += 20000;
-  posts += 25;
-  hype = 0;
-
-  if (era >= eras.length) {
-    setDiceText("🏆 Ultimate Meme Empire Complete!");
-    log("🏆 You completed every era. Memeopoly conquered.");
+  if(coins < cost){
+    log(`❌ Need ${cost.toLocaleString()} coins.`);
     return;
   }
 
-  landmarks = landmarks.map(l => ({ ...l, level: 0 }));
+  coins -= cost;
+  lm.level++;
 
-  log(`🌍 Era complete! Unlocked ${eras[era]}. +8,000 coins, +20,000 fans, +25 posts.`);
+  followers += lm.level * 500;
+
+  log(`🏗️ Upgraded ${lm.name} to Level ${lm.level}`);
+
+  checkEraComplete();
+
 }
 
-function collectMemeCard() {
-  const card = memeCards[Math.floor(Math.random() * memeCards.length)];
+function checkEraComplete(){
 
-  if (!cards.includes(card)) {
-    cards.push(card);
-    followers += 2500;
-    log(`🃏 New meme card: ${card}. +2,500 fans.`);
+  const done =
+    landmarks.every(l=>l.level>=5);
+
+  if(!done) return;
+
+  era++;
+
+  coins += 10000;
+  followers += 25000;
+  posts += 25;
+
+  landmarks.forEach(l=>l.level=0);
+
+  if(era >= eras.length){
+
+    log("🏆 MEMEOPOLY COMPLETED!");
+
   } else {
-    coins += 1500;
-    log(`🃏 Duplicate ${card}. Converted to +1,500 coins.`);
+
+    log(`🌍 New Era Unlocked: ${eras[era]}`);
+
   }
 
-  if (cards.length === memeCards.length) {
-    coins += 15000;
-    followers += 40000;
-    cards = [];
-    log("📚 Meme album complete! +15,000 coins +40,000 fans.");
+}
+
+function collectCard(){
+
+  const card =
+    memeCards[Math.floor(Math.random()*memeCards.length)];
+
+  if(cards.includes(card)){
+
+    coins += 2000;
+    log(`🃏 Duplicate ${card} → +2000 coins`);
+
+  }else{
+
+    cards.push(card);
+
+    followers += 3000;
+
+    log(`🃏 New Card: ${card}`);
+
   }
+
 }
 
-function raid() {
-  const targets = ["NPC Influencer", "Fake Guru", "Reaction Channel", "Crypto Streamer", "Drama Page"];
-  const target = targets[Math.floor(Math.random() * targets.length)];
-  const reward = 2000 + Math.floor(Math.random() * 6000) + era * 1000;
+function raid(){
+
+  const reward =
+    2000 + Math.floor(Math.random()*5000);
 
   coins += reward;
-  followers += Math.floor(reward / 2);
 
-  log(`💰 Algorithm Raid: hit ${target} and gained ${money(reward)} coins.`);
+  followers += Math.floor(reward/2);
+
+  log(`💰 Raid Success +${reward.toLocaleString()} coins`);
+
 }
 
-function attack() {
-  const targets = ["Rival Meme Lord", "Copycat Page", "Spam Bot Army", "Clout Chaser", "Comment Warrior"];
-  const target = targets[Math.floor(Math.random() * targets.length)];
-  const reward = 1200 + Math.floor(Math.random() * 4000) + era * 700;
+function attack(){
+
+  const reward =
+    1000 + Math.floor(Math.random()*3000);
 
   coins += reward;
+
   hype += 20;
 
-  log(`⚔️ Shadowban attack on ${target}. +${money(reward)} coins +20 hype.`);
+  log(`⚔️ Rival hit +${reward.toLocaleString()} coins`);
+
 }
 
-function viralEvent() {
-  const events = [
-    () => {
-      coins += 2500 + era * 1000;
-      log("🔥 Viral repost chain. Big ad money gained.");
-    },
-    () => {
-      followers += 6000 + era * 2000;
-      log("🚀 Meme hit the explore page. Fans exploded.");
-    },
-    () => {
-      posts += 10;
-      log("🎁 Free post pack. +10 posts.");
-    },
-    () => {
-      hype += 40;
-      log("⚡ Internet surge. +40 hype.");
-    },
-    () => {
-      coins = Math.max(0, coins - 1200);
-      log("💀 Bad take backlash. Lost 1,200 coins.");
-    }
-  ];
+function viralEvent(){
 
-  events[Math.floor(Math.random() * events.length)]();
+  const roll =
+    Math.floor(Math.random()*4);
+
+  if(roll===0){
+    coins += 2500;
+    log("🔥 Viral Post");
+  }
+
+  if(roll===1){
+    followers += 5000;
+    log("🚀 Explore Page");
+  }
+
+  if(roll===2){
+    posts += 10;
+    log("🎁 Free Posts");
+  }
+
+  if(roll===3){
+    hype += 40;
+    log("⚡ Huge Hype");
+  }
+
 }
 
-function handleTile(tile) {
-  if (tile.type === "GO") {
+function handleTile(tile){
+
+  if(tile.type==="GO"){
     coins += 1500;
-    followers += 1000;
-    log("🚀 GO VIRAL bonus. +1,500 coins +1,000 fans.");
   }
 
-  if (tile.type === "COINS") {
-    const reward = 1000 + era * 700;
-    coins += reward;
-    log(`💵 ${tile.name}. +${money(reward)} coins.`);
+  if(tile.type==="COINS"){
+    coins += 1000 + era*500;
   }
 
-  if (tile.type === "LANDMARK") {
-    upgradeLandmark(tile.name);
+  if(tile.type==="LANDMARK"){
+    upgradeCheapest();
   }
 
-  if (tile.type === "CARD") {
-    collectMemeCard();
+  if(tile.type==="CARD"){
+    collectCard();
   }
 
-  if (tile.type === "RAID") {
+  if(tile.type==="RAID"){
     raid();
   }
 
-  if (tile.type === "ATTACK") {
+  if(tile.type==="ATTACK"){
     attack();
   }
 
-  if (tile.type === "EVENT") {
+  if(tile.type==="EVENT"){
     viralEvent();
   }
 
-  if (tile.type === "HYPE") {
-    hype += 35;
-    log("⚡ Hype Boost. +35 hype.");
+  if(tile.type==="HYPE"){
+    hype += 30;
   }
 
-  if (hype >= 100) {
+  if(hype >= 100){
+
     hype = 0;
+
+    followers += 15000;
     coins += 5000;
-    followers += 12000;
-    posts += 5;
-    log("🌟 HYPE BURST! +5,000 coins +12,000 fans +5 posts.");
+
+    log("🌟 HYPE BURST!");
+
   }
+
 }
 
-function rollPost() {
-  if (rolling) return;
+async function animateMove(steps){
 
-  if (posts <= 0) {
-    setDiceText("No posts left. Earn more posts.");
-    log("❌ No posts left.");
+  for(let i=0;i<steps;i++){
+
+    await new Promise(r=>setTimeout(r,120));
+
+    position++;
+
+    if(position>=board.length){
+      position=0;
+      coins += 1500;
+      log("🏁 Completed Board Lap");
+    }
+
+    renderBoard();
+
+  }
+
+}
+
+async function rollPost(){
+
+  if(rolling) return;
+
+  if(posts<=0){
+    log("❌ No Posts Left");
     return;
   }
 
   rolling = true;
-  posts -= 1;
-  hype += 10;
 
-  const diceIcon = document.getElementById("diceIcon");
+  posts--;
+
+  const diceIcon =
+    document.getElementById("diceIcon");
+
   diceIcon.classList.add("rolling");
-  setDiceText("Rolling...");
 
-  let flashes = 0;
-  const flashInterval = setInterval(() => {
-    const temp = Math.floor(Math.random() * 6) + 1;
-    setDiceText(`Rolling ${temp}...`);
-    flashes++;
-    if (flashes >= 6) clearInterval(flashInterval);
-  }, 100);
+  let dice =
+    Math.floor(Math.random()*6)+1;
 
-  setTimeout(() => {
-    const dice = Math.floor(Math.random() * 6) + 1;
-    setDiceText(`Rolled ${dice}`);
+  document.getElementById("diceText")
+    .innerText = `Rolled ${dice}`;
 
-    const oldPosition = position;
-    position = (position + dice) % board.length;
+  await animateMove(dice);
 
-    if (position < oldPosition) {
-      coins += 1500;
-      log("🏁 Completed a full board lap. +1,500 coins.");
-    }
+  handleTile(board[position]);
 
-    const tile = board[position];
-    log(`🎲 Landed on ${tile.icon} ${tile.name}.`);
-    handleTile(tile);
+  diceIcon.classList.remove("rolling");
 
-    diceIcon.classList.remove("rolling");
-    rolling = false;
-
-    updateUI();
-    renderBoard();
-    renderLandmarks();
-  }, 800);
-
-  updateUI();
-}
-
-document.getElementById("postBtn").addEventListener("click", rollPost);
-
-document.getElementById("upgradeBtn").addEventListener("click", () => {
-  upgradeCheapestLandmark();
   updateUI();
   renderBoard();
   renderLandmarks();
+
+  rolling = false;
+
+}
+
+document.getElementById("postBtn")
+.addEventListener("click",rollPost);
+
+document.getElementById("upgradeBtn")
+.addEventListener("click",()=>{
+
+  upgradeCheapest();
+
+  updateUI();
+  renderLandmarks();
+  renderBoard();
+
 });
+
+document.getElementById("boardTab")
+.onclick=()=>{
+
+  document.getElementById("boardScreen")
+  .classList.remove("hidden");
+
+  document.getElementById("empireScreen")
+  .classList.add("hidden");
+
+};
+
+document.getElementById("empireTab")
+.onclick=()=>{
+
+  document.getElementById("empireScreen")
+  .classList.remove("hidden");
+
+  document.getElementById("boardScreen")
+  .classList.add("hidden");
+
+};
 
 renderBoard();
 renderLandmarks();
 updateUI();
 
-log("🎲 Welcome to Memeopoly V3.");
-log("🎯 Complete all 5 landmarks to unlock the next internet era.");
-log("💰 Raids, attacks, cards and viral events help you grow faster.");
-setDiceText("Tap POST to roll.");
+log("🎲 Welcome to Memeopoly V4");
+log("😂 Token now moves around the board");
+log("🏗️ Build landmarks in Empire tab");
