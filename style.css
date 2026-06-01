@@ -1,0 +1,59 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+#game {
+  max-width: 420px;
+  margin: auto;
+}
+
+#stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.tile {
+  background: #222;
+  padding: 6px;
+  font-size: 10px;
+  border: 1px solid #333;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: pre-line;
+}
+
+.player {
+  border: 2px solid lime;
+}
+
+#postBtn {
+  padding: 12px;
+  font-size: 16px;
+  margin: 10px;
+  width: 100%;
+}
+
+#log {
+  background: #000;
+  height: 120px;
+  overflow-y: auto;
+  font-size: 12px;
+  padding: 6px;
+  text-align: left;
+  border: 1px solid #333;
+}
