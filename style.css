@@ -1,59 +1,110 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: #fff;
-  text-align: center;
   margin: 0;
   padding: 20px;
+  background: #111827;
+  color: white;
+  font-family: Arial, sans-serif;
 }
 
 #game {
-  max-width: 420px;
+  max-width: 900px;
   margin: auto;
 }
 
+h1 {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
 #stats {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+#stats div {
+  background: #1f2937;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+#diceBox {
+  background: #1f2937;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
   margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#postBtn {
+  background: #10b981;
+  color: white;
+}
+
+#upgradeBtn {
+  background: #f59e0b;
+  color: white;
+}
+
+#message {
+  background: #1f2937;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 #board {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
-  margin: 10px 0;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
 .tile {
-  background: #222;
-  padding: 6px;
-  font-size: 10px;
-  border: 1px solid #333;
-  min-height: 50px;
+  background: #1f2937;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  min-height: 70px;
+  padding: 5px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   white-space: pre-line;
 }
 
 .player {
-  border: 2px solid lime;
+  border: 3px solid #22c55e;
 }
 
-#postBtn {
-  padding: 12px;
-  font-size: 16px;
-  margin: 10px;
-  width: 100%;
+.owned {
+  border: 3px solid #f59e0b;
 }
 
 #log {
   background: #000;
-  height: 120px;
+  height: 180px;
   overflow-y: auto;
-  font-size: 12px;
-  padding: 6px;
-  text-align: left;
-  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 8px;
 }
