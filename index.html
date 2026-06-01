@@ -1,30 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memeopoly</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memeopoly</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="game">
+    <h1>MEMEOPOLY</h1>
+    <p class="subtitle">Build your meme empire.</p>
 
-<div id="game">
-  <h1>Memeopoly</h1>
+    <div id="stats">
+      <div>Coins: <span id="coins">5000</span></div>
+      <div>Followers: <span id="followers">0</span></div>
+      <div>Hype: <span id="hype">0</span>/100</div>
+      <div>Posts: <span id="posts">30</span></div>
+    </div>
 
-  <div id="stats">
-    <div>Coins: <span id="coins">5000</span></div>
-    <div>Energy: <span id="energy">40</span></div>
-    <div>Hype: <span id="hype">0</span>/100</div>
+    <div id="diceBox">🎲 Roll: <span id="dice">0</span></div>
+
+    <button id="postBtn">POST</button>
+    <button id="upgradeBtn">UPGRADE CURRENT CHANNEL</button>
+
+    <div id="message">Tap POST to start.</div>
+
+    <div id="board"></div>
+
+    <h2>Activity</h2>
+    <div id="log"></div>
   </div>
 
-  <button id="postBtn">POST</button>
-
-  <div id="board"></div>
-
-  <div id="log"></div>
-</div>
-
-<script src="game.js"></script>
-
+  <script src="game.js"></script>
 </body>
 </html>
