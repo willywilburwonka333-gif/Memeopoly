@@ -9,7 +9,7 @@
 <body>
   <div id="game">
     <h1>MEMEOPOLY</h1>
-    <p class="subtitle">Roll posts. Build eras. Raid rivals. Collect memes.</p>
+    <p class="subtitle">Roll posts. Move around the board. Build your meme empire.</p>
 
     <div id="topBar">
       <div>Coins<br><span id="coins">0</span></div>
@@ -18,22 +18,32 @@
       <div>Hype<br><span id="hype">0</span>/100</div>
     </div>
 
-    <div id="eraBox">
-      <h2 id="eraName">Era</h2>
-      <div id="progressText">0/25 upgrades</div>
-      <div id="progressBar"><div id="progressFill"></div></div>
+    <div id="tabs">
+      <button id="boardTab" class="activeTab">BOARD</button>
+      <button id="empireTab">EMPIRE</button>
     </div>
 
-    <div id="board"></div>
+    <section id="boardScreen">
+      <div id="eraBox">
+        <h2 id="eraName">Era</h2>
+        <div id="progressText">0/25 upgrades</div>
+        <div id="progressBar"><div id="progressFill"></div></div>
+      </div>
 
-    <div id="dicePanel">
-      <div id="diceIcon">🎲</div>
-      <div id="diceText">Tap POST</div>
-      <button id="postBtn">POST</button>
-      <button id="upgradeBtn">BUILD / UPGRADE</button>
-    </div>
+      <div id="board"></div>
 
-    <div id="landmarks"></div>
+      <div id="dicePanel">
+        <div id="diceIcon">🎲</div>
+        <div id="diceText">Tap POST to roll</div>
+        <button id="postBtn">POST</button>
+      </div>
+    </section>
+
+    <section id="empireScreen" class="hidden">
+      <h2>Your Meme Empire</h2>
+      <div id="landmarks"></div>
+      <button id="upgradeBtn">BUILD CHEAPEST UPGRADE</button>
+    </section>
 
     <h2>Activity</h2>
     <div id="log"></div>
