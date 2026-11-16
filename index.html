@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#101326">
   <meta name="description" content="Roll, post, collect memes and build your own Memeopoly empire.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
   <title>Memeopoly — Build Your Meme Empire</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,7 +17,7 @@
     <header class="hero">
       <div class="brand-mark">😂</div>
       <div><p class="eyebrow">THE INTERNET IS YOURS</p><h1>MEME<span>OPOLY</span></h1><p class="subtitle">Roll the feed. Own the culture. Build your meme empire.</p></div>
-      <button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button>
+      <div class="header-actions"><button id="installBtn" class="ghost-btn hidden" type="button">＋ Install</button><button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button></div>
     </header>
 
     <section id="topBar" aria-label="Player resources">
@@ -35,19 +39,23 @@
         <div class="progress-track"><div id="progressFill"></div></div>
         <div class="progress-foot"><span>Build your way to internet fame</span><span id="eraProgress">0%</span></div>
       </div>
-
       <div id="board" aria-label="Memeopoly game board">
         <div id="boardCenter">
           <div class="center-logo">😂</div><h2>MEMEOPOLY</h2><p id="centerMessage">Your next viral moment starts here.</p>
           <div class="center-mini-stats"><span>TURN <b id="turnCount">0</b></span><span>CARDS <b id="centerCards">0</b></span></div>
-          <div id="dicePanel">
-            <div id="diceIcon" aria-hidden="true">🎲</div>
-            <div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend 1 post to take your turn.</small></div>
-            <button id="postBtn" type="button">ROLL &amp; POST</button>
-          </div>
+          <div id="dicePanel"><div id="diceIcon" aria-hidden="true">🎲</div><div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend 1 post to take your turn.</small></div><button id="postBtn" type="button">ROLL &amp; POST</button></div>
         </div>
       </div>
       <p class="board-legend"><span>🟩 Rewards</span><span>🟪 Events &amp; cards</span><span>🟥 Rival trouble</span><span>🟨 Landmarks</span></p>
+      <section class="daily-panel">
+        <div class="daily-heading"><div><p class="eyebrow">COME BACK EVERY DAY</p><h2>Daily rewards &amp; missions</h2></div><button id="dailyBonusBtn" type="button">🎁 CLAIM DAILY BONUS</button></div>
+        <div class="daily-bonus-note" id="dailyBonusNote">Your daily creator bonus is ready.</div>
+        <div id="missions" class="mission-grid"></div>
+      </section>
+      <section class="achievement-panel">
+        <div class="activity-heading"><div><p class="eyebrow">MILESTONES</p><h2>Achievements</h2></div><strong id="achievementCount">0 / 6</strong></div>
+        <div id="achievements" class="achievement-grid"></div>
+      </section>
     </section>
 
     <section id="empireScreen" class="screen hidden">
@@ -62,7 +70,7 @@
     </section>
 
     <section class="activity-panel"><div class="activity-heading"><div><p class="eyebrow">LIVE FEED</p><h2>Activity</h2></div><button id="clearLogBtn" class="text-btn" type="button">Clear feed</button></div><div id="log" role="log" aria-live="polite"></div></section>
-    <footer><span>MEMEOPOLY · V1.0</span><span id="saveStatus">Auto-save enabled</span></footer>
+    <footer><span>MEMEOPOLY · V1.1</span><span id="saveStatus">Auto-save enabled</span></footer>
   </main>
   <script src="game.js"></script>
 </body>
