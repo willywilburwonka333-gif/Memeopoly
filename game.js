@@ -98,7 +98,8 @@
       for(const key of ["coins","followers","posts","turn","dice","shields"])state[key]=Math.max(0,Number(state[key])||0);
       state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Number(state.diceUpdatedAt)||Date.now();
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
-      state.completed=totalLevels()>=25||Boolean(saved.completed);
+      // Completion is derived from the actual empire, never trusted from an old save flag.
+      state.completed=totalLevels()>=25;
       normalizeDaily();return true;
     }catch(e){return false;}
   }
@@ -289,7 +290,8 @@
   }
   function handleTile(tile){
     switch(tile.type){
-      case"GO":state.coins+=1500;state.followers+=500;addLog("🚀 GO VIRAL! +1,500 coins and +500 followers.");break;
+      // The board-lap reward is paid when crossing Go; landing on Go must not pay it twice.
+      case"GO":addLog("🚀 GO VIRAL! Board-lap creator bonus collected.");break;
       case"COINS":{const reward=1000+currentEra()*500;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
       case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
