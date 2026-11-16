@@ -26,6 +26,26 @@
   const landmarkIcons=["🏠","🎤","💻","💡","🏢"];
   const memeCards=["Doge","Pepe","NPC Streamer","Side Eye Cat","Sigma Baby","Ohio Boss","Viral Rat","Distracted Boyfriend"];
   const cardIcons=["🐕","🐸","🕺","🐈","🗿","👑","🐀","💑"];
+  const districts=[
+    {id:"meme-lane",name:"Meme Lane",icon:"😂",theme:"The birthplace of viral culture",unlock:0,reward:2500,followers:1500,landmark:"Bedroom Setup"},
+    {id:"streamer-strip",name:"Streamer Strip",icon:"🎮",theme:"Where creators become celebrities",unlock:5,reward:5000,followers:3000,landmark:"Cheap Mic"},
+    {id:"viral-heights",name:"Viral Heights",icon:"🚀",theme:"The home of overnight sensations",unlock:10,reward:9000,followers:6000,landmark:"Gaming PC"},
+    {id:"creator-city",name:"Creator City",icon:"🏙️",theme:"Brand deals, studios and big money",unlock:15,reward:15000,followers:10000,landmark:"Ring Light"},
+    {id:"algorithm-central",name:"Algorithm Central",icon:"🌐",theme:"Own the feed. Rule the internet.",unlock:20,reward:25000,followers:18000,landmark:"Meme Studio"}
+  ];
+  const rivalBlueprints=[
+    {id:"pixel-pirate",name:"Pixel Pirate",handle:"@pixelpirate",icon:"🏴‍☠️",district:"Meme Lane",power:1,coins:12000,shields:1},
+    {id:"queen-scroll",name:"Queen Scroll",handle:"@queenscroll",icon:"👑",district:"Streamer Strip",power:2,coins:18000,shields:2},
+    {id:"drip-lord",name:"Drip Lord",handle:"@driplord",icon:"🕶️",district:"Viral Heights",power:3,coins:26000,shields:2},
+    {id:"botfather",name:"The Botfather",handle:"@botfather",icon:"🤖",district:"Creator City",power:4,coins:38000,shields:3},
+    {id:"algo-king",name:"Algo King",handle:"@algoking",icon:"🧠",district:"Algorithm Central",power:5,coins:55000,shields:3}
+  ];
+  const albumBlueprints=[
+    {id:"classic-chaos",name:"Classic Chaos",icon:"🤣",stickers:[["Doge Energy","🐕"],["Pepe Mood","🐸"],["Side Eye","👀"],["Big Brain","🧠"],["Main Character","✨"]]},
+    {id:"creator-life",name:"Creator Life",icon:"🎬",stickers:[["Ring Light Royalty","💡"],["Stream Goblin","🎮"],["Mic Check","🎤"],["Sponsored","💸"],["Viral Overnight","🚀"]]},
+    {id:"internet-legends",name:"Internet Legends",icon:"🏆",stickers:[["Keyboard Warrior","⌨️"],["Comment Section","💬"],["Algorithm Whisperer","🌐"],["Meme Mogul","👑"],["Certified Icon","⭐"]]}
+  ];
+  const allStickers=albumBlueprints.flatMap(a=>a.stickers.map(s=>({id:a.id+":"+s[0],album:a.id,name:s[0],icon:s[1]})));
   const achievements=[
     {id:"first-roll",name:"First Post",icon:"📱",description:"Take your first turn.",reward:500,done:s=>s.turn>=1},
     {id:"first-build",name:"Under Construction",icon:"🏗️",description:"Build your first landmark.",reward:1000,done:s=>levelCount(s)>=1},
@@ -41,7 +61,7 @@
   ];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[]});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -67,6 +87,11 @@
       state={...freshState(),...saved};
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
+      state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
+      state.rivals=rivalBlueprints.map(base=>({...base,...(Array.isArray(saved.rivals)?saved.rivals.find(r=>r.id===base.id):{}),cooldownTurn:Math.max(0,Number((Array.isArray(saved.rivals)?saved.rivals.find(r=>r.id===base.id):{})?.cooldownTurn)||0)}));
+      state.stickers=Array.isArray(saved.stickers)?allStickers.filter(s=>saved.stickers.includes(s.id)).map(s=>s.id):[];
+      state.stickerStars=Math.max(0,Number(saved.stickerStars)||0);
+      state.completedAlbums=Array.isArray(saved.completedAlbums)?saved.completedAlbums.filter(id=>albumBlueprints.some(a=>a.id===id)):[];
       state.log=Array.isArray(saved.log)?saved.log.slice(0,40):[];
       state.achievements=Array.isArray(saved.achievements)?saved.achievements.filter(id=>achievements.some(a=>a.id===id)):[];
       state.position=Math.max(0,Math.min(15,Number(state.position)||0));
@@ -139,7 +164,84 @@
     $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
-    renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();
+    renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();
+  }
+  function renderDistricts(){
+    const render=boxId=>{const box=$(boxId);if(!box)return;box.replaceChildren();districts.forEach(d=>{
+      const unlocked=totalLevels()>=d.unlock,claimed=state.districtClaims.includes(d.id),card=document.createElement("article");
+      card.className="district-card"+(unlocked?" district-open":" district-locked");
+      const icon=document.createElement("span");icon.className="district-icon";icon.textContent=unlocked?d.icon:"🔒";
+      const title=document.createElement("strong");title.textContent=unlocked?d.name:"Undiscovered district";
+      const desc=document.createElement("p");desc.textContent=unlocked?d.theme:"Unlock at "+d.unlock+" total landmark upgrades";
+      const progress=document.createElement("small");progress.textContent=unlocked?"Connected to "+d.landmark:"Empire progress: "+totalLevels()+"/"+d.unlock;
+      const btn=document.createElement("button");btn.type="button";btn.textContent=claimed?"REWARD CLAIMED":unlocked?"CLAIM TAKEOVER BONUS":"LOCKED";btn.disabled=!unlocked||claimed;btn.addEventListener("click",()=>claimDistrict(d.id));
+      card.append(icon,title,desc,progress,btn);box.append(card);
+    });};
+    render("districts");render("districtsFull");
+    const count=districts.filter(d=>totalLevels()>=d.unlock).length;if($("districtCount"))$("districtCount").textContent=count+"/5";
+  }
+  function claimDistrict(id){
+    const d=districts.find(x=>x.id===id);if(!d||totalLevels()<d.unlock||state.districtClaims.includes(id))return;
+    state.districtClaims.push(id);state.coins+=d.reward;state.followers+=d.followers;
+    addLog("🌆 DISTRICT TAKEOVER: "+d.name+" is yours! +"+number(d.reward)+" coins and +"+number(d.followers)+" followers.");
+    renderUI();save();
+  }
+  function renderRivals(){
+    const box=$("rivals");if(!box)return;box.replaceChildren();
+    state.rivals.forEach(r=>{
+      const card=document.createElement("article");card.className="rival-card";
+      const head=document.createElement("div");head.className="rival-head";
+      const icon=document.createElement("span");icon.textContent=r.icon;
+      const info=document.createElement("div"),name=document.createElement("strong"),handle=document.createElement("small");
+      name.textContent=r.name;handle.textContent=r.handle+" · "+r.district;info.append(name,handle);head.append(icon,info);
+      const stats=document.createElement("div");stats.className="rival-stats";stats.textContent="🛡️ "+r.shields+" shields   ·   💰 "+number(r.coins)+" vault   ·   ⚔️ "+r.raids+" raids";
+      const btn=document.createElement("button");btn.type="button";const cooling=state.turn<r.cooldownTurn;
+      btn.textContent=cooling?"RECOVERING · "+(r.cooldownTurn-state.turn)+" TURNS":r.shields>0?"BREAK SHIELD & RAID":"RAID STUDIO";
+      btn.disabled=cooling||state.completed;btn.addEventListener("click",()=>attackRival(r.id));card.append(head,stats,btn);box.append(card);
+    });
+  }
+  function attackRival(id){
+    const r=state.rivals.find(x=>x.id===id);if(!r||state.completed||state.turn<r.cooldownTurn)return;
+    if(r.shields>0){r.shields--;r.cooldownTurn=state.turn+2;addLog("🛡️ "+r.name+" blocked your raid! One rival shield destroyed.");}
+    else{
+      const rate=5+Math.floor(Math.random()*8),loot=Math.min(r.coins,Math.max(500,Math.floor(r.coins*rate/100)));
+      r.coins-=loot;const fans=750+r.power*350+Math.floor(Math.random()*500);
+      state.coins+=loot;state.followers+=fans;r.raids++;r.cooldownTurn=state.turn+3;
+      addLog("⚔️ STUDIO RAID SUCCESS! You hit "+r.name+" for "+number(loot)+" coins and gained "+number(fans)+" followers.");
+    }
+    renderUI();save();
+  }
+  function renderStickerAlbums(){
+    const box=$("stickerAlbums");if(!box)return;box.replaceChildren();$("stickerStats").textContent=state.stickerStars;
+    const missing=allStickers.filter(s=>!state.stickers.includes(s.id)).length;
+    $("tradeStarsBtn").disabled=state.stickerStars<3||missing===0;
+    $("stickerTradeHint").textContent=missing===0?"Every sticker collected. Your albums are complete!":state.stickerStars+" / 3 duplicate stars · "+missing+" stickers still missing";
+    albumBlueprints.forEach(a=>{
+      const items=a.stickers.map(x=>({id:a.id+":"+x[0],name:x[0],icon:x[1]}));
+      const count=items.filter(x=>state.stickers.includes(x.id)).length,card=document.createElement("article");card.className="album-card";
+      const head=document.createElement("div");head.className="album-head";const title=document.createElement("strong");title.textContent=a.icon+" "+a.name;
+      const countEl=document.createElement("span");countEl.textContent=count+"/5";head.append(title,countEl);
+      const grid=document.createElement("div");grid.className="sticker-grid";
+      items.forEach(s=>{const owned=state.stickers.includes(s.id),tile=document.createElement("div");tile.className="sticker"+(owned?" sticker-owned":"");
+        const icon=document.createElement("span");icon.textContent=owned?s.icon:"❔";const label=document.createElement("small");label.textContent=owned?s.name:"Unknown";tile.append(icon,label);grid.append(tile);});
+      const reward=document.createElement("p");reward.textContent=state.completedAlbums.includes(a.id)?"🏆 Album completed · reward collected":"Complete all five stickers for 8,000 coins + 5,000 followers";
+      card.append(head,grid,reward);box.append(card);
+    });
+  }
+  function checkAlbumRewards(){
+    albumBlueprints.forEach(a=>{const ids=a.stickers.map(s=>a.id+":"+s[0]);if(ids.every(id=>state.stickers.includes(id))&&!state.completedAlbums.includes(a.id)){
+      state.completedAlbums.push(a.id);state.coins+=8000;state.followers+=5000;addLog("⭐ ALBUM COMPLETE: "+a.name+"! +8,000 coins and +5,000 followers.");
+    }});
+  }
+  function collectSticker(){
+    const s=allStickers[Math.floor(Math.random()*allStickers.length)];
+    if(state.stickers.includes(s.id)){state.stickerStars++;addLog("⭐ DUPLICATE STICKER: "+s.name+" converted to 1 sticker star.");return;}
+    state.stickers.push(s.id);addLog("⭐ STICKER DROP: "+s.name+" added to your album.");checkAlbumRewards();
+  }
+  function tradeStickerStars(){
+    const missing=allStickers.filter(s=>!state.stickers.includes(s.id));if(state.stickerStars<3||!missing.length)return;
+    state.stickerStars-=3;const s=missing[Math.floor(Math.random()*missing.length)];state.stickers.push(s.id);
+    addLog("🔁 STICKER TRADE: "+s.name+" added to your album.");checkAlbumRewards();renderUI();save();
   }
   function checkAchievements(){
     achievements.forEach(a=>{if(!state.achievements.includes(a.id)&&a.done(state)){state.achievements.push(a.id);state.coins+=a.reward;addLog("🏅 ACHIEVEMENT: "+a.name+" unlocked! Bonus +"+number(a.reward)+" coins.");}});
@@ -167,13 +269,13 @@
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
-    if(!missing.length){state.coins+=2500;addLog("🃏 Duplicate pack! +2,500 coins.");return;}
+    if(!missing.length){state.coins+=2500;addLog("🃏 Duplicate pack! +2,500 coins.");collectSticker();return;}
     const card=missing[Math.floor(Math.random()*missing.length)];state.cards.push(card);state.followers+=3000;state.daily.cards++;
     addLog("🃏 RARE DROP: "+card+" collected! +3,000 followers.");
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
-    checkAchievements();
+    collectSticker();checkAchievements();
   }
-  function raid(){const reward=2000+Math.floor(Math.random()*5001)+currentEra()*500;state.coins+=reward;state.followers+=Math.floor(reward/2);addLog("🏦 Algorithm raid success! +"+number(reward)+" coins and +"+number(Math.floor(reward/2))+" followers.");}
+  function raid(){const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn);if(ready.length){const target=ready[Math.floor(Math.random()*ready.length)];attackRival(target.id);}else{const reward=1500+Math.floor(Math.random()*2000);state.coins+=reward;addLog("🏦 Rival studios are on alert. You salvage +"+number(reward)+" coins from the algorithm.");}}
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
   function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   function viralEvent(){
@@ -231,7 +333,7 @@
   function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("hidden",s.id!==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("activeTab",t.dataset.screen===id));}
   $("postBtn").addEventListener("click",rollPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
-  $("clearLogBtn").addEventListener("click",()=>{state.log=[];renderLog();save();});
+  $("clearLogBtn").addEventListener("click",()=>{state.log=[];renderLog();save();});$("tradeStarsBtn").addEventListener("click",tradeStickerStars);
   $("newGameBtn").addEventListener("click",()=>{if(rolling)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});

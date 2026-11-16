@@ -30,7 +30,7 @@
     <nav id="tabs" aria-label="Game sections">
       <button class="tab activeTab" data-screen="boardScreen" type="button">🎲 Board</button>
       <button class="tab" data-screen="empireScreen" type="button">🏙️ Empire</button>
-      <button class="tab" data-screen="collectionScreen" type="button">🃏 Collection <span id="cardCount" class="tab-count">0</span></button>
+      <button class="tab" data-screen="districtScreen" type="button">🌆 Districts</button><button class="tab" data-screen="rivalsScreen" type="button">⚔️ Rivals</button><button class="tab" data-screen="collectionScreen" type="button">🃏 Meme Cards <span id="cardCount" class="tab-count">0</span></button><button class="tab" data-screen="stickerScreen" type="button">⭐ Albums</button>
     </nav>
 
     <section id="boardScreen" class="screen">
@@ -60,17 +60,17 @@
 
     <section id="empireScreen" class="screen hidden">
       <div class="section-heading"><div><p class="eyebrow">YOUR CREATOR NETWORK</p><h2>Your Meme Empire</h2><p>Invest coins to upgrade your setup and grow your reach.</p></div><div class="empire-total"><strong id="empireLevel">0</strong><small>total levels</small></div></div>
-      <div id="landmarks" class="landmark-grid"></div>
+      <div id="landmarks" class="landmark-grid"></div><div class="activity-heading subheading"><div><p class="eyebrow">EXPAND YOUR MAP</p><h2>Creator Districts</h2></div></div><div id="districts" class="district-grid"></div>
       <div class="upgrade-summary"><div><strong>Next milestone</strong><p id="milestoneText">Reach 5 upgrades to unlock the next era.</p></div><button id="upgradeBtn" type="button">UPGRADE CHEAPEST</button></div>
     </section>
 
-    <section id="collectionScreen" class="screen hidden">
+    <section id="districtScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">THE INTERNET IS YOUR PLAYGROUND</p><h2>Creator Districts</h2><p>Unlock new neighbourhoods as your empire grows. Claim each district takeover reward.</p></div><div class="empire-total"><strong id="districtCount">1/5</strong><small>unlocked</small></div></div><div id="districtsFull" class="district-grid"></div></section><section id="rivalsScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">THE FEED IS CROWDED</p><h2>Rival Creators</h2><p>Scout rival studios, break through their defences and raid their creator funds.</p></div></div><div id="rivals" class="rival-grid"></div></section><section id="collectionScreen" class="screen hidden">
       <div class="section-heading"><div><p class="eyebrow">RARE INTERNET ARTIFACTS</p><h2>Meme Collection</h2><p>Collect every card. Duplicates turn into coins.</p></div><div class="empire-total"><strong id="collectionCount">0/8</strong><small>collected</small></div></div>
       <div id="collection" class="collection-grid"></div>
     </section>
 
-    <section class="activity-panel"><div class="activity-heading"><div><p class="eyebrow">LIVE FEED</p><h2>Activity</h2></div><button id="clearLogBtn" class="text-btn" type="button">Clear feed</button></div><div id="log" role="log" aria-live="polite"></div></section>
-    <footer><span>MEMEOPOLY · V1.1</span><span id="saveStatus">Auto-save enabled</span></footer>
+    <section id="stickerScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">COMPLETE THE SETS</p><h2>Sticker Albums</h2><p>Every meme pack has a sticker drop. Duplicates become stars. Trade stars for missing stickers.</p></div><div class="empire-total"><strong id="stickerStats">0</strong><small>stars</small></div></div><div class="sticker-trade"><span id="stickerTradeHint">Collect 3 duplicate stars to trade for a missing sticker.</span><button id="tradeStarsBtn" type="button">TRADE 3 STARS</button></div><div id="stickerAlbums" class="album-grid"></div></section><section class="activity-panel"><div class="activity-heading"><div><p class="eyebrow">LIVE FEED</p><h2>Activity</h2></div><button id="clearLogBtn" class="text-btn" type="button">Clear feed</button></div><div id="log" role="log" aria-live="polite"></div></section>
+    <footer><span>MEMEOPOLY · V3.0</span><span id="saveStatus">Auto-save enabled</span></footer>
   </main>
   <script src="game.js"></script>
 </body>
