@@ -100,7 +100,7 @@
         return {...base,coins:Math.max(0,Math.min(100000000,Number(old.coins??base.coins)||0)),shields:Math.max(0,Math.min(3,Math.floor(Number(old.shields??base.shields)||0))),raids:Math.max(0,Math.min(100000,Math.floor(Number(old.raids)||0))),cooldownTurn:Math.max(0,Math.min(100000000,Math.floor(Number(old.cooldownTurn)||0)))};
       });
       state.stickers=Array.isArray(saved.stickers)?allStickers.filter(s=>saved.stickers.includes(s.id)).map(s=>s.id):[];
-      state.stickerStars=Math.max(0,Number(saved.stickerStars)||0);
+      state.stickerStars=Math.max(0,Math.min(1000000,Math.floor(Number(saved.stickerStars)||0)));
       state.completedAlbums=Array.isArray(saved.completedAlbums)?saved.completedAlbums.filter(id=>albumBlueprints.some(a=>a.id===id)):[];
       state.log=Array.isArray(saved.log)?saved.log.filter(x=>x&&typeof x.message==="string").slice(0,40).map(x=>({message:x.message.slice(0,300),time:typeof x.time==="string"?x.time.slice(0,20):""})):[];
       state.achievements=Array.isArray(saved.achievements)?saved.achievements.filter(id=>achievements.some(a=>a.id===id)):[];
@@ -108,13 +108,14 @@
       for(const key of ["coins","followers","posts","turn","dice","shields","totalPostsPublished"])state[key]=Math.max(0,Math.min(1000000000,Math.floor(Number(state[key])||0)));
       state.shields=Math.min(3,state.shields);state.dailyBonusDate=typeof state.dailyBonusDate==="string"?state.dailyBonusDate:"";
       state.tutorialSeen=Boolean(state.tutorialSeen);state.completionRewarded=Boolean(saved.completionRewarded||saved.completed);
-      state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Number(state.diceUpdatedAt)||Date.now();
+      state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Math.min(Date.now(),Math.max(0,Number(state.diceUpdatedAt)||Date.now()));
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       // Completion is derived from the actual empire, never trusted from an old save flag.
       state.completed=totalLevels()>=25;
       normalizeDaily();
       if(state.completed&&!state.completionRewarded)checkCompletion();
       checkAlbumRewards();
+      checkAchievements();
       return true;
     }catch(e){return false;}
   }
@@ -375,11 +376,18 @@
       try{
         const candidate=JSON.parse(String(reader.result||""));
         if(!candidate||!Array.isArray(candidate.landmarks)||!Array.isArray(candidate.cards))throw new Error("Invalid save");
-        localStorage.setItem(SAVE_KEY,JSON.stringify(candidate));
-        state=freshState();
-        if(!load())throw new Error("Save could not be restored");
-        checkAchievements();renderUI();save();addLog("📦 Backup restored successfully.");
-        $("saveStatus").textContent="Backup restored";
+        const previous=localStorage.getItem(SAVE_KEY);
+        try{
+          localStorage.setItem(SAVE_KEY,JSON.stringify(candidate));
+          state=freshState();
+          if(!load())throw new Error("Save could not be restored");
+          checkAchievements();renderUI();save();addLog("📦 Backup restored successfully.");
+          $("saveStatus").textContent="Backup restored";
+        }catch(error){
+          if(previous===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,previous);
+          state=freshState();load();renderUI();
+          throw error;
+        }
       }catch(e){$("saveStatus").textContent="That backup file is invalid or damaged";}
       $("importSaveFile").value="";
     };
