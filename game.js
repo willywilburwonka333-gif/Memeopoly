@@ -234,9 +234,9 @@
     }});
   }
   function collectSticker(){
-    const missing=allStickers.filter(s=>!state.stickers.includes(s.id));
-    if(!missing.length){state.coins+=1000;addLog("⭐ Sticker duplicate converted to +1,000 coins.");return;}
-    const s=missing[Math.floor(Math.random()*missing.length)];state.stickers.push(s.id);addLog("⭐ STICKER DROP: "+s.name+" added to your album.");checkAlbumRewards();
+    const s=allStickers[Math.floor(Math.random()*allStickers.length)];
+    if(state.stickers.includes(s.id)){state.stickerStars++;addLog("⭐ DUPLICATE STICKER: "+s.name+" converted to 1 sticker star.");return;}
+    state.stickers.push(s.id);addLog("⭐ STICKER DROP: "+s.name+" added to your album.");checkAlbumRewards();
   }
   function tradeStickerStars(){
     const missing=allStickers.filter(s=>!state.stickers.includes(s.id));if(state.stickerStars<3||!missing.length)return;
@@ -269,7 +269,7 @@
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
-    if(!missing.length){state.coins+=2500;addLog("🃏 Duplicate pack! +2,500 coins.");return;}
+    if(!missing.length){state.coins+=2500;addLog("🃏 Duplicate pack! +2,500 coins.");collectSticker();return;}
     const card=missing[Math.floor(Math.random()*missing.length)];state.cards.push(card);state.followers+=3000;state.daily.cards++;
     addLog("🃏 RARE DROP: "+card+" collected! +3,000 followers.");
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
