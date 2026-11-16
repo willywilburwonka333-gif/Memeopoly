@@ -1,54 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Memeopoly</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101326">
+  <meta name="description" content="Roll, post, collect memes and build your own Memeopoly empire.">
+  <title>Memeopoly — Build Your Meme Empire</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game">
-    <h1>MEMEOPOLY</h1>
-    <p class="subtitle">Roll posts. Move around the board. Build your meme empire.</p>
+  <main id="game">
+    <header class="hero">
+      <div class="brand-mark">😂</div>
+      <div><p class="eyebrow">THE INTERNET IS YOURS</p><h1>MEME<span>OPOLY</span></h1><p class="subtitle">Roll the feed. Own the culture. Build your meme empire.</p></div>
+      <button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button>
+    </header>
 
-    <div id="topBar">
-      <div>Coins<br><span id="coins">0</span></div>
-      <div>Fans<br><span id="followers">0</span></div>
-      <div>Posts<br><span id="posts">0</span></div>
-      <div>Hype<br><span id="hype">0</span>/100</div>
-    </div>
-
-    <div id="tabs">
-      <button id="boardTab" class="activeTab">BOARD</button>
-      <button id="empireTab">EMPIRE</button>
-    </div>
-
-    <section id="boardScreen">
-      <div id="eraBox">
-        <h2 id="eraName">Era</h2>
-        <div id="progressText">0/25 upgrades</div>
-        <div id="progressBar"><div id="progressFill"></div></div>
-      </div>
-
-      <div id="board"></div>
-
-      <div id="dicePanel">
-        <div id="diceIcon">🎲</div>
-        <div id="diceText">Tap POST to roll</div>
-        <button id="postBtn">POST</button>
-      </div>
+    <section id="topBar" aria-label="Player resources">
+      <article class="stat-card"><span class="stat-icon">🪙</span><div><small>Coins</small><strong id="coins">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">👥</span><div><small>Followers</small><strong id="followers">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">📱</span><div><small>Posts</small><strong id="posts">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">⚡</span><div><small>Hype</small><strong><span id="hype">0</span><em>/100</em></strong></div></article>
     </section>
 
-    <section id="empireScreen" class="hidden">
-      <h2>Your Meme Empire</h2>
-      <div id="landmarks"></div>
-      <button id="upgradeBtn">BUILD CHEAPEST UPGRADE</button>
+    <nav id="tabs" aria-label="Game sections">
+      <button class="tab activeTab" data-screen="boardScreen" type="button">🎲 Board</button>
+      <button class="tab" data-screen="empireScreen" type="button">🏙️ Empire</button>
+      <button class="tab" data-screen="collectionScreen" type="button">🃏 Collection <span id="cardCount" class="tab-count">0</span></button>
+    </nav>
+
+    <section id="boardScreen" class="screen">
+      <div class="era-panel">
+        <div class="era-copy"><div><p class="eyebrow">CURRENT CHAPTER</p><h2 id="eraName">Bedroom Meme Era</h2></div><strong id="progressText">0 / 25 upgrades</strong></div>
+        <div class="progress-track"><div id="progressFill"></div></div>
+        <div class="progress-foot"><span>Build your way to internet fame</span><span id="eraProgress">0%</span></div>
+      </div>
+
+      <div id="board" aria-label="Memeopoly game board">
+        <div id="boardCenter">
+          <div class="center-logo">😂</div><h2>MEMEOPOLY</h2><p id="centerMessage">Your next viral moment starts here.</p>
+          <div class="center-mini-stats"><span>TURN <b id="turnCount">0</b></span><span>CARDS <b id="centerCards">0</b></span></div>
+          <div id="dicePanel">
+            <div id="diceIcon" aria-hidden="true">🎲</div>
+            <div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend 1 post to take your turn.</small></div>
+            <button id="postBtn" type="button">ROLL &amp; POST</button>
+          </div>
+        </div>
+      </div>
+      <p class="board-legend"><span>🟩 Rewards</span><span>🟪 Events &amp; cards</span><span>🟥 Rival trouble</span><span>🟨 Landmarks</span></p>
     </section>
 
-    <h2>Activity</h2>
-    <div id="log"></div>
-  </div>
+    <section id="empireScreen" class="screen hidden">
+      <div class="section-heading"><div><p class="eyebrow">YOUR CREATOR NETWORK</p><h2>Your Meme Empire</h2><p>Invest coins to upgrade your setup and grow your reach.</p></div><div class="empire-total"><strong id="empireLevel">0</strong><small>total levels</small></div></div>
+      <div id="landmarks" class="landmark-grid"></div>
+      <div class="upgrade-summary"><div><strong>Next milestone</strong><p id="milestoneText">Reach 5 upgrades to unlock the next era.</p></div><button id="upgradeBtn" type="button">UPGRADE CHEAPEST</button></div>
+    </section>
 
+    <section id="collectionScreen" class="screen hidden">
+      <div class="section-heading"><div><p class="eyebrow">RARE INTERNET ARTIFACTS</p><h2>Meme Collection</h2><p>Collect every card. Duplicates turn into coins.</p></div><div class="empire-total"><strong id="collectionCount">0/8</strong><small>collected</small></div></div>
+      <div id="collection" class="collection-grid"></div>
+    </section>
+
+    <section class="activity-panel"><div class="activity-heading"><div><p class="eyebrow">LIVE FEED</p><h2>Activity</h2></div><button id="clearLogBtn" class="text-btn" type="button">Clear feed</button></div><div id="log" role="log" aria-live="polite"></div></section>
+    <footer><span>MEMEOPOLY · V1.0</span><span id="saveStatus">Auto-save enabled</span></footer>
+  </main>
   <script src="game.js"></script>
 </body>
 </html>
