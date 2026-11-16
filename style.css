@@ -22,3 +22,55 @@ h1{font-size:clamp(28px,5vw,42px);letter-spacing:2px;margin:0;font-weight:950;li
 .subheading{margin:24px 0 12px}.district-grid,.rival-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:12px 0 22px}.district-card,.rival-card,.album-card{padding:15px;background:var(--panel);border:1px solid var(--line);border-radius:15px;min-width:0}.district-card{display:grid;grid-template-columns:44px 1fr;gap:6px 10px;align-items:center}.district-icon{grid-row:span 3;font-size:32px}.district-card strong{font-size:14px}.district-card p{font-size:11px;color:var(--muted);margin:0}.district-card small{font-size:10px;color:var(--gold)}.district-card button,.rival-card button,.sticker-trade button{grid-column:1/-1;border:0;border-radius:9px;padding:10px;background:linear-gradient(100deg,#8060ed,#bd55b5);color:white;font-size:10px;font-weight:900}.district-card button:disabled,.rival-card button:disabled,.sticker-trade button:disabled{background:#38405b;color:#aab2c8}.district-locked{opacity:.62;filter:saturate(.5)}.district-open{border-color:#596f83}.rival-head{display:flex;align-items:center;gap:12px}.rival-head>span{font-size:34px}.rival-head strong,.rival-head small{display:block}.rival-head strong{font-size:15px}.rival-head small{font-size:10px;color:var(--muted);margin-top:4px}.rival-stats{font-size:10px;color:var(--gold);margin:14px 0}.album-grid{display:grid;grid-template-columns:1fr;gap:12px}.album-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.album-head strong{font-size:15px}.album-head span{font-size:12px;color:var(--gold);font-weight:900}.sticker-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.sticker{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:90px;padding:7px 3px;background:#11172c;border:1px dashed #414968;border-radius:10px;text-align:center;opacity:.58}.sticker span{font-size:26px;filter:grayscale(1)}.sticker small{font-size:8px;color:var(--muted)}.sticker-owned{opacity:1;border-style:solid;border-color:#7762ad;background:#292342}.sticker-owned span{filter:none}.album-card>p{font-size:10px;color:var(--muted);margin:10px 0 0}.sticker-trade{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;background:#282442;border:1px solid #514574;border-radius:13px;margin-bottom:14px}.sticker-trade span{font-size:11px;color:var(--muted)}.sticker-trade button{white-space:nowrap}.tab{min-width:0}@media(max-width:680px){#tabs{flex-wrap:wrap}.tab{flex:1 1 28%;font-size:10px;padding:10px 5px}.district-grid,.rival-grid{grid-template-columns:1fr}.sticker-trade{align-items:stretch;flex-direction:column}.sticker-trade button{width:100%}.sticker-grid{gap:4px}.sticker{min-height:76px}.sticker span{font-size:21px}.sticker small{font-size:7px}}
 
 .publish-btn{grid-column:1/-1;width:100%;margin-top:7px;padding:10px;border:1px solid #547d78;border-radius:9px;background:linear-gradient(100deg,#267e70,#39a18d);color:white;font-size:11px;font-weight:900;letter-spacing:.7px}.publish-btn:disabled{opacity:.45;cursor:not-allowed}.tutorial-panel{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 18px;margin:0 0 16px;background:linear-gradient(145deg,#242a4a,#191e36);border:1px solid #485477;border-radius:15px}.tutorial-panel h2{font-size:17px;margin:0 0 8px}.tutorial-panel ol{margin:0;padding-left:20px;color:var(--muted);font-size:12px;line-height:1.75}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(max-width:680px){.header-actions{flex-wrap:wrap;justify-content:flex-end}.tutorial-panel{flex-direction:column}.tutorial-panel button{width:100%}}
+
+/* V5 premium tabletop presentation */
+body{background:radial-gradient(ellipse at 50% -12%,#414a83 0%,#202747 34%,#0b1022 76%);background-attachment:fixed}
+.hero{padding:8px 2px 16px;border-bottom:1px solid #ffffff14}
+.brand-mark{background:linear-gradient(145deg,#8b6cff,#ed5aa8 72%,#ffb65c);box-shadow:0 12px 38px #9b5cff55,inset 0 1px 0 #ffffff75}
+h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
+#board{position:relative;isolation:isolate;gap:9px;padding:13px;min-height:650px;border:1px solid #6675a8;border-radius:25px;background:linear-gradient(145deg,#28345c,#121a35 58%,#0a1025);box-shadow:0 22px 55px #0008,inset 0 2px 0 #ffffff18,inset 0 -10px 35px #0005}
+#board:before{content:"";position:absolute;inset:5px;border:1px solid #ffffff12;border-radius:19px;pointer-events:none;z-index:-1}
+.tile{border:1px solid #ffffff25;border-radius:15px;padding:8px 5px;background:linear-gradient(150deg,#3b466c,#222c4d 70%);box-shadow:0 5px 0 #10172d,0 9px 15px #0005,inset 0 1px 0 #ffffff22;transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.tile:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffff12,transparent 42%);pointer-events:none}
+.tile-icon{filter:drop-shadow(0 3px 2px #0008);font-size:clamp(22px,3.2vw,34px)}
+.tile strong{font-size:clamp(10px,1.15vw,13px);font-weight:900;text-shadow:0 2px 4px #0009}
+.tile small{font-size:9px;color:#d5def7}
+.tile.go,.tile.coins,.tile.hype{background:linear-gradient(145deg,#247e70,#164b4a 78%);border-color:#64d9bd;box-shadow:0 5px 0 #103c3c,0 9px 16px #0005,inset 0 1px 0 #ffffff40}
+.tile.landmark{background:linear-gradient(145deg,#a96c35,#54351f 78%);border-color:#f3bd70;box-shadow:0 5px 0 #392417,0 9px 16px #0005,inset 0 1px 0 #ffffff40}
+.tile.card,.tile.event,.tile.raid{background:linear-gradient(145deg,#7654c4,#382c70 78%);border-color:#b49bff;box-shadow:0 5px 0 #29204f,0 9px 16px #0005,inset 0 1px 0 #ffffff40}
+.tile.attack{background:linear-gradient(145deg,#b64b70,#56263f 78%);border-color:#fa91b1;box-shadow:0 5px 0 #351a31,0 9px 16px #0005,inset 0 1px 0 #ffffff40}
+.tile.player{z-index:2;border:2px solid #c6ff75;box-shadow:0 0 0 3px #c6ff7538,0 0 25px #a8ff5c9c,0 5px 0 #47612d,0 12px 22px #0008;transform:translateY(-3px) scale(1.025);filter:brightness(1.17)}
+.token{right:5px;bottom:4px;display:grid;place-items:center;width:29px;height:29px;border:2px solid #fff;border-radius:50%;background:linear-gradient(145deg,#ffdc70,#f18c35);font-size:17px;box-shadow:0 3px 8px #0009}
+#boardCenter{position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#515c9b 0%,#272f59 40%,#141b36 78%);border:1px solid #8391c5;border-radius:21px;box-shadow:inset 0 2px 0 #ffffff24,0 10px 25px #0006}
+#boardCenter:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffff0c,transparent 45%,#8c69ff12);pointer-events:none}
+.center-logo{font-size:52px;filter:drop-shadow(0 5px 5px #0008);animation:logoFloat 3s ease-in-out infinite}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#boardCenter h2{font-size:clamp(20px,3.2vw,30px);font-weight:1000;letter-spacing:2.5px;text-shadow:0 4px 15px #0008}
+#dicePanel{position:relative;grid-template-columns:58px 1fr;gap:6px 12px;padding:12px;background:linear-gradient(145deg,#0d142c,#1a2444);border:1px solid #6575a5;border-radius:15px;box-shadow:inset 0 1px 0 #ffffff18,0 5px 14px #0005}
+#diceIcon{grid-row:span 2;display:grid;place-items:center;font-size:0;perspective:500px}
+.die-face{width:48px;height:48px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:6px;border:1px solid #d9e1f5;border-radius:11px;background:linear-gradient(145deg,#fff,#dce5f7);box-shadow:0 5px 0 #8794b4,0 8px 14px #0008,inset 0 1px 2px #fff;transform:rotate(-7deg)}
+.die-pip{display:block;width:7px;height:7px;align-self:center;justify-self:center;border-radius:50%;background:transparent}
+.die-pip.visible{background:radial-gradient(circle at 35% 30%,#6e7893,#18213b 75%);box-shadow:0 1px 1px #fff8}
+#diceIcon.rolling .die-face{animation:diceTumble .42s cubic-bezier(.3,.8,.3,1) infinite}
+@keyframes diceTumble{0%{transform:rotate(-12deg) translateY(0) scale(1)}50%{transform:rotate(170deg) translateY(-5px) scale(1.12)}100%{transform:rotate(348deg) translateY(0) scale(1)}}
+#dicePanel strong{font-size:14px;color:#fff}
+#dicePanel small{font-size:10px}
+#postBtn{box-shadow:0 4px 0 #56318f,0 7px 15px #0005;transition:transform .15s,filter .15s}
+#postBtn:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 #56318f}
+.board-legend{padding:9px 12px;border:1px solid #ffffff12;border-radius:12px;background:#111a33a8}
+.era-panel,.activity-panel,.daily-panel,.achievement-panel,.landmark-card,.district-card,.rival-card,.album-card{box-shadow:0 10px 25px #0003,inset 0 1px 0 #ffffff0b}
+@media(max-width:680px){
+ #board{min-height:455px;grid-template-rows:repeat(5,minmax(82px,1fr));gap:5px;padding:8px;border-radius:19px}
+ .tile{border-radius:10px;padding:4px 2px;box-shadow:0 3px 0 #10172d,0 5px 9px #0005}
+ .tile-icon{font-size:21px}
+ .tile strong{font-size:8px}
+ .tile small{font-size:7px}
+ .token{width:23px;height:23px;font-size:14px}
+ #boardCenter{border-radius:13px;padding:8px}
+ .center-logo{font-size:34px}
+ #dicePanel{grid-template-columns:39px 1fr;padding:7px;gap:4px 7px}
+ .die-face{width:36px;height:36px;padding:4px;gap:2px;border-radius:8px}
+ .die-pip{width:6px;height:6px}
+ #dicePanel strong{font-size:10px}
+}
+@media(max-width:380px){#board{min-height:385px;grid-template-rows:repeat(5,minmax(70px,1fr))}}
