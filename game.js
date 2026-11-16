@@ -10,7 +10,6 @@
     {type:"LANDMARK",icon:"🏠",name:"Bedroom Setup",description:"Upgrade your setup"},
     {type:"ATTACK",icon:"⚔️",name:"Cancel Strike",description:"A rival makes a move"},
     {type:"HYPE",icon:"⚡",name:"Hype Boost",description:"Build your hype"},
-    {type:"SHIELD",icon:"🛡️",name:"Shield Drop",description:"Protect your studio"},
     {type:"LANDMARK",icon:"🎤",name:"Cheap Mic",description:"Upgrade your audio"},
     {type:"EVENT",icon:"🔥",name:"Viral Event",description:"A random event"},
     {type:"LANDMARK",icon:"💻",name:"Gaming PC",description:"Upgrade your workstation"},
@@ -18,7 +17,7 @@
     {type:"LANDMARK",icon:"💡",name:"Ring Light",description:"Upgrade your lighting"},
     {type:"ATTACK",icon:"💀",name:"Shadowban",description:"Survive a platform setback"},
     {type:"LANDMARK",icon:"🏢",name:"Meme Studio",description:"Upgrade your studio"},
-    {type:"COINS",icon:"🤝",name:"Sponsor Deal",description:"Earn a sponsor payout"},
+    {type:"SHIELD",icon:"🛡️",name:"Shield Drop",description:"Protect your studio"},
     {type:"CARD",icon:"🎁",name:"Mystery Drop",description:"Open a mystery pack"},
     {type:"EVENT",icon:"🌈",name:"Community Event",description:"See what happens"}
   ];
@@ -135,6 +134,7 @@
     $("achievementCount").textContent=state.achievements.length+" / "+achievements.length;
   }
   function renderUI(){
+    regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
     $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
@@ -191,16 +191,32 @@
       case"COINS":{const reward=1000+currentEra()*500;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
       case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
-      case"HYPE":awardHype(30);addLog("⚡ Hype boost! +30 hype.");break;\n      case"SHIELD":shieldDrop();break;
+      case"HYPE":awardHype(30);addLog("⚡ Hype boost! +30 hype.");break;
+      case"SHIELD":shieldDrop();break;
     }
   }
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   async function rollPost(){
-    if(rolling||state.posts<=0||state.completed)return;
-    rolling=true;state.posts--;state.turn++;state.daily.rolls++;$("postBtn").disabled=true;$("diceIcon").classList.add("rolling");
-    const dice=Math.floor(Math.random()*6)+1;$("diceText").textContent="Rolling…";
-    for(let i=0;i<dice;i++){await wait(115);state.position=(state.position+1)%board.length;if(state.position===0){state.coins+=1500;addLog("🏁 Board lap complete! +1,500 coins.");}renderBoard();}
-    $("diceIcon").classList.remove("rolling");$("diceText").textContent="You rolled a "+dice+"!";handleTile(board[state.position]);
+    regenerateDice();normalizeDaily();
+    const multiplier=Number($("rollMultiplier").value)||1;
+    if(rolling||state.dice<multiplier||state.completed)return;
+    rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
+    $("postBtn").disabled=true;$("diceIcon").classList.add("rolling");
+    const roll=Math.floor(Math.random()*6)+1,steps=roll*multiplier;
+    $("diceText").textContent="Rolling…";
+    for(let i=0;i<steps;i++){
+      await wait(multiplier>1?45:100);
+      state.position=(state.position+1)%board.length;
+      if(state.position===0){
+        const lap=1500*multiplier;
+        state.coins+=lap;state.followers+=250*multiplier;
+        addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*multiplier)+" followers.");
+      }
+      renderBoard();
+    }
+    $("diceIcon").classList.remove("rolling");
+    $("diceText").textContent=roll+" × "+multiplier+" = "+steps+" spaces";
+    handleTile(board[state.position]);
     rolling=false;checkAchievements();renderUI();save();
   }
   function claimDailyBonus(){
