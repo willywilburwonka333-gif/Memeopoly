@@ -429,7 +429,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();renderUI();
+  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
