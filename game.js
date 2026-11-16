@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   const SAVE_KEY="memeopoly-save-v1";
+  const MAX_DICE=50,DICE_REGEN_MS=5*60*1000;
   const eras=["Bedroom Meme Era","Vine House Era","YouTube Shorts Era","TikTok Empire Era","Meme HQ Era"];
   const board=[
     {type:"GO",icon:"🚀",name:"Go Viral",description:"Collect your creator bonus"},
@@ -9,6 +10,7 @@
     {type:"LANDMARK",icon:"🏠",name:"Bedroom Setup",description:"Upgrade your setup"},
     {type:"ATTACK",icon:"⚔️",name:"Cancel Strike",description:"A rival makes a move"},
     {type:"HYPE",icon:"⚡",name:"Hype Boost",description:"Build your hype"},
+    {type:"SHIELD",icon:"🛡️",name:"Shield Drop",description:"Protect your studio"},
     {type:"LANDMARK",icon:"🎤",name:"Cheap Mic",description:"Upgrade your audio"},
     {type:"EVENT",icon:"🔥",name:"Viral Event",description:"A random event"},
     {type:"LANDMARK",icon:"💻",name:"Gaming PC",description:"Upgrade your workstation"},
@@ -40,7 +42,7 @@
   ];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[]});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -50,6 +52,11 @@
   const costFor=level=>500+level*750+currentEra()*350;
   const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));$("saveStatus").textContent="✓ Progress saved";}catch(e){$("saveStatus").textContent="Save unavailable in this browser";}};
   const addLog=message=>{state.log.unshift({message,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});state.log=state.log.slice(0,40);renderLog();save();};
+  function regenerateDice(){
+    const now=Date.now(),last=Number(state.diceUpdatedAt)||now;
+    if(state.dice<MAX_DICE){const gained=Math.floor((now-last)/DICE_REGEN_MS);if(gained>0){state.dice=Math.min(MAX_DICE,state.dice+gained);state.diceUpdatedAt=last+gained*DICE_REGEN_MS;}}
+    else state.diceUpdatedAt=now;
+  }
   function normalizeDaily(){
     if(!state.daily||state.daily.date!==today())state.daily=freshDaily();
     if(!Array.isArray(state.daily.claims))state.daily.claims=[];
@@ -64,7 +71,8 @@
       state.log=Array.isArray(saved.log)?saved.log.slice(0,40):[];
       state.achievements=Array.isArray(saved.achievements)?saved.achievements.filter(id=>achievements.some(a=>a.id===id)):[];
       state.position=Math.max(0,Math.min(15,Number(state.position)||0));
-      for(const key of ["coins","followers","posts","turn"])state[key]=Math.max(0,Number(state[key])||0);
+      for(const key of ["coins","followers","posts","turn","dice","shields"])state[key]=Math.max(0,Number(state[key])||0);
+      state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Number(state.diceUpdatedAt)||Date.now();
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       state.completed=totalLevels()>=25||Boolean(saved.completed);
       normalizeDaily();return true;
@@ -129,7 +137,7 @@
   function renderUI(){
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
     $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
-    $("postBtn").disabled=rolling||state.posts<=0||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL & POST";$("rollHint").textContent=state.completed?"You have conquered the board.":state.posts+" posts available · 1 post per turn";$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
+    const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();
   }
@@ -166,7 +174,8 @@
     checkAchievements();
   }
   function raid(){const reward=2000+Math.floor(Math.random()*5001)+currentEra()*500;state.coins+=reward;state.followers+=Math.floor(reward/2);addLog("🏦 Algorithm raid success! +"+number(reward)+" coins and +"+number(Math.floor(reward/2))+" followers.");}
-  function rivalAttack(){const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501)),gain=500+Math.floor(Math.random()*1501);state.coins-=loss;state.hype=Math.max(0,state.hype-10);state.followers+=gain;addLog("⚔️ Rival drama! -"+number(loss)+" coins, but +"+number(gain)+" followers.");}
+  function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
+  function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   function viralEvent(){
     const events=[
       ()=>{state.coins+=2500;addLog("🔥 Your post went viral! +2,500 coins.");},
@@ -182,7 +191,7 @@
       case"COINS":{const reward=1000+currentEra()*500;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
       case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
-      case"HYPE":awardHype(30);addLog("⚡ Hype boost! +30 hype.");break;
+      case"HYPE":awardHype(30);addLog("⚡ Hype boost! +30 hype.");break;\n      case"SHIELD":shieldDrop();break;
     }
   }
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -196,15 +205,15 @@
   }
   function claimDailyBonus(){
     normalizeDaily();if(state.dailyBonusDate===today()||state.completed)return;
-    state.dailyBonusDate=today();state.coins+=2000;state.followers+=2000;
-    addLog("🎁 DAILY CREATOR BONUS! +2,000 coins and +2,000 followers.");renderUI();save();
+    state.dailyBonusDate=today();state.coins+=2000;state.followers+=2000;state.dice=Math.min(MAX_DICE,state.dice+5);
+    addLog("🎁 DAILY CREATOR BONUS! +2,000 coins, +2,000 followers and +5 dice.");renderUI();save();
   }
   function claimMission(id){
     normalizeDaily();const m=missions.find(x=>x.id===id);if(!m||state.daily.claims.includes(id)||m.progress(state)<m.goal)return;
     state.daily.claims.push(id);state.coins+=m.reward;addLog("✅ DAILY MISSION COMPLETE: "+m.name+". +"+number(m.reward)+" coins.");renderUI();save();
   }
   function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("hidden",s.id!==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("activeTab",t.dataset.screen===id));}
-  $("postBtn").addEventListener("click",rollPost);$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
+  $("postBtn").addEventListener("click",rollPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
   $("clearLogBtn").addEventListener("click",()=>{state.log=[];renderLog();save();});
   $("newGameBtn").addEventListener("click",()=>{if(rolling)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
