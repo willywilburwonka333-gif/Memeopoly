@@ -89,8 +89,11 @@
   }
   function load(){
     try{
-      const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_SAVE_KEY);if(!raw)return false;
-      const saved=JSON.parse(raw);if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
+      const primary=localStorage.getItem(SAVE_KEY),legacy=localStorage.getItem(LEGACY_SAVE_KEY);
+      let saved=null;
+      try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
+      if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
+      if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
       state={...freshState(),...saved};
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
