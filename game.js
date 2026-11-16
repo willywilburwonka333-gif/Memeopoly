@@ -122,6 +122,24 @@
       return true;
     }catch(e){return false;}
   }
+  function setDiceFace(value){
+    const icon=$("diceIcon");
+    const face=document.createElement("span");
+    face.className="die-face";
+    face.setAttribute("role","img");
+    face.setAttribute("aria-label","Dice result "+value);
+    const patterns={
+      1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],
+      5:[0,2,4,6,8],6:[0,2,3,5,6,8]
+    };
+    for(let i=0;i<9;i++){
+      const pip=document.createElement("i");
+      pip.className="die-pip"+(patterns[value].includes(i)?" visible":"");
+      face.append(pip);
+    }
+    icon.replaceChildren(face);
+    icon.setAttribute("aria-label","Dice showing "+value);
+  }
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -335,6 +353,7 @@
     $("diceText").textContent="Rolling…";
     for(let i=0;i<steps;i++){
       await wait(multiplier>1?45:100);
+      setDiceFace(Math.floor(Math.random()*6)+1);
       state.position=(state.position+1)%board.length;
       if(state.position===0){
         const lap=1500*multiplier;
@@ -344,6 +363,7 @@
       renderBoard();
     }
     $("diceIcon").classList.remove("rolling");
+    setDiceFace(roll);
     $("diceText").textContent=roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
     rolling=false;checkAchievements();renderUI();save();
@@ -409,7 +429,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();renderUI();
+  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
