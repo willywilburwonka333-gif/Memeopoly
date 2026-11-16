@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const SAVE_KEY="memeopoly-save-v1";
+  const SAVE_KEY="memeopoly-save-v2",LEGACY_SAVE_KEY="memeopoly-save-v1";
   const MAX_DICE=50,DICE_REGEN_MS=5*60*1000;
   const eras=["Bedroom Meme Era","Vine House Era","YouTube Shorts Era","TikTok Empire Era","Meme HQ Era"];
   const board=[
@@ -52,16 +52,22 @@
     {id:"first-card",name:"Collector",icon:"🃏",description:"Find your first meme card.",reward:1000,done:s=>s.cards.length>=1},
     {id:"ten-turns",name:"Algorithm Regular",icon:"🔥",description:"Take 10 turns.",reward:2500,done:s=>s.turn>=10},
     {id:"five-levels",name:"Big Creator Energy",icon:"⭐",description:"Reach five landmark upgrades.",reward:5000,done:s=>levelCount(s)>=5},
-    {id:"full-set",name:"Meme Museum",icon:"🏆",description:"Collect all eight meme cards.",reward:10000,done:s=>s.cards.length===8}
+    {id:"full-set",name:"Meme Museum",icon:"🏆",description:"Collect all eight meme cards.",reward:10000,done:s=>s.cards.length===8},
+    {id:"first-publish",name:"Content Machine",icon:"📣",description:"Publish your first post.",reward:1000,done:s=>s.totalPostsPublished>=1},
+    {id:"first-district",name:"Neighbourhood Famous",icon:"🌆",description:"Claim your first creator district.",reward:2000,done:s=>s.districtClaims.length>=1},
+    {id:"first-raid",name:"Studio Breaker",icon:"⚔️",description:"Successfully raid a rival studio.",reward:2500,done:s=>s.rivals.some(r=>r.raids>=1)},
+    {id:"first-album",name:"Album Artist",icon:"⭐",description:"Complete your first sticker album.",reward:5000,done:s=>s.completedAlbums.length>=1}
   ];
   const missions=[
     {id:"rolls",name:"Feed the algorithm",icon:"🎲",description:"Take 3 turns today.",goal:3,reward:1200,progress:s=>s.daily.rolls},
     {id:"builds",name:"Upgrade your setup",icon:"🛠️",description:"Build or upgrade 1 landmark today.",goal:1,reward:1800,progress:s=>s.daily.upgrades},
-    {id:"cards",name:"Meme hunter",icon:"🃏",description:"Find 1 meme card today.",goal:1,reward:2200,progress:s=>s.daily.cards}
+    {id:"cards",name:"Meme hunter",icon:"🃏",description:"Find 1 meme card today.",goal:1,reward:2200,progress:s=>s.daily.cards},
+    {id:"posts",name:"Keep the feed alive",icon:"📣",description:"Publish 2 posts today.",goal:2,reward:1500,progress:s=>s.daily.posts},
+    {id:"raids",name:"Rival trouble",icon:"⚔️",description:"Successfully raid 1 rival today.",goal:1,reward:2500,progress:s=>s.daily.raids}
   ];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
-  const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[]});
+  const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[]});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -78,29 +84,38 @@
   }
   function normalizeDaily(){
     if(!state.daily||state.daily.date!==today())state.daily=freshDaily();
-    if(!Array.isArray(state.daily.claims))state.daily.claims=[];
+    for(const key of ["rolls","upgrades","cards","posts","raids"])state.daily[key]=Math.max(0,Math.min(100000,Math.floor(Number(state.daily[key])||0)));
+    state.daily.claims=Array.isArray(state.daily.claims)?state.daily.claims.filter(id=>missions.some(m=>m.id===id)):[];
   }
   function load(){
     try{
-      const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
+      const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_SAVE_KEY);if(!raw)return false;
       const saved=JSON.parse(raw);if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
       state={...freshState(),...saved};
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
-      state.rivals=rivalBlueprints.map(base=>({...base,...(Array.isArray(saved.rivals)?saved.rivals.find(r=>r.id===base.id):{}),cooldownTurn:Math.max(0,Number((Array.isArray(saved.rivals)?saved.rivals.find(r=>r.id===base.id):{})?.cooldownTurn)||0)}));
+      state.rivals=rivalBlueprints.map(base=>{
+        const old=Array.isArray(saved.rivals)?saved.rivals.find(r=>r&&r.id===base.id)||{}:{};
+        return {...base,coins:Math.max(0,Math.min(100000000,Number(old.coins??base.coins)||0)),shields:Math.max(0,Math.min(3,Math.floor(Number(old.shields??base.shields)||0))),raids:Math.max(0,Math.min(100000,Math.floor(Number(old.raids)||0))),cooldownTurn:Math.max(0,Math.min(100000000,Math.floor(Number(old.cooldownTurn)||0)))};
+      });
       state.stickers=Array.isArray(saved.stickers)?allStickers.filter(s=>saved.stickers.includes(s.id)).map(s=>s.id):[];
       state.stickerStars=Math.max(0,Number(saved.stickerStars)||0);
       state.completedAlbums=Array.isArray(saved.completedAlbums)?saved.completedAlbums.filter(id=>albumBlueprints.some(a=>a.id===id)):[];
-      state.log=Array.isArray(saved.log)?saved.log.slice(0,40):[];
+      state.log=Array.isArray(saved.log)?saved.log.filter(x=>x&&typeof x.message==="string").slice(0,40).map(x=>({message:x.message.slice(0,300),time:typeof x.time==="string"?x.time.slice(0,20):""})):[];
       state.achievements=Array.isArray(saved.achievements)?saved.achievements.filter(id=>achievements.some(a=>a.id===id)):[];
       state.position=Math.max(0,Math.min(15,Number(state.position)||0));
-      for(const key of ["coins","followers","posts","turn","dice","shields"])state[key]=Math.max(0,Number(state[key])||0);
+      for(const key of ["coins","followers","posts","turn","dice","shields","totalPostsPublished"])state[key]=Math.max(0,Math.min(1000000000,Math.floor(Number(state[key])||0)));
+      state.shields=Math.min(3,state.shields);state.dailyBonusDate=typeof state.dailyBonusDate==="string"?state.dailyBonusDate:"";
+      state.tutorialSeen=Boolean(state.tutorialSeen);state.completionRewarded=Boolean(saved.completionRewarded||saved.completed);
       state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Number(state.diceUpdatedAt)||Date.now();
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       // Completion is derived from the actual empire, never trusted from an old save flag.
       state.completed=totalLevels()>=25;
-      normalizeDaily();return true;
+      normalizeDaily();
+      if(state.completed&&!state.completionRewarded)checkCompletion();
+      checkAlbumRewards();
+      return true;
     }catch(e){return false;}
   }
   function renderBoard(){
@@ -165,6 +180,8 @@
     $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
+    $("publishBtn").disabled=state.completed||state.posts<1;
+    $("publishBtn").textContent=state.posts>0?"📣 PUBLISH POST · "+state.posts+" LEFT":"NO POSTS LEFT";
     renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();
   }
   function renderDistricts(){
@@ -183,7 +200,7 @@
   }
   function claimDistrict(id){
     const d=districts.find(x=>x.id===id);if(!d||totalLevels()<d.unlock||state.districtClaims.includes(id))return;
-    state.districtClaims.push(id);state.coins+=d.reward;state.followers+=d.followers;
+    state.districtClaims.push(id);state.coins+=d.reward;state.followers+=d.followers;checkAchievements();
     addLog("🌆 DISTRICT TAKEOVER: "+d.name+" is yours! +"+number(d.reward)+" coins and +"+number(d.followers)+" followers.");
     renderUI();save();
   }
@@ -195,22 +212,25 @@
       const icon=document.createElement("span");icon.textContent=r.icon;
       const info=document.createElement("div"),name=document.createElement("strong"),handle=document.createElement("small");
       name.textContent=r.name;handle.textContent=r.handle+" · "+r.district;info.append(name,handle);head.append(icon,info);
-      const stats=document.createElement("div");stats.className="rival-stats";stats.textContent="🛡️ "+r.shields+" shields   ·   💰 "+number(r.coins)+" vault   ·   ⚔️ "+r.raids+" raids";
+      const requirement=districts.find(d=>d.name===r.district),unlocked=totalLevels()>=(requirement?.unlock??0);
+      const stats=document.createElement("div");stats.className="rival-stats";
+      stats.textContent=unlocked?"🛡️ "+r.shields+" shields   ·   💰 "+number(r.coins)+" vault   ·   ⚔️ "+r.raids+" raids":"🔒 Unlock "+r.district+" at "+(requirement?.unlock??0)+" upgrades";
       const btn=document.createElement("button");btn.type="button";const cooling=state.turn<r.cooldownTurn;
-      btn.textContent=cooling?"RECOVERING · "+(r.cooldownTurn-state.turn)+" TURNS":r.shields>0?"BREAK SHIELD & RAID":"RAID STUDIO";
-      btn.disabled=cooling||state.completed;btn.addEventListener("click",()=>attackRival(r.id));card.append(head,stats,btn);box.append(card);
+      btn.textContent=!unlocked?"DISTRICT LOCKED":cooling?"RECOVERING · "+(r.cooldownTurn-state.turn)+" TURNS":r.shields>0?"BREAK SHIELD & RAID":"RAID STUDIO";
+      btn.disabled=!unlocked||cooling||state.completed;btn.addEventListener("click",()=>attackRival(r.id));card.append(head,stats,btn);box.append(card);
     });
   }
   function attackRival(id){
-    const r=state.rivals.find(x=>x.id===id);if(!r||state.completed||state.turn<r.cooldownTurn)return;
+    normalizeDaily();const r=state.rivals.find(x=>x.id===id),requirement=r&&districts.find(d=>d.name===r.district);
+    if(!r||state.completed||totalLevels()<(requirement?.unlock??0)||state.turn<r.cooldownTurn)return;
     if(r.shields>0){r.shields--;r.cooldownTurn=state.turn+2;addLog("🛡️ "+r.name+" blocked your raid! One rival shield destroyed.");}
     else{
       const rate=5+Math.floor(Math.random()*8),loot=Math.min(r.coins,Math.max(500,Math.floor(r.coins*rate/100)));
       r.coins-=loot;const fans=750+r.power*350+Math.floor(Math.random()*500);
-      state.coins+=loot;state.followers+=fans;r.raids++;r.cooldownTurn=state.turn+3;
+      state.coins+=loot;state.followers+=fans;r.raids++;state.daily.raids++;r.cooldownTurn=state.turn+3;
       addLog("⚔️ STUDIO RAID SUCCESS! You hit "+r.name+" for "+number(loot)+" coins and gained "+number(fans)+" followers.");
     }
-    renderUI();save();
+    checkAchievements();renderUI();save();
   }
   function renderStickerAlbums(){
     const box=$("stickerAlbums");if(!box)return;box.replaceChildren();$("stickerStats").textContent=state.stickerStars;
@@ -231,7 +251,7 @@
   }
   function checkAlbumRewards(){
     albumBlueprints.forEach(a=>{const ids=a.stickers.map(s=>a.id+":"+s[0]);if(ids.every(id=>state.stickers.includes(id))&&!state.completedAlbums.includes(a.id)){
-      state.completedAlbums.push(a.id);state.coins+=8000;state.followers+=5000;addLog("⭐ ALBUM COMPLETE: "+a.name+"! +8,000 coins and +5,000 followers.");
+      state.completedAlbums.push(a.id);state.coins+=8000;state.followers+=5000;addLog("⭐ ALBUM COMPLETE: "+a.name+"! +8,000 coins and +5,000 followers.");checkAchievements();
     }});
   }
   function collectSticker(){
@@ -266,7 +286,8 @@
   function checkCompletion(){
     const levels=totalLevels();
     if(levels>0&&levels%5===0&&levels<25){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/5]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
-    if(levels>=25&&!state.completed){state.completed=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 25 upgrades built. You are the ultimate meme mogul!");}
+    if(levels>=25&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 25 upgrades built. You are the ultimate meme mogul!");}
+    if(levels>=25)state.completed=true;
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
@@ -276,7 +297,7 @@
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
     collectSticker();checkAchievements();
   }
-  function raid(){const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn);if(ready.length){const target=ready[Math.floor(Math.random()*ready.length)];attackRival(target.id);}else{const reward=1500+Math.floor(Math.random()*2000);state.coins+=reward;addLog("🏦 Rival studios are on alert. You salvage +"+number(reward)+" coins from the algorithm.");}}
+  function raid(){const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn&&totalLevels()>=(districts.find(d=>d.name===r.district)?.unlock??0));if(ready.length){const target=ready[Math.floor(Math.random()*ready.length)];attackRival(target.id);}else{const reward=1500+Math.floor(Math.random()*2000);state.coins+=reward;addLog("🏦 Rival studios are on alert. You salvage +"+number(reward)+" coins from the algorithm.");}}
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
   function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   function viralEvent(){
@@ -323,6 +344,13 @@
     handleTile(board[state.position]);
     rolling=false;checkAchievements();renderUI();save();
   }
+  function publishPost(){
+    if(state.completed||state.posts<1)return;
+    state.posts--;state.totalPostsPublished++;state.daily.posts++;
+    state.coins+=250;state.followers+=500;awardHype(10);
+    addLog("📣 POST PUBLISHED! +250 coins, +500 followers and +10 hype.");
+    checkAchievements();renderUI();save();
+  }
   function claimDailyBonus(){
     normalizeDaily();if(state.dailyBonusDate===today()||state.completed)return;
     state.dailyBonusDate=today();state.coins+=2000;state.followers+=2000;state.dice=Math.min(MAX_DICE,state.dice+5);
@@ -332,15 +360,46 @@
     normalizeDaily();const m=missions.find(x=>x.id===id);if(!m||state.daily.claims.includes(id)||m.progress(state)<m.goal)return;
     state.daily.claims.push(id);state.coins+=m.reward;addLog("✅ DAILY MISSION COMPLETE: "+m.name+". +"+number(m.reward)+" coins.");renderUI();save();
   }
+  function exportSave(){
+    try{
+      const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download="memeopoly-save-"+today()+".json";a.click();URL.revokeObjectURL(url);
+      $("saveStatus").textContent="Backup downloaded";
+    }catch(e){$("saveStatus").textContent="Backup could not be created";}
+  }
+  function importSave(file){
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const candidate=JSON.parse(String(reader.result||""));
+        if(!candidate||!Array.isArray(candidate.landmarks)||!Array.isArray(candidate.cards))throw new Error("Invalid save");
+        localStorage.setItem(SAVE_KEY,JSON.stringify(candidate));
+        state=freshState();
+        if(!load())throw new Error("Save could not be restored");
+        checkAchievements();renderUI();save();addLog("📦 Backup restored successfully.");
+        $("saveStatus").textContent="Backup restored";
+      }catch(e){$("saveStatus").textContent="That backup file is invalid or damaged";}
+      $("importSaveFile").value="";
+    };
+    reader.onerror=()=>{$("saveStatus").textContent="Could not read backup file";$("importSaveFile").value="";};
+    reader.readAsText(file);
+  }
   function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("hidden",s.id!==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("activeTab",t.dataset.screen===id));}
-  $("postBtn").addEventListener("click",rollPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
+  $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
   $("clearLogBtn").addEventListener("click",()=>{state.log=[];renderLog();save();});$("tradeStarsBtn").addEventListener("click",tradeStickerStars);
+  $("tutorialDismissBtn").addEventListener("click",()=>{state.tutorialSeen=true;$("tutorialPanel").classList.add("hidden");save();});
+  $("exportSaveBtn").addEventListener("click",exportSave);
+  $("importSaveBtn").addEventListener("click",()=>$("importSaveFile").click());
+  $("importSaveFile").addEventListener("change",event=>importSave(event.target.files?.[0]));
   $("newGameBtn").addEventListener("click",()=>{if(rolling)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
   const resumed=load();normalizeDaily();renderUI();
+  if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
   else{addLog("🎲 Welcome to Memeopoly! Roll the board, collect cards and build your empire.");addLog("💡 Tip: complete daily missions for extra coins.");}
