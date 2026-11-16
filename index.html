@@ -17,7 +17,7 @@
     <header class="hero">
       <div class="brand-mark">😂</div>
       <div><p class="eyebrow">THE INTERNET IS YOURS</p><h1>MEME<span>OPOLY</span></h1><p class="subtitle">Roll the feed. Raid the algorithm. Build your creator empire.</p></div>
-      <div class="header-actions"><button id="installBtn" class="ghost-btn hidden" type="button">＋ Install</button><button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button></div>
+      <div class="header-actions"><button id="exportSaveBtn" class="ghost-btn" type="button">↓ Backup</button><button id="importSaveBtn" class="ghost-btn" type="button">↑ Restore</button><input id="importSaveFile" class="hidden" type="file" accept="application/json,.json"><button id="installBtn" class="ghost-btn hidden" type="button">＋ Install</button><button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button></div>
     </header>
 
     <section id="topBar" aria-label="Player resources">
@@ -43,9 +43,10 @@
         <div id="boardCenter">
           <div class="center-logo">😂</div><h2>MEMEOPOLY</h2><p id="centerMessage">Your next viral moment starts here.</p>
           <div class="center-mini-stats"><span>TURN <b id="turnCount">0</b></span><span>CARDS <b id="centerCards">0</b></span></div>
-          <div id="dicePanel"><div id="diceIcon" aria-hidden="true">🎲</div><div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend dice energy to move and win bigger rewards.</small></div><div class="roll-controls"><label for="rollMultiplier">Multiplier</label><select id="rollMultiplier"><option value="1">x1 · 1 dice</option><option value="2">x2 · 2 dice</option><option value="5">x5 · 5 dice</option><option value="10">x10 · 10 dice</option></select><button id="postBtn" type="button">ROLL DICE</button></div></div>
+          <div id="dicePanel"><div id="diceIcon" aria-hidden="true">🎲</div><div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend dice energy to move and win bigger rewards.</small></div><div class="roll-controls"><label for="rollMultiplier">Multiplier</label><select id="rollMultiplier"><option value="1">x1 · 1 dice</option><option value="2">x2 · 2 dice</option><option value="5">x5 · 5 dice</option><option value="10">x10 · 10 dice</option></select><button id="postBtn" type="button">ROLL DICE</button></div></div><button id="publishBtn" class="publish-btn" type="button">📣 PUBLISH POST</button>
         </div>
       </div>
+      <section id="tutorialPanel" class="tutorial-panel" aria-label="How to play"><div><p class="eyebrow">QUICK START</p><h2>Build your meme empire</h2><ol><li>Roll dice to move around the board and trigger spaces.</li><li>Collect coins, cards, shields, hype and followers.</li><li>Spend coins in Empire to build 25 landmark upgrades.</li><li>Publish posts for extra coins, followers and hype.</li><li>Unlock districts to challenge stronger rival creators.</li></ol></div><button id="tutorialDismissBtn" class="ghost-btn" type="button">Got it</button></section>
       <p class="board-legend"><span>🟩 Rewards</span><span>🟪 Events &amp; cards</span><span>🟥 Rival trouble</span><span>🟨 Landmarks</span></p>
       <section class="daily-panel">
         <div class="daily-heading"><div><p class="eyebrow">COME BACK EVERY DAY</p><h2>Daily rewards &amp; missions</h2></div><button id="dailyBonusBtn" type="button">🎁 CLAIM DAILY BONUS</button></div>
@@ -65,12 +66,12 @@
     </section>
 
     <section id="districtScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">THE INTERNET IS YOUR PLAYGROUND</p><h2>Creator Districts</h2><p>Unlock new neighbourhoods as your empire grows. Claim each district takeover reward.</p></div><div class="empire-total"><strong id="districtCount">1/5</strong><small>unlocked</small></div></div><div id="districtsFull" class="district-grid"></div></section><section id="rivalsScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">THE FEED IS CROWDED</p><h2>Rival Creators</h2><p>Scout rival studios, break through their defences and raid their creator funds.</p></div></div><div id="rivals" class="rival-grid"></div></section><section id="collectionScreen" class="screen hidden">
-      <div class="section-heading"><div><p class="eyebrow">RARE INTERNET ARTIFACTS</p><h2>Meme Collection</h2><p>Collect every card. Duplicates turn into coins.</p></div><div class="empire-total"><strong id="collectionCount">0/8</strong><small>collected</small></div></div>
+      <div class="section-heading"><div><p class="eyebrow">RARE INTERNET ARTIFACTS</p><h2>Meme Collection</h2><p>Collect every card. Duplicate cards pay coins; duplicate stickers become trade stars.</p></div><div class="empire-total"><strong id="collectionCount">0/8</strong><small>collected</small></div></div>
       <div id="collection" class="collection-grid"></div>
     </section>
 
     <section id="stickerScreen" class="screen hidden"><div class="section-heading"><div><p class="eyebrow">COMPLETE THE SETS</p><h2>Sticker Albums</h2><p>Every meme pack has a sticker drop. Duplicates become stars. Trade stars for missing stickers.</p></div><div class="empire-total"><strong id="stickerStats">0</strong><small>stars</small></div></div><div class="sticker-trade"><span id="stickerTradeHint">Collect 3 duplicate stars to trade for a missing sticker.</span><button id="tradeStarsBtn" type="button">TRADE 3 STARS</button></div><div id="stickerAlbums" class="album-grid"></div></section><section class="activity-panel"><div class="activity-heading"><div><p class="eyebrow">LIVE FEED</p><h2>Activity</h2></div><button id="clearLogBtn" class="text-btn" type="button">Clear feed</button></div><div id="log" role="log" aria-live="polite"></div></section>
-    <footer><span>MEMEOPOLY · V3.0</span><span id="saveStatus">Auto-save enabled</span></footer>
+    <footer><span>MEMEOPOLY · V4.0</span><span id="saveStatus">Auto-save enabled</span></footer>
   </main>
   <script src="game.js"></script>
 </body>

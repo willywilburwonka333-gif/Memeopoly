@@ -34,5 +34,8 @@ jobs:
           for (const file of ['style.css', 'game.js', 'manifest.webmanifest', 'sw.js', 'icon.svg']) {
             if (!fs.existsSync(file)) throw new Error('Missing app asset: ' + file);
           }
-          console.log('Manifest, DOM references and app assets verified.');
+          for (const marker of ['function publishPost()', 'function exportSave()', 'function importSave(file)', 'completionRewarded', 'DISTRICT LOCKED']) {
+            if (!js.includes(marker)) throw new Error('Missing release feature: ' + marker);
+          }
+          console.log('Manifest, DOM references, save tools and progression features verified.');
           NODE
