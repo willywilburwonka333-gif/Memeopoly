@@ -16,14 +16,14 @@
   <main id="game">
     <header class="hero">
       <div class="brand-mark">😂</div>
-      <div><p class="eyebrow">THE INTERNET IS YOURS</p><h1>MEME<span>OPOLY</span></h1><p class="subtitle">Roll the feed. Own the culture. Build your meme empire.</p></div>
+      <div><p class="eyebrow">THE INTERNET IS YOURS</p><h1>MEME<span>OPOLY</span></h1><p class="subtitle">Roll the feed. Raid the algorithm. Build your creator empire.</p></div>
       <div class="header-actions"><button id="installBtn" class="ghost-btn hidden" type="button">＋ Install</button><button id="newGameBtn" class="ghost-btn" type="button" title="Start a new game">↻ New game</button></div>
     </header>
 
     <section id="topBar" aria-label="Player resources">
       <article class="stat-card"><span class="stat-icon">🪙</span><div><small>Coins</small><strong id="coins">0</strong></div></article>
       <article class="stat-card"><span class="stat-icon">👥</span><div><small>Followers</small><strong id="followers">0</strong></div></article>
-      <article class="stat-card"><span class="stat-icon">📱</span><div><small>Posts</small><strong id="posts">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">🎲</span><div><small>Dice energy</small><strong><span id="dice">30</span><em>/50</em></strong></div></article><article class="stat-card"><span class="stat-icon">🛡️</span><div><small>Shields</small><strong id="shields">0</strong></div></article><article class="stat-card"><span class="stat-icon">📱</span><div><small>Posts</small><strong id="posts">0</strong></div></article>
       <article class="stat-card"><span class="stat-icon">⚡</span><div><small>Hype</small><strong><span id="hype">0</span><em>/100</em></strong></div></article>
     </section>
 
@@ -43,7 +43,7 @@
         <div id="boardCenter">
           <div class="center-logo">😂</div><h2>MEMEOPOLY</h2><p id="centerMessage">Your next viral moment starts here.</p>
           <div class="center-mini-stats"><span>TURN <b id="turnCount">0</b></span><span>CARDS <b id="centerCards">0</b></span></div>
-          <div id="dicePanel"><div id="diceIcon" aria-hidden="true">🎲</div><div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend 1 post to take your turn.</small></div><button id="postBtn" type="button">ROLL &amp; POST</button></div>
+          <div id="dicePanel"><div id="diceIcon" aria-hidden="true">🎲</div><div><strong id="diceText">Ready to roll?</strong><small id="rollHint">Spend dice energy to move and win bigger rewards.</small></div><div class="roll-controls"><label for="rollMultiplier">Multiplier</label><select id="rollMultiplier"><option value="1">x1 · 1 dice</option><option value="2">x2 · 2 dice</option><option value="5">x5 · 5 dice</option><option value="10">x10 · 10 dice</option></select><button id="postBtn" type="button">ROLL DICE</button></div></div>
         </div>
       </div>
       <p class="board-legend"><span>🟩 Rewards</span><span>🟪 Events &amp; cards</span><span>🟥 Rival trouble</span><span>🟨 Landmarks</span></p>
