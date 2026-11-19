@@ -140,17 +140,75 @@
     icon.replaceChildren(face);
     icon.setAttribute("aria-label","Dice showing "+value);
   }
+  let effectsOn=true,soundOn=false,audioContext=null;
+  try{effectsOn=localStorage.getItem("memeopoly-effects")!=="off";soundOn=localStorage.getItem("memeopoly-sound")==="on";}catch(e){}
+  function updateGameOptions(){
+    const effects=$("effectsToggle"),sound=$("soundToggle");
+    effects.textContent=effectsOn?"✨ Effects on":"✨ Effects off";effects.setAttribute("aria-pressed",String(effectsOn));
+    sound.textContent=soundOn?"🔊 Sound on":"🔇 Sound off";sound.setAttribute("aria-pressed",String(soundOn));
+  }
+  function gameSound(frequency=440,duration=.12){
+    if(!soundOn)return;
+    try{
+      const Audio=window.AudioContext||window.webkitAudioContext;
+      if(!Audio)return;
+      audioContext=audioContext||new Audio();
+      if(audioContext.state==="suspended")audioContext.resume();
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+      osc.type="sine";osc.frequency.value=frequency;
+      gain.gain.setValueAtTime(.065,audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start();osc.stop(audioContext.currentTime+duration);
+    }catch(e){}
+  }
+  function burst(symbols=["✨","⭐","🪙"],amount=16){
+    if(!effectsOn)return;
+    const layer=$("gameEffects");
+    if(!layer)return;
+    for(let i=0;i<amount;i++){
+      const particle=document.createElement("span");
+      particle.className="game-particle";
+      particle.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+      particle.style.setProperty("--x",Math.round((Math.random()-.5)*260)+"px");
+      particle.style.setProperty("--y",Math.round(-65-Math.random()*200)+"px");
+      particle.style.setProperty("--spin",Math.round((Math.random()-.5)*600)+"deg");
+      particle.style.animationDelay=(i*24)+"ms";
+      layer.append(particle);
+      setTimeout(()=>particle.remove(),1700);
+    }
+  }
+  function tileCelebration(tile){
+    if(!tile)return;
+    const types={
+      COINS:[["🪙","✨"],18,660],
+      CARD:[["🃏","⭐","✨"],20,780],
+      RAID:[["💰","⚡","✨"],22,480],
+      SHIELD:[["🛡️","💎","✨"],16,700],
+      HYPE:[["⚡","🔥","✨"],18,820],
+      EVENT:[["🎉","✨","🌈"],24,900],
+      GO:[["🚀","⭐","✨"],22,880],
+      LANDMARK:[["🏗️","✨"],10,540],
+      ATTACK:[["💥","⚡"],14,220]
+    };
+    const [symbols,count,pitch]=types[tile.type]||[["✨"],10,440];
+    burst(symbols,count);gameSound(pitch,.18);
+    const center=$("boardCenter");
+    center.classList.remove("landed");
+    void center.offsetWidth;
+    center.classList.add("landed");
+  }
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
       const tile=document.createElement("article"),[row,col]=coords[i];
       tile.className="tile "+item.type.toLowerCase()+(state.position===i?" player":"");
-      tile.style.gridRow=String(row);tile.style.gridColumn=String(col);
+      tile.style.gridRow=String(row);tile.style.gridColumn=String(col);tile.style.setProperty("--tile-index",i);
       const icon=document.createElement("span");icon.className="tile-icon";icon.textContent=item.icon;
       const name=document.createElement("strong");name.textContent=item.name;
       const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
-      if(state.position===i){const token=document.createElement("span");token.className="token";token.textContent="😂";token.setAttribute("aria-label","Your token");tile.append(token);}
+      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.textContent="😂";token.setAttribute("aria-label","Your token");tile.append(token);}
       el.append(tile);
     });
   }
@@ -356,14 +414,16 @@
     // Animate the die independently of board movement, including a one-space roll.
     for(let frame=0;frame<12;frame++){
       setDiceFace(1+Math.floor(Math.random()*6));
-      await wait(65+frame*7);
+      if(frame%3===0)gameSound(230+frame*25,.055);
+      await wait(effectsOn?65+frame*7:18);
     }
     diceIcon.classList.remove("rolling");
     setDiceFace(roll);
     $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
-    await wait(300);
+    gameSound(520+roll*65,.25);
+    await wait(effectsOn?300:40);
     for(let i=0;i<steps;i++){
-      await wait(multiplier>1?55:130);
+      await wait(effectsOn?(multiplier>1?70:150):20);
       state.position=(state.position+1)%board.length;
       if(state.position===0){
         const lap=1500*multiplier;
@@ -371,10 +431,12 @@
         addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*multiplier)+" followers.");
       }
       renderBoard();
+      if(i===steps-1)gameSound(680,.12);
     }
     setDiceFace(roll);
     $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
+    tileCelebration(board[state.position]);
     rolling=false;checkAchievements();renderUI();save();
   }
   function publishPost(){
@@ -382,6 +444,7 @@
     state.posts--;state.totalPostsPublished++;state.daily.posts++;
     state.coins+=250;state.followers+=500;awardHype(10);
     addLog("📣 POST PUBLISHED! +250 coins, +500 followers and +10 hype.");
+    burst(["📣","💬","❤️"],18);gameSound(760,.18);
     checkAchievements();renderUI();save();
   }
   function claimDailyBonus(){
@@ -427,6 +490,9 @@
     reader.readAsText(file);
   }
   function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("hidden",s.id!==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("activeTab",t.dataset.screen===id));}
+  $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
+  $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
+  updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
   $("clearLogBtn").addEventListener("click",()=>{state.log=[];renderLog();save();});$("tradeStarsBtn").addEventListener("click",tradeStickerStars);
