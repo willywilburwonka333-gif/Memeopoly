@@ -74,3 +74,29 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
  #dicePanel strong{font-size:10px}
 }
 @media(max-width:380px){#board{min-height:385px;grid-template-rows:repeat(5,minmax(70px,1fr))}}
+
+/* Game Experience V2: lively tabletop, animated token and responsive feedback */
+#board{background:radial-gradient(circle at 50% 46%,#435185 0%,#202b50 34%,#101a35 80%);border:2px solid #8799cf;box-shadow:0 0 0 5px #101830,0 0 0 7px #566594,0 28px 70px #000a,inset 0 0 45px #080d23}
+#board:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:repeating-linear-gradient(45deg,transparent 0 25px,#ffffff04 25px 26px);border-radius:inherit}
+.tile{transform-style:preserve-3d;outline:1px solid #0003;outline-offset:-4px}
+.tile-icon{transition:transform .3s ease}
+.tile:hover .tile-icon{transform:translateY(-3px) scale(1.12)}
+.tile.player{animation:activeTilePulse 1.9s ease-in-out infinite alternate}
+.tile.player .token{animation:tokenHop .42s cubic-bezier(.18,.8,.4,1) both}
+@keyframes tokenHop{0%{transform:translateY(-26px) scale(.7);opacity:.3}60%{transform:translateY(3px) scale(1.18);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes activeTilePulse{0%{filter:brightness(1.08);box-shadow:0 0 0 2px #b7ff7530,0 0 18px #a6ff5d70,0 5px 0 #47612d}100%{filter:brightness(1.25);box-shadow:0 0 0 4px #b7ff7560,0 0 34px #a6ff5db0,0 5px 0 #47612d}}
+#boardCenter{background:radial-gradient(ellipse at 50% 5%,#5a6db1 0%,#2b376a 38%,#141c38 85%);box-shadow:0 0 35px #526fe333,inset 0 2px 0 #ffffff2c,inset 0 -16px 30px #0004}
+#boardCenter.landed{animation:centerLand .55s ease-out}
+@keyframes centerLand{0%{filter:brightness(1.6);transform:scale(.985)}55%{filter:brightness(1.2);transform:scale(1.012)}100%{filter:brightness(1);transform:scale(1)}}
+.game-stage-label{font-size:9px;letter-spacing:2.3px;font-weight:900;color:#d5c6ff;margin:3px 0 6px}
+#gameEffects{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden;border-radius:inherit}
+.game-particle{position:absolute;left:50%;top:50%;font-size:clamp(17px,3vw,29px);filter:drop-shadow(0 2px 3px #0009);animation:particleBurst 1.35s cubic-bezier(.15,.7,.25,1) forwards;will-change:transform,opacity}
+@keyframes particleBurst{0%{transform:translate(-50%,-50%) scale(.2) rotate(0deg);opacity:0}15%{opacity:1}75%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.1) rotate(var(--spin));opacity:0}}
+.game-options{display:flex;gap:6px;width:100%;justify-content:center;margin-top:10px}
+.game-options button{border:1px solid #6977a7;border-radius:9px;padding:7px 10px;background:#111b38;color:#dce5ff;font-size:10px;font-weight:800}
+.game-options button[aria-pressed="true"]{background:#303e75;border-color:#a18fff;color:white}
+.game-options button:focus-visible{outline:3px solid #64d8ff;outline-offset:2px}
+#diceIcon:not(.rolling) .die-face{animation:dieSettle .36s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes dieSettle{0%{transform:translateY(-9px) rotate(24deg) scale(1.1)}65%{transform:translateY(3px) rotate(-12deg)}100%{transform:rotate(-7deg)}}
+@media(max-width:680px){#board{box-shadow:0 0 0 3px #101830,0 0 0 4px #566594,0 16px 35px #0008}.game-stage-label{font-size:7px;letter-spacing:1px;margin:1px 0 3px}.game-options{margin-top:6px;gap:4px}.game-options button{font-size:9px;padding:6px}}
+@media(prefers-reduced-motion:reduce){.tile.player,.tile.player .token,.center-logo,#boardCenter.landed,.game-particle{animation:none!important}}
