@@ -348,12 +348,22 @@
     const multiplier=Number($("rollMultiplier").value)||1;
     if(rolling||state.dice<multiplier||state.completed)return;
     rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
-    $("postBtn").disabled=true;$("diceIcon").classList.add("rolling");
-    const roll=Math.floor(Math.random()*6)+1,steps=roll*multiplier;
+    $("postBtn").disabled=true;
+    const roll=1+Math.floor(Math.random()*6),steps=roll*multiplier;
+    const diceIcon=$("diceIcon");
+    diceIcon.classList.add("rolling");
     $("diceText").textContent="Rolling…";
+    // Animate the die independently of board movement, including a one-space roll.
+    for(let frame=0;frame<12;frame++){
+      setDiceFace(1+Math.floor(Math.random()*6));
+      await wait(65+frame*7);
+    }
+    diceIcon.classList.remove("rolling");
+    setDiceFace(roll);
+    $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
+    await wait(300);
     for(let i=0;i<steps;i++){
-      await wait(multiplier>1?45:100);
-      setDiceFace(Math.floor(Math.random()*6)+1);
+      await wait(multiplier>1?55:130);
       state.position=(state.position+1)%board.length;
       if(state.position===0){
         const lap=1500*multiplier;
@@ -362,9 +372,8 @@
       }
       renderBoard();
     }
-    $("diceIcon").classList.remove("rolling");
     setDiceFace(roll);
-    $("diceText").textContent=roll+" × "+multiplier+" = "+steps+" spaces";
+    $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
     rolling=false;checkAchievements();renderUI();save();
   }
