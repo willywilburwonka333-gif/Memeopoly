@@ -131,3 +131,24 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #eventOptions button:disabled{opacity:.4;cursor:not-allowed}
 #eventOptions button:focus-visible{outline:3px solid #f9d270;outline-offset:2px}
 @media(max-width:620px){.contract-panel{padding:14px}.contract-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.contract-card{padding:10px}.contract-name{font-size:12px}.contract-card p,.contract-card small{font-size:11px}.event-choice-card{padding:10px}.event-choice-card h2{font-size:15px}.event-choice-card p{font-size:10px}#eventOptions button{padding:7px}#eventOptions button strong{font-size:10px}}
+
+/* Original Memeopoly sprite-world art direction */
+:root{--world-ink:#0b1531;--world-gold:#f9d179}
+#board{position:relative;isolation:isolate;background:radial-gradient(circle at 50% 48%,#566ba0 0%,#26385f 38%,#142440 68%,#0c172e 100%);border:5px solid #334d79;outline:2px solid #7e91b9;outline-offset:3px;gap:8px;padding:12px;box-shadow:0 22px 70px #020512aa,inset 0 3px 14px #ffffff19,inset 0 -10px 30px #0008}
+#board::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 22px,#b3d5ff09 23px 24px),repeating-linear-gradient(90deg,transparent 0 22px,#b3d5ff09 23px 24px);border-radius:12px}
+.tile{border:2px solid #ffffff50;box-shadow:inset 0 2px 0 #ffffff4a,inset 0 -6px 0 #0003,0 7px 0 #0b102a,0 9px 10px #0008;transform:translateY(-3px);background-image:linear-gradient(145deg,#ffffff24,transparent 55%)}
+.tile-icon{display:block;width:clamp(27px,4.5vw,51px);height:clamp(27px,4.5vw,51px);overflow:visible;filter:drop-shadow(0 4px 2px #0007);animation:spriteFloat 2.6s ease-in-out infinite;animation-delay:calc(var(--tile-index) * -125ms)}
+.tile strong{color:#fff;text-shadow:0 2px 2px #0009;font-weight:900}
+.tile small{color:#f0eafa;opacity:.9}
+.tile.go,.tile.coins,.tile.hype{background:linear-gradient(145deg,#277c81,#154c62);border-color:#71e3c6}
+.tile.landmark{background:linear-gradient(145deg,#8d568e,#4d3e8b);border-color:#e0b6ff}
+.tile.card,.tile.event,.tile.raid{background:linear-gradient(145deg,#6b57c0,#343777);border-color:#b9b2ff}
+.tile.attack{background:linear-gradient(145deg,#ae466e,#652950);border-color:#ff9bc2}
+.tile.shield{background:linear-gradient(145deg,#3577b4,#254a82);border-color:#94d8ff}
+.tile.player{z-index:2;border-color:#f6e68b;box-shadow:inset 0 2px 0 #ffffff8a,0 7px 0 #6c4e1d,0 0 0 4px #ffe89a7a,0 0 32px #ffe56a8c}
+.token{position:absolute;right:0;bottom:-3px;display:block;width:clamp(30px,4.6vw,52px);height:clamp(30px,4.6vw,52px);z-index:4}
+.creator-sprite{width:100%;height:100%;filter:drop-shadow(0 5px 3px #000a)}
+#boardCenter{background:radial-gradient(ellipse at 50% 0%,#506bb3 0%,#283966 45%,#15243f 100%);border:2px solid #c7a7f2;box-shadow:inset 0 2px 0 #ffffff4d,inset 0 -8px 20px #0006,0 10px 20px #0006}
+@keyframes spriteFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(max-width:680px){#board{padding:5px;gap:4px;border-width:3px;outline-offset:1px}.tile{border-width:1px;box-shadow:inset 0 1px 0 #ffffff50,0 3px 0 #101a35,0 5px 5px #0006;padding:3px 1px}.tile-icon{width:clamp(19px,5.8vw,31px);height:clamp(19px,5.8vw,31px)}.token{width:clamp(21px,6vw,33px);height:clamp(21px,6vw,33px)}}
+@media(prefers-reduced-motion:reduce){.tile-icon{animation:none}}
