@@ -152,3 +152,20 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes spriteFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @media(max-width:680px){#board{padding:5px;gap:4px;border-width:3px;outline-offset:1px}.tile{border-width:1px;box-shadow:inset 0 1px 0 #ffffff50,0 3px 0 #101a35,0 5px 5px #0006;padding:3px 1px}.tile-icon{width:clamp(19px,5.8vw,31px);height:clamp(19px,5.8vw,31px)}.token{width:clamp(21px,6vw,33px);height:clamp(21px,6vw,33px)}}
 @media(prefers-reduced-motion:reduce){.tile-icon{animation:none}}
+
+/* Interactive vault-heist animation */
+.heist-card{width:min(100%,430px)}
+.heist-vaults{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0}
+#heistVaults .heist-vault{display:flex;align-items:center;justify-content:center;flex-direction:column;min-width:0;min-height:105px;gap:8px;background:linear-gradient(155deg,#586fb1,#2d407c);border:2px solid #9ab9e9;border-radius:14px;box-shadow:inset 0 3px 0 #ffffff40,0 6px 0 #17264f;transition:transform .18s,box-shadow .18s}
+#heistVaults .heist-vault:not(:disabled):active{transform:translateY(5px);box-shadow:inset 0 2px 0 #ffffff40,0 1px 0 #17264f}
+.heist-vault-icon{width:60px;height:60px;filter:drop-shadow(0 6px 5px #0008);animation:vaultPulse 1.6s ease-in-out infinite}
+#heistVaults .vault-jackpot{background:linear-gradient(155deg,#b57a22,#634418);border-color:#ffe18d}
+#heistVaults .vault-picked{outline:3px solid #fff2ac;outline-offset:2px}
+#heistVaults .vault-empty{opacity:.5}
+#heistVaults .vault-jackpot .heist-vault-icon{animation:vaultWin .6s ease-in-out 2}
+#heistResult{min-height:30px;font-weight:900;color:#ffdc7a}
+.heist-continue{width:100%;padding:12px;border:0;border-radius:10px;background:linear-gradient(110deg,#f3c45f,#ffe7a3);color:#2d210e;font-weight:950}
+@keyframes vaultPulse{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+@keyframes vaultWin{0%,100%{transform:scale(1)}50%{transform:scale(1.22) rotate(8deg)}}
+@media(max-width:550px){.heist-vault-icon{width:36px;height:36px}#heistVaults .heist-vault{min-height:80px;gap:3px}#heistVaults .heist-vault strong{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.heist-vault-icon,#heistVaults .vault-jackpot .heist-vault-icon{animation:none}}
