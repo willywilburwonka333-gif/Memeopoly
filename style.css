@@ -169,3 +169,29 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes vaultWin{0%,100%{transform:scale(1)}50%{transform:scale(1.22) rotate(8deg)}}
 @media(max-width:550px){.heist-vault-icon{width:36px;height:36px}#heistVaults .heist-vault{min-height:80px;gap:3px}#heistVaults .heist-vault strong{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.heist-vault-icon,#heistVaults .vault-jackpot .heist-vault-icon{animation:none}}
+
+/* Creator selection and living landmark skyline */
+.character-picker{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;background:linear-gradient(135deg,#1e3154,#30264e);border:1px solid #6572a4;border-radius:17px;padding:17px;margin:0 0 18px}
+.character-picker h3{margin:2px 0 5px;font-size:18px}.character-picker p:not(.eyebrow){margin:0;color:#bac5e0;font-size:12px}
+.character-choices{display:flex;flex-wrap:wrap;gap:8px}
+.character-option{display:flex;flex-direction:column;align-items:center;gap:3px;background:#131d36;border:2px solid #536287;color:#f5f6ff;padding:7px 11px;border-radius:13px;min-width:70px}
+.character-option.chosen{border-color:#f5d078;background:#403653;box-shadow:0 0 15px #ffcc6370}
+.character-option strong{font-size:11px}
+.creator-avatar{display:inline-grid;place-items:center;width:44px;height:44px;background:radial-gradient(circle at 50% 45%,var(--creator-color),#0f1831 75%);border:2px solid var(--creator-color);border-radius:50%;box-shadow:0 0 14px var(--creator-color);overflow:visible}
+.creator-avatar svg{width:38px;height:38px}
+.token .creator-avatar{width:100%;height:100%;border-width:2px}
+.token .creator-avatar svg{width:100%;height:100%}
+.landmark-scene{position:relative;height:105px;margin:12px 0 15px;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#4261a5,#1b274a 70%);border:1px solid #7387b46e;display:flex;align-items:end;justify-content:center;gap:8px;padding:0 15px 15px}
+.landmark-scene::before{content:"";position:absolute;inset:auto 0 0;height:17px;background:linear-gradient(#65a4b4,#24445c);border-top:3px solid #a3d6dd}
+.landmark-scene::after{content:"";position:absolute;top:12px;right:16px;width:23px;height:23px;border-radius:50%;background:#ffe4a0;box-shadow:0 0 26px #ffd37370}
+.scene-building{position:relative;z-index:1;width:24%;height:var(--height);min-height:12px;border:2px solid #b6d6ff;background:repeating-linear-gradient(90deg,#78a9e5 0 7px,#314a84 7px 12px);box-shadow:inset 0 4px 0 #ffffff50,0 0 14px #0006;transition:height .55s ease,transform .55s ease;clip-path:polygon(0 9%,12% 0,88% 0,100% 9%,100% 100%,0 100%)}
+.stage-0 .scene-building{opacity:.42;filter:grayscale(.8)}
+.stage-3 .scene-building,.stage-4 .scene-building,.stage-5 .scene-building{background:repeating-linear-gradient(90deg,#efb964 0 7px,#9961b6 7px 12px);border-color:#ffe6a1}
+.scene-sparkle{position:absolute;z-index:2;left:20%;top:14px;color:#ffdf78;font-size:23px;animation:sceneTwinkle 2s ease-in-out infinite}
+.building-upgraded .landmark-scene{animation:buildingReveal 1s ease-out}
+.building-upgraded .scene-building{animation:towerRise .8s cubic-bezier(.2,1.7,.5,1)}
+@keyframes sceneTwinkle{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}
+@keyframes towerRise{0%{transform:translateY(85px) scale(.75)}75%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+@keyframes buildingReveal{0%{filter:brightness(1)}40%{filter:brightness(2);box-shadow:0 0 40px #ffe3a1}100%{filter:brightness(1)}}
+@media(max-width:600px){.character-picker{padding:12px}.character-choices{width:100%;justify-content:space-between}.character-option{flex:1;min-width:62px;padding:6px 4px}.landmark-scene{height:90px}}
+@media(prefers-reduced-motion:reduce){.scene-sparkle,.building-upgraded .landmark-scene,.building-upgraded .scene-building{animation:none}}
