@@ -68,7 +68,7 @@
   const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -95,7 +95,7 @@
       try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
-      state={...freshState(),...saved};
+      state={...freshState(),...saved};state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
@@ -203,6 +203,22 @@
   }
   const spriteFor={GO:"rocket",COINS:"coin",CARD:"card",LANDMARK:"building",ATTACK:"attack",HYPE:"hype",EVENT:"event",RAID:"raid",SHIELD:"shield"};
   function sprite(name,className){const el=document.createElementNS("http://www.w3.org/2000/svg","svg");el.setAttribute("class",className);el.setAttribute("viewBox","0 0 64 64");el.setAttribute("aria-hidden","true");const use=document.createElementNS("http://www.w3.org/2000/svg","use");use.setAttribute("href","assets/memeopoly-sprites.svg#"+name);el.append(use);return el;}
+  const creatorStyles=[{name:"Original",color:"#b65ce9",accent:"#ffcb7a"},{name:"Neon",color:"#22d7c8",accent:"#b8ffff"},{name:"Gold",color:"#f5ba42",accent:"#ffe4a1"},{name:"Rebel",color:"#ed597f",accent:"#ffc1d2"}];
+  function creatorAvatar(style){
+    const wrap=document.createElement("span");wrap.className="creator-avatar";
+    const art=sprite("creator","creator-sprite");art.style.setProperty("--creator-tint",style.color);
+    art.style.filter="drop-shadow(0 4px 3px #0009)";
+    wrap.style.setProperty("--creator-color",style.color);wrap.append(art);return wrap;
+  }
+  function renderCharacterChoices(){
+    const box=$("characterChoices");box.replaceChildren();
+    creatorStyles.forEach((style,i)=>{
+      const btn=document.createElement("button");btn.type="button";btn.className="character-option"+(state.creatorStyle===i?" chosen":"");btn.setAttribute("aria-pressed",String(state.creatorStyle===i));btn.append(creatorAvatar(style));
+      const name=document.createElement("strong");name.textContent=style.name;btn.append(name);
+      btn.addEventListener("click",()=>{state.creatorStyle=i;renderUI();save();});
+      box.append(btn);
+    });
+  }
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -213,7 +229,7 @@
       const name=document.createElement("strong");name.textContent=item.name;
       const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
-      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(sprite("creator","creator-sprite"));tile.append(token);}
+      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(creatorAvatar(creatorStyles[state.creatorStyle]||creatorStyles[0]));tile.append(token);}
       el.append(tile);
     });
   }
@@ -222,16 +238,16 @@
     state.landmarks.forEach((lm,i)=>{
       const card=document.createElement("article");card.className="landmark-card";
       const top=document.createElement("div");top.className="landmark-top";
-      const icon=document.createElement("span");icon.className="landmark-icon";icon.textContent=landmarkIcons[i];
+      const icon=document.createElement("span");icon.className="landmark-icon";icon.textContent=landmarkIcons[i];const scene=document.createElement("div");scene.className="landmark-scene stage-"+lm.level;scene.setAttribute("aria-label",lm.name+" building level "+lm.level);for(let tower=0;tower<3;tower++){const building=document.createElement("span");building.className="scene-building tower-"+tower;building.style.setProperty("--height",Math.max(12,18+lm.level*12+(tower===1?15:0))+"px");scene.append(building);}const sparkle=document.createElement("span");sparkle.className="scene-sparkle";sparkle.textContent="✦";scene.append(sparkle);
       const title=document.createElement("div"),name=document.createElement("strong"),level=document.createElement("small");
       name.textContent=lm.name;level.textContent="LEVEL "+lm.level+" / 5";title.append(name,level);top.append(icon,title);
       const bar=document.createElement("div");bar.className="small-bar";const fill=document.createElement("div");fill.className="small-fill";fill.style.width=lm.level*20+"%";bar.append(fill);
       const bottom=document.createElement("div");bottom.className="landmark-bottom";
       const cost=document.createElement("span");cost.textContent=lm.level===5?"MAX LEVEL":"🪙 "+number(costFor(lm.level));
       const btn=document.createElement("button");btn.type="button";btn.textContent=lm.level===0?"BUILD":lm.level===5?"MAXED":"UPGRADE";btn.disabled=lm.level===5||state.coins<costFor(lm.level)||state.completed;btn.addEventListener("click",()=>upgradeLandmark(i));
-      bottom.append(cost,btn);card.append(top,bar,bottom);box.append(card);
+      bottom.append(cost,btn);card.append(top,scene,bar,bottom);box.append(card);
     });
-    $("empireLevel").textContent=totalLevels();
+    renderCharacterChoices();$("empireLevel").textContent=totalLevels();
     $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(5-totalLevels()%5)+" more upgrade(s) until the next era milestone.";
   }
   function renderCollection(){
@@ -359,7 +375,7 @@
   function upgradeLandmark(index){
     const lm=state.landmarks[index];if(!lm||lm.level>=5||state.completed)return;
     const cost=costFor(lm.level);if(state.coins<cost){addLog("Not enough coins. You need "+number(cost)+" coins.");return;}
-    state.coins-=cost;lm.level++;state.followers+=lm.level*500;state.daily.upgrades++;
+    state.coins-=cost;lm.level++;state.followers+=lm.level*500;const upgradedIndex=index;window.requestAnimationFrame(()=>{const cards=$("landmarks").children;const card=cards[upgradedIndex];if(card){card.classList.add("building-upgraded");window.setTimeout(()=>card.classList.remove("building-upgraded"),1150);}});state.daily.upgrades++;
     addLog("🏗️ "+lm.name+" upgraded to level "+lm.level+". +"+number(lm.level*500)+" followers.");
     checkCompletion();checkAchievements();renderUI();save();
   }
