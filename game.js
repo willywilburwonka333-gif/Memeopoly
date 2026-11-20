@@ -382,7 +382,45 @@
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
     collectSticker();checkAchievements();
   }
-  function raid(){const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn&&totalLevels()>=(districts.find(d=>d.name===r.district)?.unlock??0));if(ready.length){const target=ready[Math.floor(Math.random()*ready.length)];attackRival(target.id);}else{const reward=1500+Math.floor(Math.random()*2000);state.coins+=reward;addLog("🏦 Rival studios are on alert. You salvage +"+number(reward)+" coins from the algorithm.");}}
+  let heistOpen=false,heistFinished=false;
+  function raid(){
+    if(heistOpen||eventOpen)return;
+    const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn&&totalLevels()>=(districts.find(d=>d.name===r.district)?.unlock??0));
+    const target=ready.length?ready[Math.floor(Math.random()*ready.length)]:null;
+    heistOpen=true;heistFinished=false;rolling=true;
+    $("heistTitle").textContent=target?"Raid "+target.name+"'s vault":"Crack the algorithm vault";
+    $("heistDescription").textContent="Choose one of three vaults. Your pick determines the reward.";
+    $("heistResult").textContent="";$("heistContinue").classList.add("hidden");
+    const vaults=$("heistVaults");vaults.replaceChildren();
+    const prizeIndex=Math.floor(Math.random()*3);
+    for(let i=0;i<3;i++){
+      const button=document.createElement("button");button.type="button";button.className="heist-vault";
+      button.append(sprite("raid","heist-vault-icon"));
+      const caption=document.createElement("strong");caption.textContent="VAULT "+(i+1);button.append(caption);
+      button.addEventListener("click",()=>{
+        if(heistFinished)return;
+        heistFinished=true;
+        const jackpot=i===prizeIndex;
+        let coins=0,fans=0;
+        if(target){
+          if(target.shields>0){target.shields--;target.cooldownTurn=state.turn+2;coins=jackpot?1200:500;state.coins+=coins;addLog("🛡️ "+target.name+"'s shield blocked the main vault. Shield broken; consolation +"+number(coins)+" coins.");}
+          else{coins=Math.min(target.coins,jackpot?Math.max(1800,Math.floor(target.coins*.18)):Math.max(400,Math.floor(target.coins*.045)));fans=jackpot?1800+target.power*500:500+target.power*150;target.coins-=coins;target.raids++;target.cooldownTurn=state.turn+3;state.daily.raids++;state.coins+=coins;state.followers+=fans;addLog("🏦 "+(jackpot?"JACKPOT! ":"")+"Raided "+target.name+" for "+number(coins)+" coins and "+number(fans)+" followers.");}
+        }else{coins=jackpot?5500:1500+Math.floor(Math.random()*700);state.coins+=coins;addLog("🏦 Algorithm vault "+(jackpot?"JACKPOT! ":"")+"+"+number(coins)+" coins.");}
+        vaults.querySelectorAll("button").forEach((b,j)=>{b.disabled=true;b.classList.add(j===prizeIndex?"vault-jackpot":"vault-empty");if(j===i)b.classList.add("vault-picked");});
+        $("heistResult").textContent=jackpot?"🎉 JACKPOT! +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":""):"💰 +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":"");
+        $("heistContinue").classList.remove("hidden");
+        burst(jackpot?["🏆","🪙","✨"]:["🪙","💰"],jackpot?36:15);gameSound(jackpot?940:640,.24);
+        checkAchievements();renderUI();save();
+      });
+      vaults.append(button);
+    }
+    $("heistOverlay").classList.remove("hidden");
+    vaults.querySelector("button")?.focus();
+  }
+  $("heistContinue").addEventListener("click",()=>{
+    if(!heistOpen||!heistFinished)return;
+    heistOpen=false;heistFinished=false;rolling=false;$("heistOverlay").classList.add("hidden");renderUI();save();
+  });
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
   function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   const eventScenarios=[
@@ -468,7 +506,7 @@
   async function rollPost(){
     regenerateDice();normalizeDaily();
     const multiplier=Number($("rollMultiplier").value)||1;
-    if(rolling||eventOpen||state.dice<multiplier||state.completed)return;
+    if(rolling||eventOpen||heistOpen||state.dice<multiplier||state.completed)return;
     rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
     $("postBtn").disabled=true;
     const roll=1+Math.floor(Math.random()*6),steps=roll*multiplier;
@@ -501,10 +539,10 @@
     $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
-    rolling=eventOpen;checkAchievements();renderUI();save();
+    rolling=eventOpen||heistOpen;checkAchievements();renderUI();save();
   }
   function publishPost(){
-    if(state.completed||eventOpen||state.posts<1)return;
+    if(state.completed||eventOpen||heistOpen||state.posts<1)return;
     state.posts--;state.totalPostsPublished++;state.daily.posts++;
     state.coins+=250;state.followers+=500;awardHype(10);
     addLog("📣 POST PUBLISHED! +250 coins, +500 followers and +10 hype.");
@@ -564,7 +602,7 @@
   $("exportSaveBtn").addEventListener("click",exportSave);
   $("importSaveBtn").addEventListener("click",()=>$("importSaveFile").click());
   $("importSaveFile").addEventListener("change",event=>importSave(event.target.files?.[0]));
-  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
+  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen||heistOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
