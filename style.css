@@ -100,3 +100,34 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes dieSettle{0%{transform:translateY(-9px) rotate(24deg) scale(1.1)}65%{transform:translateY(3px) rotate(-12deg)}100%{transform:rotate(-7deg)}}
 @media(max-width:680px){#board{box-shadow:0 0 0 3px #101830,0 0 0 4px #566594,0 16px 35px #0008}.game-stage-label{font-size:7px;letter-spacing:1px;margin:1px 0 3px}.game-options{margin-top:6px;gap:4px}.game-options button{font-size:9px;padding:6px}}
 @media(prefers-reduced-motion:reduce){.tile.player,.tile.player .token,.center-logo,#boardCenter.landed,.game-particle{animation:none!important}}
+
+/* Gameplay Expansion: contracts and consequential creator choices */
+.contract-panel{margin:20px 0;padding:22px;border:1px solid #495a91;border-radius:19px;background:linear-gradient(145deg,#182447,#10172e);box-shadow:0 12px 35px #0004;color:#f3f5ff}
+.contract-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.contract-heading h2{margin:3px 0 5px;font-size:clamp(19px,2.4vw,27px)}
+.contract-heading p{margin:0;color:#b8c5e9}
+#contractCount{font-weight:900;color:#f7d68a;white-space:nowrap}
+.contract-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.contract-card{padding:15px;border:1px solid #3b4b7c;border-radius:13px;background:#101b39;display:flex;flex-direction:column;gap:9px}
+.contract-card.contract-done{border-color:#6c936f}
+.contract-name{display:flex;align-items:center;gap:8px}
+.contract-name span{font-size:24px}
+.contract-card p{margin:0;color:#b9c7ed;font-size:13px}
+.contract-progress{height:8px;overflow:hidden;border-radius:20px;background:#303e66}
+.contract-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a55df9,#f3c66c)}
+.contract-card small{color:#dce4fa}
+.contract-card button{margin-top:auto;padding:10px;border:0;border-radius:9px;background:linear-gradient(120deg,#e5a746,#f8db81);color:#241a0c;font-weight:900}
+.contract-card button:disabled{background:#354263;color:#9eaaca}
+.event-choice{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:10px;background:#090e25e8;backdrop-filter:blur(5px);border-radius:inherit}
+.event-choice.hidden{display:none!important}
+.event-choice-card{width:min(100%,360px);max-height:95%;overflow-y:auto;padding:18px;border:2px solid #b5a3ff;border-radius:16px;background:linear-gradient(145deg,#263a73,#151e3f);box-shadow:0 15px 45px #000a;color:#fff;text-align:center}
+.event-kicker{color:#f5cc79;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.event-choice-card h2{font-size:clamp(16px,2.8vw,25px);line-height:1.2;margin:9px 0}
+.event-choice-card p{font-size:12px;line-height:1.4;color:#d6dff8}
+#eventOptions{display:grid;gap:9px}
+#eventOptions button{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:12px 9px;border-radius:10px;border:1px solid #a89bf6;background:#364a91;color:#fff;cursor:pointer}
+#eventOptions button strong{font-size:12px}
+#eventOptions button small{font-size:10px;color:#e0e7ff}
+#eventOptions button:disabled{opacity:.4;cursor:not-allowed}
+#eventOptions button:focus-visible{outline:3px solid #f9d270;outline-offset:2px}
+@media(max-width:620px){.contract-panel{padding:14px}.contract-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.contract-card{padding:10px}.contract-name{font-size:12px}.contract-card p,.contract-card small{font-size:11px}.event-choice-card{padding:10px}.event-choice-card h2{font-size:15px}.event-choice-card p{font-size:10px}#eventOptions button{padding:7px}#eventOptions button strong{font-size:10px}}
