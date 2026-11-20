@@ -65,9 +65,10 @@
     {id:"posts",name:"Keep the feed alive",icon:"📣",description:"Publish 2 posts today.",goal:2,reward:1500,progress:s=>s.daily.posts},
     {id:"raids",name:"Rival trouble",icon:"⚔️",description:"Successfully raid 1 rival today.",goal:1,reward:2500,progress:s=>s.daily.raids}
   ];
+  const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -102,6 +103,8 @@
         const old=Array.isArray(saved.rivals)?saved.rivals.find(r=>r&&r.id===base.id)||{}:{};
         return {...base,coins:Math.max(0,Math.min(100000000,Number(old.coins??base.coins)||0)),shields:Math.max(0,Math.min(3,Math.floor(Number(old.shields??base.shields)||0))),raids:Math.max(0,Math.min(100000,Math.floor(Number(old.raids)||0))),cooldownTurn:Math.max(0,Math.min(100000000,Math.floor(Number(old.cooldownTurn)||0)))};
       });
+      state.contractClaims=Array.isArray(saved.contractClaims)?saved.contractClaims.filter(id=>contracts.some(c=>c.id===id)):[];
+      state.eventChoices=Math.max(0,Math.min(1000000,Math.floor(Number(saved.eventChoices)||0)));
       state.stickers=Array.isArray(saved.stickers)?allStickers.filter(s=>saved.stickers.includes(s.id)).map(s=>s.id):[];
       state.stickerStars=Math.max(0,Math.min(1000000,Math.floor(Number(saved.stickerStars)||0)));
       state.completedAlbums=Array.isArray(saved.completedAlbums)?saved.completedAlbums.filter(id=>albumBlueprints.some(a=>a.id===id)):[];
@@ -262,7 +265,7 @@
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
     $("publishBtn").textContent=state.posts>0?"📣 PUBLISH POST · "+state.posts+" LEFT":"NO POSTS LEFT";
-    renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();
+    renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();renderContracts();
   }
   function renderDistricts(){
     const render=boxId=>{const box=$(boxId);if(!box)return;box.replaceChildren();districts.forEach(d=>{
@@ -380,14 +383,73 @@
   function raid(){const ready=state.rivals.filter(r=>state.turn>=r.cooldownTurn&&totalLevels()>=(districts.find(d=>d.name===r.district)?.unlock??0));if(ready.length){const target=ready[Math.floor(Math.random()*ready.length)];attackRival(target.id);}else{const reward=1500+Math.floor(Math.random()*2000);state.coins+=reward;addLog("🏦 Rival studios are on alert. You salvage +"+number(reward)+" coins from the algorithm.");}}
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
   function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
+  const eventScenarios=[
+    {title:"Brand deal or viral gamble?",description:"A sponsor offers guaranteed coins, but a risky viral campaign could bring a huge audience.",options:[
+      {label:"🤝 Take the brand deal",detail:"+2,800 coins",run:()=>{state.coins+=2800;addLog("🤝 You signed a brand deal! +2,800 coins.");}},
+      {label:"🚀 Chase the viral moment",detail:"60% chance of +7,000 followers; otherwise +300 followers",run:()=>{const win=Math.random()<.6,amount=win?7000:300;state.followers+=amount;addLog("🚀 Viral gamble: +"+number(amount)+" followers.");}}
+    ]},
+    {title:"Your community needs you",description:"You can invest in a fan meetup or take a quick ad payout.",options:[
+      {label:"❤️ Host the meetup",detail:"Spend 1,000 coins for +3,500 followers",can:()=>state.coins>=1000,run:()=>{state.coins-=1000;state.followers+=3500;addLog("❤️ Community meetup! -1,000 coins, +3,500 followers.");}},
+      {label:"🪙 Run ads",detail:"+1,700 coins",run:()=>{state.coins+=1700;addLog("🪙 Ad payout! +1,700 coins.");}}
+    ]},
+    {title:"A rival challenges your channel",description:"Defend your reputation or put everything into a public clapback.",options:[
+      {label:"🛡️ Protect the channel",detail:"+1 shield (or +1,000 coins when full)",run:()=>{if(state.shields<3){state.shields++;addLog("🛡️ Reputation defended! +1 shield.");}else{state.coins+=1000;addLog("🪙 Shields full! +1,000 coins.");}}},
+      {label:"🔥 Fire back",detail:"50% chance of +5,000 followers; otherwise lose up to 1,200 coins",run:()=>{if(Math.random()<.5){state.followers+=5000;addLog("🔥 Clapback went viral! +5,000 followers.");}else{const loss=Math.min(state.coins,1200);state.coins-=loss;addLog("💥 Clapback backfired! -"+number(loss)+" coins.");}}}
+    ]}
+  ];
+  let eventOpen=false;
   function viralEvent(){
-    const events=[
-      ()=>{state.coins+=2500;addLog("🔥 Your post went viral! +2,500 coins.");},
-      ()=>{state.followers+=5000;addLog("🚀 Explore page takeover! +5,000 followers.");},
-      ()=>{state.posts+=5;addLog("🎁 Creator care package! +5 posts.");},
-      ()=>{awardHype(40);addLog("⚡ The crowd is buzzing! +40 hype.");},
-      ()=>{state.coins+=1000;state.followers+=1500;addLog("🤝 A brand deal landed! +1,000 coins and +1,500 followers.");}
-    ];events[Math.floor(Math.random()*events.length)]();
+    if(eventOpen)return;
+    const event=eventScenarios[Math.floor(Math.random()*eventScenarios.length)];
+    eventOpen=true;rolling=true;
+    $("eventTitle").textContent=event.title;$("eventDescription").textContent=event.description;
+    const options=$("eventOptions");options.replaceChildren();
+    event.options.forEach(option=>{
+      const btn=document.createElement("button");btn.type="button";
+      const name=document.createElement("strong");name.textContent=option.label;
+      const detail=document.createElement("small");detail.textContent=option.detail;
+      btn.append(name,detail);btn.disabled=Boolean(option.can&&!option.can());
+      btn.addEventListener("click",()=>{
+        if(!eventOpen||option.can&&!option.can())return;
+        option.run();state.eventChoices++;eventOpen=false;rolling=false;
+        $("eventChoice").classList.add("hidden");$("boardCenter").classList.remove("landed");
+        burst(["🎉","⭐","⚡"],20);gameSound(820,.22);
+        checkAchievements();renderUI();save();
+      });
+      options.append(btn);
+    });
+    $("eventChoice").classList.remove("hidden");
+    options.querySelector("button:not(:disabled)")?.focus();
+    addLog("⚡ CREATOR EVENT: "+event.title+" Choose your next move.");
+  }
+  function renderContracts(){
+    const box=$("creatorContracts");if(!box)return;box.replaceChildren();
+    $("contractCount").textContent=state.contractClaims.length+" / "+contracts.length;
+    contracts.forEach(contract=>{
+      const progress=Math.min(contract.goal,Math.max(0,contract.progress(state)));
+      const claimed=state.contractClaims.includes(contract.id);
+      const card=document.createElement("article");card.className="contract-card"+(claimed?" contract-done":"");
+      const heading=document.createElement("div");heading.className="contract-name";
+      const icon=document.createElement("span");icon.textContent=contract.icon;
+      const name=document.createElement("strong");name.textContent=contract.name;
+      heading.append(icon,name);
+      const description=document.createElement("p");description.textContent=contract.description;
+      const bar=document.createElement("div");bar.className="contract-progress";
+      const fill=document.createElement("span");fill.style.width=(100*progress/contract.goal)+"%";bar.append(fill);
+      const status=document.createElement("small");status.textContent=number(progress)+" / "+number(contract.goal)+" · 🪙 "+number(contract.reward);
+      const button=document.createElement("button");button.type="button";
+      button.textContent=claimed?"✓ CLAIMED":progress>=contract.goal?"CLAIM REWARD":"IN PROGRESS";
+      button.disabled=claimed||progress<contract.goal;
+      button.addEventListener("click",()=>claimContract(contract.id));
+      card.append(heading,description,bar,status,button);box.append(card);
+    });
+  }
+  function claimContract(id){
+    const contract=contracts.find(c=>c.id===id);
+    if(!contract||state.contractClaims.includes(id)||contract.progress(state)<contract.goal)return;
+    state.contractClaims.push(id);state.coins+=contract.reward;
+    addLog("🏆 CONTRACT COMPLETE: "+contract.name+"! +"+number(contract.reward)+" coins.");
+    burst(["🏆","🪙","✨"],24);gameSound(920,.22);renderUI();save();
   }
   function handleTile(tile){
     switch(tile.type){
@@ -404,7 +466,7 @@
   async function rollPost(){
     regenerateDice();normalizeDaily();
     const multiplier=Number($("rollMultiplier").value)||1;
-    if(rolling||state.dice<multiplier||state.completed)return;
+    if(rolling||eventOpen||state.dice<multiplier||state.completed)return;
     rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
     $("postBtn").disabled=true;
     const roll=1+Math.floor(Math.random()*6),steps=roll*multiplier;
@@ -437,10 +499,10 @@
     $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
-    rolling=false;checkAchievements();renderUI();save();
+    rolling=eventOpen;checkAchievements();renderUI();save();
   }
   function publishPost(){
-    if(state.completed||state.posts<1)return;
+    if(state.completed||eventOpen||state.posts<1)return;
     state.posts--;state.totalPostsPublished++;state.daily.posts++;
     state.coins+=250;state.followers+=500;awardHype(10);
     addLog("📣 POST PUBLISHED! +250 coins, +500 followers and +10 hype.");
@@ -500,7 +562,7 @@
   $("exportSaveBtn").addEventListener("click",exportSave);
   $("importSaveBtn").addEventListener("click",()=>$("importSaveFile").click());
   $("importSaveFile").addEventListener("change",event=>importSave(event.target.files?.[0]));
-  $("newGameBtn").addEventListener("click",()=>{if(rolling)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
+  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
