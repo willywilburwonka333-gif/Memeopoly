@@ -201,17 +201,19 @@
     void center.offsetWidth;
     center.classList.add("landed");
   }
+  const spriteFor={GO:"rocket",COINS:"coin",CARD:"card",LANDMARK:"building",ATTACK:"attack",HYPE:"hype",EVENT:"event",RAID:"raid",SHIELD:"shield"};
+  function sprite(name,className){const el=document.createElementNS("http://www.w3.org/2000/svg","svg");el.setAttribute("class",className);el.setAttribute("viewBox","0 0 64 64");el.setAttribute("aria-hidden","true");const use=document.createElementNS("http://www.w3.org/2000/svg","use");use.setAttribute("href","assets/memeopoly-sprites.svg#"+name);el.append(use);return el;}
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
       const tile=document.createElement("article"),[row,col]=coords[i];
       tile.className="tile "+item.type.toLowerCase()+(state.position===i?" player":"");
       tile.style.gridRow=String(row);tile.style.gridColumn=String(col);tile.style.setProperty("--tile-index",i);
-      const icon=document.createElement("span");icon.className="tile-icon";icon.textContent=item.icon;
+      const icon=sprite(spriteFor[item.type],"tile-icon");
       const name=document.createElement("strong");name.textContent=item.name;
       const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
-      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.textContent="😂";token.setAttribute("aria-label","Your token");tile.append(token);}
+      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(sprite("creator","creator-sprite"));tile.append(token);}
       el.append(tile);
     });
   }
