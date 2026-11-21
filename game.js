@@ -519,6 +519,45 @@
       case"SHIELD":shieldDrop();break;
     }
   }
+  // Travel uses a temporary fixed-position avatar; game state remains authoritative.
+  // Always render the destination even when motion is disabled or unavailable.
+  async function travelToken(fromIndex,toIndex,duration){
+    const boardElement=$("board");
+    const source=boardElement.querySelector('.tile.player .token');
+    const tiles=Array.from(boardElement.querySelectorAll(".tile"));
+    const destination=tiles[toIndex];
+    const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!source||!destination||!effectsOn||reduceMotion||!source.animate){
+      renderBoard();return;
+    }
+    const start=source.getBoundingClientRect();
+    const end=destination.getBoundingClientRect();
+    if(!start.width||!end.width){renderBoard();return;}
+    const ghost=source.cloneNode(true);
+    ghost.classList.add("travelling-token");
+    ghost.removeAttribute("aria-label");
+    ghost.setAttribute("aria-hidden","true");
+    ghost.style.left=start.left+"px";
+    ghost.style.top=start.top+"px";
+    ghost.style.width=start.width+"px";
+    ghost.style.height=start.height+"px";
+    document.body.append(ghost);
+    source.style.visibility="hidden";
+    const dx=end.left+end.width/2-(start.left+start.width/2);
+    const dy=end.top+end.height/2-(start.top+start.height/2);
+    const lift=Math.min(38,Math.max(14,Math.abs(dx)*.12+Math.abs(dy)*.12));
+    try{
+      const motion=ghost.animate([
+        {transform:"translate(0,0) scale(1)",offset:0},
+        {transform:"translate("+dx*.5+"px,"+(dy*.5-lift)+"px) scale(1.18)",offset:.5},
+        {transform:"translate("+dx+"px,"+dy+"px) scale(1)",offset:1}
+      ],{duration,easing:"cubic-bezier(.3,.65,.25,1)",fill:"forwards"});
+      await motion.finished.catch(()=>{});
+    }finally{
+      ghost.remove();
+      renderBoard();
+    }
+  }
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   async function rollPost(){
     regenerateDice();normalizeDaily();
@@ -550,8 +589,10 @@
         state.coins+=lap;state.followers+=250*multiplier;
         addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*multiplier)+" followers.");
       }
-      renderBoard();
-      const currentTile=$("board").querySelector(".tile.player");if(currentTile&&effectsOn)currentTile.classList.add("token-hopped");
+      // Animate the same creator across adjacent spaces rather than spawning a new hop.
+      const nextPosition=state.position;
+      const previousPosition=(nextPosition+board.length-1)%board.length;
+      await travelToken(previousPosition,nextPosition,multiplier>1?85:155);
       if(i===steps-1)gameSound(680,.12);
     }
     setDiceFace(roll);

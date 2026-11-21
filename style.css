@@ -207,3 +207,8 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes diceLand{0%{transform:translateY(-22px) rotate(55deg) scale(1.25);filter:brightness(1.5)}48%{transform:translateY(5px) rotate(-12deg) scale(.94)}72%{transform:translateY(-7px) rotate(-6deg) scale(1.04)}100%{transform:translateY(0) rotate(-7deg) scale(1);filter:brightness(1)}}
 @keyframes tokenHop{0%{transform:translateY(5px) scale(.88)}48%{transform:translateY(-15px) scale(1.1)}100%{transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){#diceIcon.dice-landed .die-face,.tile.player.token-hopped .token{animation:none}}
+
+/* Cinematic travel: one elevated avatar moves along the board path. */
+.travelling-token{position:fixed!important;right:auto!important;bottom:auto!important;z-index:10000;pointer-events:none;transform-origin:center;will-change:transform;filter:drop-shadow(0 12px 9px #0009);animation:none!important}
+.travelling-token .creator-avatar{animation:none!important}
+@media(prefers-reduced-motion:reduce){.travelling-token{display:none!important}}
