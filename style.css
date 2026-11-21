@@ -207,3 +207,46 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes diceLand{0%{transform:translateY(-22px) rotate(55deg) scale(1.25);filter:brightness(1.5)}48%{transform:translateY(5px) rotate(-12deg) scale(.94)}72%{transform:translateY(-7px) rotate(-6deg) scale(1.04)}100%{transform:translateY(0) rotate(-7deg) scale(1);filter:brightness(1)}}
 @keyframes tokenHop{0%{transform:translateY(5px) scale(.88)}48%{transform:translateY(-15px) scale(1.1)}100%{transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){#diceIcon.dice-landed .die-face,.tile.player.token-hopped .token{animation:none}}
+
+
+/* V8 art-direction pass: cohesive neon arcade tabletop, restrained motion. */
+:root{--bg:#080d1b;--panel:#121c32;--panel2:#1b2944;--line:#3b5276;--muted:#a9bdd6;--cyan:#77e9ef;--gold:#ffda86}
+body{background:radial-gradient(ellipse 75% 42% at 50% -10%,#273b64 0%,transparent 90%),linear-gradient(180deg,#0b1428,#080d1b 68%);background-attachment:fixed}
+#game{max-width:1180px}
+.hero{border-bottom-color:#83e9ff24}
+.brand-mark{background:linear-gradient(145deg,#5ae7ef,#6754bb 58%,#e779b1);border:1px solid #d4faff7a;box-shadow:0 0 0 4px #72eaff10,0 15px 32px #0008}
+h1 span{color:#8cf4e6}
+#tabs{background:#0b1528;border:1px solid #54718c80;box-shadow:inset 0 1px #ffffff13}
+.tab{transition:background .2s,color .2s,transform .2s}
+.tab.activeTab{background:linear-gradient(130deg,#356c91,#6047a1);box-shadow:inset 0 1px #ffffff3b,0 5px 15px #0005}
+.stat-card{background:linear-gradient(155deg,#223653,#121d32);border-color:#7194a344;box-shadow:inset 0 1px #ffffff20,0 9px 20px #0004}
+.stat-icon{filter:drop-shadow(0 3px 4px #0007)}
+.era-panel,.activity-panel,.daily-panel,.achievement-panel,.contract-panel,.landmark-card,.district-card,.rival-card,.album-card{background:linear-gradient(155deg,#1a2944,#10192d);border-color:#6586a347}
+#board{gap:8px;padding:14px;border:2px solid #92c9d0;border-radius:27px;background:radial-gradient(ellipse at 50% 48%,#28465f,#142942 46%,#0b172c 88%);box-shadow:0 0 0 5px #0b1425,0 0 0 7px #31556c,0 30px 65px #000a,inset 0 0 50px #020711}
+#board:before{inset:7px;border:1px solid #9ae4e026;border-radius:20px}
+#board:after{background:repeating-linear-gradient(0deg,transparent 0 27px,#ffffff04 27px 28px),repeating-linear-gradient(90deg,transparent 0 27px,#ffffff04 27px 28px)}
+.tile{border-radius:16px;box-shadow:inset 0 2px 0 #ffffff35,inset 0 -5px 0 #0003,0 6px 0 #091426,0 11px 16px #0006;transition:transform .22s cubic-bezier(.2,.8,.2,1),filter .22s,box-shadow .22s}
+.tile:after{background:linear-gradient(145deg,#ffffff28,transparent 42%,#00000020)}
+.tile.go,.tile.coins,.tile.hype{background:linear-gradient(145deg,#228d85,#125451 78%);border-color:#86f3d9}
+.tile.landmark{background:linear-gradient(145deg,#b58549,#654127 78%);border-color:#ffe2a1}
+.tile.card,.tile.event,.tile.raid{background:linear-gradient(145deg,#7662bd,#3b3476 78%);border-color:#c5b3ff}
+.tile.attack{background:linear-gradient(145deg,#b85c7a,#612e52 78%);border-color:#ffacc8}
+.tile.player{border-color:#f7e59d;box-shadow:0 0 0 3px #ffeaa54d,0 0 28px #ffe49c8c,0 6px 0 #725e33,0 13px 20px #0009;animation:premiumActiveTile 2.2s ease-in-out infinite alternate}
+@keyframes premiumActiveTile{from{filter:brightness(1.04);box-shadow:0 0 0 2px #ffeaa53a,0 0 15px #ffe49c6c,0 6px 0 #725e33}to{filter:brightness(1.18);box-shadow:0 0 0 4px #ffeaa55b,0 0 30px #ffe49c9c,0 6px 0 #725e33}}
+.tile.player .token{box-shadow:0 3px 0 #74512d,0 6px 10px #0009}
+#boardCenter{background:radial-gradient(ellipse at 50% 0%,#375878,#1a304e 48%,#0d1c32 95%);border:1px solid #94d9db8c;box-shadow:inset 0 2px #ffffff30,inset 0 -12px 30px #0006,0 14px 28px #0007}
+#boardCenter:before{background:linear-gradient(130deg,#9aeff311,transparent 42%,#bd89ff0e)}
+#boardCenter h2{color:#f6fcff;text-shadow:0 3px 0 #102239,0 7px 20px #0008}
+.game-stage-label{color:#9debe6}
+#dicePanel{background:linear-gradient(155deg,#182d47,#0d1a2f);border:1px solid #8fc9d87a;box-shadow:inset 0 1px #ffffff27,0 8px 20px #0007}
+.die-face{background:linear-gradient(140deg,#ffffff,#d6f1f0 70%,#a7c9d8);border-color:white;box-shadow:0 5px 0 #7398a8,0 9px 16px #000a,inset 0 2px #fff}
+#postBtn{background:linear-gradient(135deg,#ffe9a5,#f6b95f 65%,#d58c45);color:#302016;text-shadow:none;box-shadow:inset 0 2px #ffffff80,0 5px 0 #9a5b30,0 10px 17px #0008;letter-spacing:1.1px;transition:transform .16s,box-shadow .16s,filter .16s}
+#postBtn:not(:disabled):hover{filter:brightness(1.08)}
+#postBtn:not(:disabled):active{transform:translateY(4px);box-shadow:inset 0 2px #ffffff80,0 1px 0 #9a5b30,0 4px 8px #0008}
+.progress-track>div{background:linear-gradient(90deg,#4ab7d8,#7be9c6,#f9d889)}
+.landmark-scene{background:radial-gradient(ellipse at 50% 110%,#5384a5,#182b4b 75%);border-color:#a2d6e077}
+.scene-building{box-shadow:inset 0 4px #ffffff50,0 6px 13px #0008}
+.character-option.chosen{border-color:#ffe5a1;box-shadow:0 0 0 2px #ffdd8833,0 8px 18px #0007}
+@media(hover:hover){.tile:not(.player):hover{transform:translateY(-3px);filter:brightness(1.13)}.character-option:hover,.tab:hover{filter:brightness(1.12)}}
+@media(max-width:680px){#board{gap:4px;padding:7px;border-radius:18px;box-shadow:0 0 0 3px #0b1425,0 0 0 4px #31556c,0 16px 34px #0009}.tile{border-radius:10px;box-shadow:inset 0 1px #ffffff2b,0 3px 0 #091426,0 6px 8px #0005}#boardCenter{border-radius:12px}.stat-card{gap:7px}}
+@media(prefers-reduced-motion:reduce){.tile.player{animation:none}.tile,.tab,#postBtn{transition:none}}
