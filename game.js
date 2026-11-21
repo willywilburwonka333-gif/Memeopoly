@@ -68,7 +68,7 @@
   const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[]});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -95,7 +95,7 @@
       try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
-      state={...freshState(),...saved};state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=6).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
@@ -219,6 +219,7 @@
       box.append(btn);
     });
   }
+  function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent=["⚀","⚁","⚂","⚃","⚄","⚅"][result-1];chip.setAttribute("aria-label","Rolled "+result);target.append(chip);}}
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -283,7 +284,7 @@
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
     $("publishBtn").textContent=state.posts>0?"📣 PUBLISH POST · "+state.posts+" LEFT":"NO POSTS LEFT";
-    renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();renderContracts();
+    renderRollHistory();renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();renderContracts();
   }
   function renderDistricts(){
     const render=boxId=>{const box=$(boxId);if(!box)return;box.replaceChildren();districts.forEach(d=>{
@@ -536,7 +537,8 @@
       await wait(effectsOn?65+frame*7:18);
     }
     diceIcon.classList.remove("rolling");
-    setDiceFace(roll);
+    diceIcon.classList.remove("dice-landed");void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");
+    setDiceFace(roll);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
     $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
     gameSound(520+roll*65,.25);
     await wait(effectsOn?300:40);
@@ -549,12 +551,14 @@
         addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*multiplier)+" followers.");
       }
       renderBoard();
+      const currentTile=$("board").querySelector(".tile.player");if(currentTile&&effectsOn)currentTile.classList.add("token-hopped");
       if(i===steps-1)gameSound(680,.12);
     }
     setDiceFace(roll);
     $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
+    if(effectsOn)burst(["✨","⭐"],roll===6?18:8);
     rolling=eventOpen||heistOpen;checkAchievements();renderUI();save();
   }
   function publishPost(){
