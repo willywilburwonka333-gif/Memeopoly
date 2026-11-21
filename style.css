@@ -195,3 +195,15 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes buildingReveal{0%{filter:brightness(1)}40%{filter:brightness(2);box-shadow:0 0 40px #ffe3a1}100%{filter:brightness(1)}}
 @media(max-width:600px){.character-picker{padding:12px}.character-choices{width:100%;justify-content:space-between}.character-option{flex:1;min-width:62px;padding:6px 4px}.landmark-scene{height:90px}}
 @media(prefers-reduced-motion:reduce){.scene-sparkle,.building-upgraded .landmark-scene,.building-upgraded .scene-building{animation:none}}
+
+/* Dice landing feedback and a compact five-roll history */
+.roll-history{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:33px;margin:3px 0 8px;flex-wrap:wrap}
+.roll-history-label{font-size:9px;letter-spacing:1.3px;color:#c4cce8;font-weight:800}
+.roll-history-faces{display:flex;align-items:center;gap:4px;font-size:10px;color:#b9c6e3}
+.roll-history-chip{display:inline-grid;place-items:center;width:27px;height:27px;border:1px solid #e8dcff75;border-radius:7px;background:linear-gradient(150deg,#eee8ff,#b7c7ec);color:#283363;font-size:24px;line-height:1;box-shadow:0 3px 0 #6d76a1,0 4px 7px #0005}
+.roll-history-chip:first-child{border-color:#ffe7a0;box-shadow:0 0 12px #ffe2a26b,0 3px 0 #a27c37}
+#diceIcon.dice-landed .die-face{animation:diceLand .48s cubic-bezier(.16,1.4,.35,1) both}
+.tile.player.token-hopped .token{animation:tokenHop .24s ease-out both}
+@keyframes diceLand{0%{transform:translateY(-22px) rotate(55deg) scale(1.25);filter:brightness(1.5)}48%{transform:translateY(5px) rotate(-12deg) scale(.94)}72%{transform:translateY(-7px) rotate(-6deg) scale(1.04)}100%{transform:translateY(0) rotate(-7deg) scale(1);filter:brightness(1)}}
+@keyframes tokenHop{0%{transform:translateY(5px) scale(.88)}48%{transform:translateY(-15px) scale(1.1)}100%{transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#diceIcon.dice-landed .die-face,.tile.player.token-hopped .token{animation:none}}
