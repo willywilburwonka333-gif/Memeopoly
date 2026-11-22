@@ -4,26 +4,370 @@
   const MAX_DICE=50,DICE_REGEN_MS=5*60*1000;
   const eras=["Bedroom Meme Era","Vine House Era","YouTube Shorts Era","TikTok Empire Era","Meme HQ Era"];
   const board=[
-    {type:"GO",icon:"🚀",name:"Go Viral",description:"Collect your creator bonus"},
-    {type:"COINS",icon:"🪙",name:"Ad Revenue",description:"Earn coins"},
-    {type:"CARD",icon:"🃏",name:"Meme Pack",description:"Find a collectible"},
-    {type:"LANDMARK",icon:"🏠",name:"Bedroom Setup",description:"Upgrade your setup"},
-    {type:"ATTACK",icon:"⚔️",name:"Cancel Strike",description:"A rival makes a move"},
-    {type:"HYPE",icon:"⚡",name:"Hype Boost",description:"Build your hype"},
-    {type:"LANDMARK",icon:"🎤",name:"Cheap Mic",description:"Upgrade your audio"},
-    {type:"EVENT",icon:"🔥",name:"Viral Event",description:"A random event"},
-    {type:"LANDMARK",icon:"💻",name:"Gaming PC",description:"Upgrade your workstation"},
-    {type:"RAID",icon:"🏦",name:"Follower Heist",description:"Raid the algorithm"},
-    {type:"LANDMARK",icon:"💡",name:"Ring Light",description:"Upgrade your lighting"},
-    {type:"ATTACK",icon:"💀",name:"Shadowban",description:"Survive a platform setback"},
-    {type:"LANDMARK",icon:"🏢",name:"Meme Studio",description:"Upgrade your studio"},
-    {type:"SHIELD",icon:"🛡️",name:"Shield Drop",description:"Protect your studio"},
-    {type:"CARD",icon:"🎁",name:"Mystery Drop",description:"Open a mystery pack"},
-    {type:"EVENT",icon:"🌈",name:"Community Event",description:"See what happens"}
-  ];
-  const coords=[[1,1],[1,2],[1,3],[1,4],[1,5],[2,5],[3,5],[4,5],[5,5],[5,4],[5,3],[5,2],[5,1],[4,1],[3,1],[2,1]];
-  const landmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio"];
-  const landmarkIcons=["🏠","🎤","💻","💡","🏢"];
+  {
+    "type": "GO",
+    "icon": "🚀",
+    "name": "Go Viral",
+    "description": "Collect creator bonus"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Ad Revenue",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏠",
+    "name": "Bedroom Setup",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🃏",
+    "name": "Meme Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "⚔️",
+    "name": "Cancel Strike",
+    "description": "Rival attack"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎤",
+    "name": "Cheap Mic",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Hype Boost",
+    "description": "Build hype"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🔥",
+    "name": "Viral Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "💻",
+    "name": "Gaming PC",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "RAID",
+    "icon": "🏦",
+    "name": "Follower Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Shield Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "💡",
+    "name": "Ring Light",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎁",
+    "name": "Mystery Drop",
+    "description": "Open a mystery pack"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌈",
+    "name": "Community Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏢",
+    "name": "Meme Studio",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "💰",
+    "name": "Sponsor Deal",
+    "description": "Earn coins"
+  },
+  {
+    "type": "HYPE",
+    "icon": "✨",
+    "name": "Trend Surge",
+    "description": "Build hype"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🕹️",
+    "name": "Viral Arcade",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "💀",
+    "name": "Shadowban",
+    "description": "Rival setback"
+  },
+  {
+    "type": "RAID",
+    "icon": "🎯",
+    "name": "Trend Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🐈",
+    "name": "Cat Cafe",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Creator Payday",
+    "description": "Earn coins"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎴",
+    "name": "Legend Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "📡",
+    "name": "Stream Tower",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌸",
+    "name": "Festival Night",
+    "description": "Surprise event"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Guardian Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🖼️",
+    "name": "Meme Museum",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Power Hour",
+    "description": "Build hype"
+  },
+  {
+    "type": "COINS",
+    "icon": "💎",
+    "name": "Brand Bonus",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎬",
+    "name": "Neon Cinema",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "GO",
+    "icon": "🚀",
+    "name": "Go Viral",
+    "description": "Collect creator bonus"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Ad Revenue",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎭",
+    "name": "Cosplay Alley",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🃏",
+    "name": "Meme Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "⚔️",
+    "name": "Cancel Strike",
+    "description": "Rival attack"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏯",
+    "name": "Creator Mansion",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Hype Boost",
+    "description": "Build hype"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🔥",
+    "name": "Viral Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🌆",
+    "name": "Pixel Plaza",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "RAID",
+    "icon": "🏦",
+    "name": "Follower Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Shield Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🐉",
+    "name": "Dragon Dojo",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎁",
+    "name": "Mystery Drop",
+    "description": "Open a mystery pack"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌈",
+    "name": "Community Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🤖",
+    "name": "Robot Factory",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "💰",
+    "name": "Sponsor Deal",
+    "description": "Earn coins"
+  },
+  {
+    "type": "HYPE",
+    "icon": "✨",
+    "name": "Trend Surge",
+    "description": "Build hype"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🦊",
+    "name": "Fox Shrine",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "💀",
+    "name": "Shadowban",
+    "description": "Rival setback"
+  },
+  {
+    "type": "RAID",
+    "icon": "🎯",
+    "name": "Trend Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏟️",
+    "name": "Hype Stadium",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Creator Payday",
+    "description": "Earn coins"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎴",
+    "name": "Legend Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🌃",
+    "name": "Skyline Studio",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌸",
+    "name": "Festival Night",
+    "description": "Surprise event"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Guardian Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🛍️",
+    "name": "Anime Market",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Power Hour",
+    "description": "Build hype"
+  },
+  {
+    "type": "COINS",
+    "icon": "💎",
+    "name": "Brand Bonus",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏰",
+    "name": "Legend Palace",
+    "description": "Own and upgrade this property"
+  }
+];
+  const coords=[[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[1,12],[1,13],[1,14],[1,15],[1,16],[2,16],[3,16],[4,16],[5,16],[6,16],[7,16],[8,16],[9,16],[10,16],[11,16],[12,16],[13,16],[14,16],[15,16],[16,16],[16,15],[16,14],[16,13],[16,12],[16,11],[16,10],[16,9],[16,8],[16,7],[16,6],[16,5],[16,4],[16,3],[16,2],[16,1],[15,1],[14,1],[13,1],[12,1],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1]];
+  const landmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio","Viral Arcade","Cat Cafe","Stream Tower","Meme Museum","Neon Cinema","Cosplay Alley","Creator Mansion","Pixel Plaza","Dragon Dojo","Robot Factory","Fox Shrine","Hype Stadium","Skyline Studio","Anime Market","Legend Palace"];
+  const landmarkIcons=["🏠","🎤","💻","💡","🏢","🕹️","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
   const memeCards=["Doge","Pepe","NPC Streamer","Side Eye Cat","Sigma Baby","Ohio Boss","Viral Rat","Distracted Boyfriend"];
   const cardIcons=["🐕","🐸","🕺","🐈","🗿","👑","🐀","💑"];
   const districts=[
@@ -45,6 +389,13 @@
     {id:"creator-life",name:"Creator Life",icon:"🎬",stickers:[["Ring Light Royalty","💡"],["Stream Goblin","🎮"],["Mic Check","🎤"],["Sponsored","💸"],["Viral Overnight","🚀"]]},
     {id:"internet-legends",name:"Internet Legends",icon:"🏆",stickers:[["Keyboard Warrior","⌨️"],["Comment Section","💬"],["Algorithm Whisperer","🌐"],["Meme Mogul","👑"],["Certified Icon","⭐"]]}
   ];
+  // Cosmetic collectibles never change dice odds or shield capacity.
+  const cosmeticSets={
+    dice:[{id:"arcade",name:"Arcade Cubes",icon:"🎲",rarity:"Starter"},{id:"storm",name:"Thunder Twins",icon:"⚡",rarity:"Rare"},{id:"sakura",name:"Sakura Roll",icon:"🌸",rarity:"Epic"},{id:"dragon",name:"Dragon Eyes",icon:"🐉",rarity:"Legendary"}],
+    tokens:[{id:"creator",name:"Creator Hero",icon:"🧑‍🎤",rarity:"Starter"},{id:"kitsune",name:"Neon Kitsune",icon:"🦊",rarity:"Rare"},{id:"mecha",name:"Mecha Guardian",icon:"🤖",rarity:"Epic"},{id:"cat",name:"Crowned Cat",icon:"🐈",rarity:"Legendary"}],
+    shields:[{id:"classic",name:"Creator Guard",icon:"🛡️",rarity:"Starter"},{id:"holo",name:"Holo Barrier",icon:"💠",rarity:"Rare"},{id:"oni",name:"Oni Crest",icon:"👹",rarity:"Epic"},{id:"phoenix",name:"Phoenix Ward",icon:"🔥",rarity:"Legendary"}]
+  };
+  const cosmeticDefaults={dice:"arcade",tokens:"creator",shields:"classic"};
   const allStickers=albumBlueprints.flatMap(a=>a.stickers.map(s=>({id:a.id+":"+s[0],album:a.id,name:s[0],icon:s[1]})));
   const achievements=[
     {id:"first-roll",name:"First Post",icon:"📱",description:"Take your first turn.",reward:500,done:s=>s.turn>=1},
@@ -68,13 +419,13 @@
   const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[],cosmeticsOwned:{dice:["arcade"],tokens:["creator"],shields:["classic"]},cosmeticsEquipped:{...cosmeticDefaults}});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
   const levelCount=s=>s.landmarks.reduce((sum,item)=>sum+item.level,0);
   const totalLevels=()=>levelCount(state);
-  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/5));
+  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/20));
   const costFor=level=>500+level*750+currentEra()*350;
   const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));$("saveStatus").textContent="✓ Progress saved";}catch(e){$("saveStatus").textContent="Save unavailable in this browser";}};
   const addLog=message=>{state.log.unshift({message,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});state.log=state.log.slice(0,40);renderLog();save();};
@@ -95,7 +446,12 @@
       try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
-      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=6).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state.cosmeticsOwned={};state.cosmeticsEquipped={};for(const kind of Object.keys(cosmeticSets)){
+        const valid=cosmeticSets[kind].map(x=>x.id);
+        state.cosmeticsOwned[kind]=[...new Set([cosmeticDefaults[kind],...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
+        const selected=saved.cosmeticsEquipped?.[kind];state.cosmeticsEquipped[kind]=state.cosmeticsOwned[kind].includes(selected)?selected:cosmeticDefaults[kind];
+      }
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
@@ -117,7 +473,7 @@
       state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Math.min(Date.now(),Math.max(0,Number(state.diceUpdatedAt)||Date.now()));
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       // Completion is derived from the actual empire, never trusted from an old save flag.
-      state.completed=totalLevels()>=25;
+      state.completed=totalLevels()>=100;
       normalizeDaily();
       if(state.completed&&!state.completionRewarded)checkCompletion();
       checkAlbumRewards();
@@ -125,31 +481,23 @@
       return true;
     }catch(e){return false;}
   }
-  function setDiceFace(value){
+  function setDiceFace(first,second=first){
     const icon=$("diceIcon");
-    // Keep the same face node throughout a roll. Replacing it each frame
-    // restarted the CSS tumble animation and made the die appear to jitter.
-    let face=icon.querySelector(".die-face");
-    if(!face){
-      face=document.createElement("span");
-      face.className="die-face";
-      face.setAttribute("role","img");
-      for(let i=0;i<9;i++){
-        const pip=document.createElement("i");
-        pip.className="die-pip";
-        face.append(pip);
+    const patterns={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+    const faces=[first,second];
+    if(icon.querySelectorAll(".die-face").length!==2){
+      icon.replaceChildren();
+      for(let die=0;die<2;die++){
+        const face=document.createElement("span");face.className="die-face";face.setAttribute("role","img");
+        for(let i=0;i<9;i++){const pip=document.createElement("i");pip.className="die-pip";face.append(pip);}
+        icon.append(face);
       }
-      icon.replaceChildren(face);
     }
-    face.setAttribute("aria-label","Dice result "+value);
-    const patterns={
-      1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],
-      5:[0,2,4,6,8],6:[0,2,3,5,6,8]
-    };
-    Array.from(face.children).forEach((pip,i)=>{
-      pip.classList.toggle("visible",patterns[value].includes(i));
+    icon.querySelectorAll(".die-face").forEach((face,die)=>{
+      face.setAttribute("aria-label","Die "+(die+1)+": "+faces[die]);
+      Array.from(face.children).forEach((pip,i)=>pip.classList.toggle("visible",patterns[faces[die]].includes(i)));
     });
-    icon.setAttribute("aria-label","Dice showing "+value);
+    icon.setAttribute("aria-label","Dice showing "+first+" and "+second+", total "+(first+second));
   }
   let effectsOn=true,soundOn=false,audioContext=null;
   try{effectsOn=localStorage.getItem("memeopoly-effects")!=="off";soundOn=localStorage.getItem("memeopoly-sound")==="on";}catch(e){}
@@ -227,7 +575,7 @@
       box.append(btn);
     });
   }
-  function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent=["⚀","⚁","⚂","⚃","⚄","⚅"][result-1];chip.setAttribute("aria-label","Rolled "+result);target.append(chip);}}
+  function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent="🎲 "+result;chip.setAttribute("aria-label","Rolled total "+result);target.append(chip);}}
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -257,9 +605,32 @@
       bottom.append(cost,btn);card.append(top,scene,bar,bottom);box.append(card);
     });
     renderCharacterChoices();$("empireLevel").textContent=totalLevels();
-    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(5-totalLevels()%5)+" more upgrade(s) until the next era milestone.";
+    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(20-totalLevels()%20)+" more upgrade(s) until the next era milestone.";
+  }
+  function awardCosmetic(kind){
+    const missing=cosmeticSets[kind].filter(item=>!state.cosmeticsOwned[kind].includes(item.id));
+    if(!missing.length){state.coins+=750;addLog("✨ Duplicate cosmetic converted to 750 coins.");return;}
+    const item=missing[Math.floor(Math.random()*missing.length)];state.cosmeticsOwned[kind].push(item.id);
+    addLog("✨ "+item.rarity.toUpperCase()+" UNLOCK: "+item.name+" added to your collection!");
+  }
+  function renderCosmetics(){
+    const host=$("cosmeticCollection");if(!host)return;host.replaceChildren();
+    for(const [kind,items] of Object.entries(cosmeticSets)){
+      const section=document.createElement("section");section.className="cosmetic-category";
+      const heading=document.createElement("h3");heading.textContent=kind==="dice"?"🎲 Dice Skins":kind==="tokens"?"🧑‍🎤 Anime Tokens":"🛡️ Shield Designs";section.append(heading);
+      const grid=document.createElement("div");grid.className="cosmetic-grid";
+      for(const item of items){
+        const owned=state.cosmeticsOwned[kind].includes(item.id),equipped=state.cosmeticsEquipped[kind]===item.id;
+        const button=document.createElement("button");button.type="button";button.className="cosmetic-card"+(equipped?" equipped":"");button.disabled=!owned;button.setAttribute("aria-pressed",String(equipped));
+        const art=document.createElement("span");art.className="cosmetic-art";art.textContent=owned?item.icon:"🔒";
+        const name=document.createElement("strong");name.textContent=owned?item.name:"Undiscovered";
+        const rarity=document.createElement("small");rarity.textContent=owned?(equipped?"EQUIPPED":item.rarity+" · Equip"):item.rarity+" · Locked";
+        button.append(art,name,rarity);button.addEventListener("click",()=>{state.cosmeticsEquipped[kind]=item.id;renderUI();save();});grid.append(button);
+      }section.append(grid);host.append(section);
+    }
   }
   function renderCollection(){
+    renderCosmetics();
     const box=$("collection");box.replaceChildren();
     memeCards.forEach((name,i)=>{const owned=state.cards.includes(name),card=document.createElement("article");card.className="collect-card"+(owned?" owned":"");const icon=document.createElement("span");icon.className="collect-icon";icon.textContent=owned?cardIcons[i]:"❔";const title=document.createElement("strong");title.textContent=owned?name:"Unknown meme";const status=document.createElement("small");status.textContent=owned?"COLLECTED":"NOT DISCOVERED";card.append(icon,title,status);box.append(card);});
     $("collectionCount").textContent=state.cards.length+"/8";$("cardCount").textContent=state.cards.length;$("centerCards").textContent=state.cards.length;
@@ -287,7 +658,7 @@
   function renderUI(){
     regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
-    $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
+    $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
@@ -456,9 +827,9 @@
   }
   function checkCompletion(){
     const levels=totalLevels();
-    if(levels>0&&levels%5===0&&levels<25){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/5]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
-    if(levels>=25&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 25 upgrades built. You are the ultimate meme mogul!");}
-    if(levels>=25)state.completed=true;
+    if(levels>0&&levels%20===0&&levels<100){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/20]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
+    if(levels>=100&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 100 property upgrades built. You are the ultimate meme mogul!");}
+    if(levels>=100)state.completed=true;
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
@@ -466,7 +837,7 @@
     const card=missing[Math.floor(Math.random()*missing.length)];state.cards.push(card);state.followers+=3000;state.daily.cards++;
     addLog("🃏 RARE DROP: "+card+" collected! +3,000 followers.");
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
-    collectSticker();checkAchievements();
+    collectSticker();if(Math.random()<.3)awardCosmetic(["dice","tokens","shields"][Math.floor(Math.random()*3)]);checkAchievements();
   }
   let heistOpen=false,heistFinished=false;
   function raid(){
@@ -512,7 +883,7 @@
     heistOpen=false;heistFinished=false;rolling=false;$("heistOverlay").classList.add("hidden");renderUI();save();
   });
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
-  function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
+  function shieldDrop(){if(Math.random()<.2)awardCosmetic("shields");if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   const eventScenarios=[
     {title:"Brand deal or viral gamble?",description:"A sponsor offers guaranteed coins, but a risky viral campaign could bring a huge audience.",options:[
       {label:"🤝 Take the brand deal",detail:"+2,800 coins",run:()=>{state.coins+=2800;addLog("🤝 You signed a brand deal! +2,800 coins.");}},
@@ -592,6 +963,18 @@
       case"SHIELD":shieldDrop();break;
     }
   }
+  // Keep the creator visible when the board is wider than the phone screen.
+  // Only pan during gameplay; manual board exploration remains possible between rolls.
+  function revealBoardTile(index){
+    const viewport=document.querySelector(".board-viewport");
+    const boardElement=$("board");
+    if(!viewport||!cameraFollow)return;
+    const tile=boardElement.querySelectorAll(".tile")[index];
+    if(!tile)return;
+    const target=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
+    const limit=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+    viewport.scrollLeft=Math.max(0,Math.min(limit,target));
+  }
   // Travel uses a temporary fixed-position avatar; game state remains authoritative.
   // Always render the destination even when motion is disabled or unavailable.
   async function travelToken(fromIndex,toIndex,duration){
@@ -599,6 +982,7 @@
     const source=boardElement.querySelector(".tile.player .token");
     const tiles=Array.from(boardElement.querySelectorAll(".tile"));
     const destination=tiles[toIndex];
+    revealBoardTile(toIndex);
     const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!source||!destination||!effectsOn||reduceMotion||!source.animate){
       renderBoard();return;
@@ -656,7 +1040,7 @@
     if(rolling||eventOpen||heistOpen||state.dice<multiplier||state.completed)return;
     rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
     $("postBtn").disabled=true;
-    const roll=1+Math.floor(Math.random()*6),steps=roll*multiplier;
+    const dieOne=1+Math.floor(Math.random()*6),dieTwo=1+Math.floor(Math.random()*6),roll=dieOne+dieTwo,steps=roll*multiplier;
     const diceIcon=$("diceIcon");
     diceIcon.classList.add("rolling");
     $("diceText").textContent="Rolling…";
@@ -664,7 +1048,7 @@
     const animateDice=effectsOn&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(animateDice){
       for(let frame=0;frame<12;frame++){
-        setDiceFace(1+Math.floor(Math.random()*6));
+        setDiceFace(1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6));
         if(frame%3===0)gameSound(230+frame*25,.055);
         await wait(65+frame*7);
       }
@@ -672,8 +1056,8 @@
     diceIcon.classList.remove("rolling");
     diceIcon.classList.remove("dice-landed");
     if(animateDice){void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");}
-    setDiceFace(roll);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
-    $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
+    setDiceFace(dieOne,dieTwo);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
+    $("diceText").textContent="Rolled "+dieOne+" + "+dieTwo+" = "+roll+" · moving "+steps+" spaces";
     gameSound(520+roll*65,.25);
     await wait(animateDice?300:0);
     for(let i=0;i<steps;i++){
@@ -691,8 +1075,9 @@
       await travelToken(previousPosition,nextPosition,multiplier>1?85:155);
       if(i===steps-1)gameSound(680,.12);
     }
-    setDiceFace(roll);
-    $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
+    setDiceFace(dieOne,dieTwo);
+    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" × "+multiplier+" = "+steps+" spaces";
+    revealBoardTile(state.position);
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
     if(effectsOn)burst(["✨","⭐"],roll===6?18:8);
@@ -735,7 +1120,7 @@
           localStorage.setItem(SAVE_KEY,JSON.stringify(candidate));
           state=freshState();
           if(!load())throw new Error("Save could not be restored");
-          checkAchievements();renderUI();save();addLog("📦 Backup restored successfully.");
+          checkAchievements();renderUI();revealBoardTile(state.position);save();addLog("📦 Backup restored successfully.");
           $("saveStatus").textContent="Backup restored";
         }catch(error){
           if(previous===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,previous);
@@ -756,6 +1141,7 @@
     // Hide the old scene immediately so there is never an interactive invisible screen.
     if(current){current.classList.add("hidden");current.classList.remove("screen-entering");}
     target.classList.remove("hidden","screen-entering");
+    if(id==="boardScreen")revealBoardTile(state.position);
     document.querySelectorAll(".tab").forEach(tab=>{
       const selected=tab.dataset.screen===id;
       tab.classList.toggle("activeTab",selected);
@@ -771,6 +1157,32 @@
   }
   $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
   $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
+  // Camera zoom changes only the board surface, never the HUD or save schema.
+  const cameraViewport=document.querySelector(".board-viewport");
+  const cameraBoard=$("board");
+  let cameraZoom=1;
+  let cameraFollow=true;
+  const cameraClamp=value=>Math.max(.5,Math.min(2,Math.round(value*10)/10));
+  function cameraSetZoom(value){
+    const previous=cameraZoom;
+    const centerX=cameraViewport.scrollLeft+cameraViewport.clientWidth/2;
+    const centerY=cameraViewport.scrollTop+cameraViewport.clientHeight/2;
+    cameraZoom=cameraClamp(value);
+    cameraBoard.style.zoom=String(cameraZoom);
+    $("boardZoomLabel").textContent=Math.round(cameraZoom*100)+"%";
+    const ratio=cameraZoom/previous;
+    cameraViewport.scrollLeft=Math.max(0,centerX*ratio-cameraViewport.clientWidth/2);
+    cameraViewport.scrollTop=Math.max(0,centerY*ratio-cameraViewport.clientHeight/2);
+  }
+  $("boardZoomOut").addEventListener("click",()=>cameraSetZoom(cameraZoom-.1));
+  $("boardZoomIn").addEventListener("click",()=>cameraSetZoom(cameraZoom+.1));
+  $("boardFit").addEventListener("click",()=>{const original=cameraZoom;const width=cameraBoard.getBoundingClientRect().width/original;cameraSetZoom(cameraViewport.clientWidth/width);cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
+  $("boardFollow").addEventListener("click",()=>{cameraFollow=!cameraFollow;$("boardFollow").setAttribute("aria-pressed",String(cameraFollow));if(cameraFollow)revealBoardTile(state.position);});
+  let pinchStartDistance=0,pinchStartZoom=1;
+  cameraViewport.addEventListener("touchstart",event=>{if(event.touches.length!==2)return;const [a,b]=event.touches;pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchStartZoom=cameraZoom;},{passive:true});
+  cameraViewport.addEventListener("touchmove",event=>{if(event.touches.length!==2||!pinchStartDistance)return;const [a,b]=event.touches;const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);cameraSetZoom(pinchStartZoom*distance/pinchStartDistance);event.preventDefault();},{passive:false});
+  cameraViewport.addEventListener("touchend",event=>{if(event.touches.length<2)pinchStartDistance=0;},{passive:true});
+  $("jumpToDice").addEventListener("click",()=>{const viewport=document.querySelector(".board-viewport");const dice=$("dicePanel");if(!viewport||!dice)return;const box=viewport.getBoundingClientRect();const target=dice.getBoundingClientRect();const desired=viewport.scrollLeft+(target.left+target.width/2-box.left-box.width/2);viewport.scrollTo({left:Math.max(0,desired),behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});});
   updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
@@ -779,11 +1191,11 @@
   $("exportSaveBtn").addEventListener("click",exportSave);
   $("importSaveBtn").addEventListener("click",()=>$("importSaveFile").click());
   $("importSaveFile").addEventListener("change",event=>importSave(event.target.files?.[0]));
-  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen||heistOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
+  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen||heistOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();revealBoardTile(state.position);addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();
+  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();revealBoardTile(state.position);
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
