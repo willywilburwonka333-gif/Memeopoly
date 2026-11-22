@@ -4,26 +4,370 @@
   const MAX_DICE=50,DICE_REGEN_MS=5*60*1000;
   const eras=["Bedroom Meme Era","Vine House Era","YouTube Shorts Era","TikTok Empire Era","Meme HQ Era"];
   const board=[
-    {type:"GO",icon:"🚀",name:"Go Viral",description:"Collect your creator bonus"},
-    {type:"COINS",icon:"🪙",name:"Ad Revenue",description:"Earn coins"},
-    {type:"CARD",icon:"🃏",name:"Meme Pack",description:"Find a collectible"},
-    {type:"LANDMARK",icon:"🏠",name:"Bedroom Setup",description:"Upgrade your setup"},
-    {type:"ATTACK",icon:"⚔️",name:"Cancel Strike",description:"A rival makes a move"},
-    {type:"HYPE",icon:"⚡",name:"Hype Boost",description:"Build your hype"},
-    {type:"LANDMARK",icon:"🎤",name:"Cheap Mic",description:"Upgrade your audio"},
-    {type:"EVENT",icon:"🔥",name:"Viral Event",description:"A random event"},
-    {type:"LANDMARK",icon:"💻",name:"Gaming PC",description:"Upgrade your workstation"},
-    {type:"RAID",icon:"🏦",name:"Follower Heist",description:"Raid the algorithm"},
-    {type:"LANDMARK",icon:"💡",name:"Ring Light",description:"Upgrade your lighting"},
-    {type:"ATTACK",icon:"💀",name:"Shadowban",description:"Survive a platform setback"},
-    {type:"LANDMARK",icon:"🏢",name:"Meme Studio",description:"Upgrade your studio"},
-    {type:"SHIELD",icon:"🛡️",name:"Shield Drop",description:"Protect your studio"},
-    {type:"CARD",icon:"🎁",name:"Mystery Drop",description:"Open a mystery pack"},
-    {type:"EVENT",icon:"🌈",name:"Community Event",description:"See what happens"}
-  ];
-  const coords=[[1,1],[1,2],[1,3],[1,4],[1,5],[2,5],[3,5],[4,5],[5,5],[5,4],[5,3],[5,2],[5,1],[4,1],[3,1],[2,1]];
-  const landmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio"];
-  const landmarkIcons=["🏠","🎤","💻","💡","🏢"];
+  {
+    "type": "GO",
+    "icon": "🚀",
+    "name": "Go Viral",
+    "description": "Collect creator bonus"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Ad Revenue",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏠",
+    "name": "Bedroom Setup",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🃏",
+    "name": "Meme Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "⚔️",
+    "name": "Cancel Strike",
+    "description": "Rival attack"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎤",
+    "name": "Cheap Mic",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Hype Boost",
+    "description": "Build hype"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🔥",
+    "name": "Viral Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "💻",
+    "name": "Gaming PC",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "RAID",
+    "icon": "🏦",
+    "name": "Follower Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Shield Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "💡",
+    "name": "Ring Light",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎁",
+    "name": "Mystery Drop",
+    "description": "Open a mystery pack"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌈",
+    "name": "Community Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏢",
+    "name": "Meme Studio",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "💰",
+    "name": "Sponsor Deal",
+    "description": "Earn coins"
+  },
+  {
+    "type": "HYPE",
+    "icon": "✨",
+    "name": "Trend Surge",
+    "description": "Build hype"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🕹️",
+    "name": "Viral Arcade",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "💀",
+    "name": "Shadowban",
+    "description": "Rival setback"
+  },
+  {
+    "type": "RAID",
+    "icon": "🎯",
+    "name": "Trend Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🐈",
+    "name": "Cat Cafe",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Creator Payday",
+    "description": "Earn coins"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎴",
+    "name": "Legend Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "📡",
+    "name": "Stream Tower",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌸",
+    "name": "Festival Night",
+    "description": "Surprise event"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Guardian Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🖼️",
+    "name": "Meme Museum",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Power Hour",
+    "description": "Build hype"
+  },
+  {
+    "type": "COINS",
+    "icon": "💎",
+    "name": "Brand Bonus",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎬",
+    "name": "Neon Cinema",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "GO",
+    "icon": "🚀",
+    "name": "Go Viral",
+    "description": "Collect creator bonus"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Ad Revenue",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🎭",
+    "name": "Cosplay Alley",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🃏",
+    "name": "Meme Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "⚔️",
+    "name": "Cancel Strike",
+    "description": "Rival attack"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏯",
+    "name": "Creator Mansion",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Hype Boost",
+    "description": "Build hype"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🔥",
+    "name": "Viral Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🌆",
+    "name": "Pixel Plaza",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "RAID",
+    "icon": "🏦",
+    "name": "Follower Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Shield Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🐉",
+    "name": "Dragon Dojo",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎁",
+    "name": "Mystery Drop",
+    "description": "Open a mystery pack"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌈",
+    "name": "Community Event",
+    "description": "Surprise event"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🤖",
+    "name": "Robot Factory",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "💰",
+    "name": "Sponsor Deal",
+    "description": "Earn coins"
+  },
+  {
+    "type": "HYPE",
+    "icon": "✨",
+    "name": "Trend Surge",
+    "description": "Build hype"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🦊",
+    "name": "Fox Shrine",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "ATTACK",
+    "icon": "💀",
+    "name": "Shadowban",
+    "description": "Rival setback"
+  },
+  {
+    "type": "RAID",
+    "icon": "🎯",
+    "name": "Trend Heist",
+    "description": "Raid the algorithm"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏟️",
+    "name": "Hype Stadium",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "COINS",
+    "icon": "🪙",
+    "name": "Creator Payday",
+    "description": "Earn coins"
+  },
+  {
+    "type": "CARD",
+    "icon": "🎴",
+    "name": "Legend Pack",
+    "description": "Find a collectible"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🌃",
+    "name": "Skyline Studio",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "EVENT",
+    "icon": "🌸",
+    "name": "Festival Night",
+    "description": "Surprise event"
+  },
+  {
+    "type": "SHIELD",
+    "icon": "🛡️",
+    "name": "Guardian Drop",
+    "description": "Protect your studio"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🛍️",
+    "name": "Anime Market",
+    "description": "Own and upgrade this property"
+  },
+  {
+    "type": "HYPE",
+    "icon": "⚡",
+    "name": "Power Hour",
+    "description": "Build hype"
+  },
+  {
+    "type": "COINS",
+    "icon": "💎",
+    "name": "Brand Bonus",
+    "description": "Earn coins"
+  },
+  {
+    "type": "LANDMARK",
+    "icon": "🏰",
+    "name": "Legend Palace",
+    "description": "Own and upgrade this property"
+  }
+];
+  const coords=[[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[1,12],[1,13],[1,14],[1,15],[1,16],[2,16],[3,16],[4,16],[5,16],[6,16],[7,16],[8,16],[9,16],[10,16],[11,16],[12,16],[13,16],[14,16],[15,16],[16,16],[16,15],[16,14],[16,13],[16,12],[16,11],[16,10],[16,9],[16,8],[16,7],[16,6],[16,5],[16,4],[16,3],[16,2],[16,1],[15,1],[14,1],[13,1],[12,1],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1]];
+  const landmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio","Viral Arcade","Cat Cafe","Stream Tower","Meme Museum","Neon Cinema","Cosplay Alley","Creator Mansion","Pixel Plaza","Dragon Dojo","Robot Factory","Fox Shrine","Hype Stadium","Skyline Studio","Anime Market","Legend Palace"];
+  const landmarkIcons=["🏠","🎤","💻","💡","🏢","🕹️","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
   const memeCards=["Doge","Pepe","NPC Streamer","Side Eye Cat","Sigma Baby","Ohio Boss","Viral Rat","Distracted Boyfriend"];
   const cardIcons=["🐕","🐸","🕺","🐈","🗿","👑","🐀","💑"];
   const districts=[
