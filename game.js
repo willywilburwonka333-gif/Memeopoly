@@ -576,6 +576,15 @@
     });
   }
   function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent="🎲 "+result;chip.setAttribute("aria-label","Rolled total "+result);target.append(chip);}}
+  // Inspect a tiny board space without zooming or changing saved gameplay state.
+  function inspectBoardSpace(index){
+    const item=board[index];if(!item)return;
+    const property=item.type==="LANDMARK"?state.landmarks.find(l=>l.name===item.name):null;
+    $("spaceInspectorTitle").textContent="Space "+(index+1)+" / "+board.length+" · "+item.name;
+    $("spaceInspectorDescription").textContent=property?"Property · Level "+property.level+"/5 · "+item.description:item.description;
+    $("spaceInspector").hidden=false;
+  }
+  $("spaceInspectorClose").addEventListener("click",()=>{$("spaceInspector").hidden=true;});
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -586,6 +595,10 @@
       const name=document.createElement("strong");name.textContent=item.name;
       const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
+      tile.setAttribute("role","button");tile.tabIndex=0;
+      tile.setAttribute("aria-label","Space "+(i+1)+": "+item.name+". "+detail.textContent+". Activate for details.");
+      tile.addEventListener("click",()=>inspectBoardSpace(i));
+      tile.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();inspectBoardSpace(i);}});
       if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(creatorAvatar(creatorStyles[state.creatorStyle]||creatorStyles[0]));tile.append(token);}
       el.append(tile);
     });
