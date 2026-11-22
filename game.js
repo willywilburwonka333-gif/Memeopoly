@@ -597,7 +597,7 @@
   function revealBoardTile(index){
     const viewport=document.querySelector(".board-viewport");
     const boardElement=$("board");
-    if(!viewport||viewport.scrollWidth<=viewport.clientWidth)return;
+    if(!viewport||!cameraFollow)return;
     const tile=boardElement.querySelectorAll(".tile")[index];
     if(!tile)return;
     const target=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
@@ -786,6 +786,31 @@
   }
   $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
   $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
+  // Camera zoom changes only the board surface, never the HUD or save schema.
+  const cameraViewport=document.querySelector(".board-viewport");
+  const cameraBoard=$("board");
+  let cameraZoom=1;
+  let cameraFollow=true;
+  const cameraClamp=value=>Math.max(.5,Math.min(2,Math.round(value*10)/10));
+  function cameraSetZoom(value){
+    const previous=cameraZoom;
+    const centerX=cameraViewport.scrollLeft+cameraViewport.clientWidth/2;
+    const centerY=cameraViewport.scrollTop+cameraViewport.clientHeight/2;
+    cameraZoom=cameraClamp(value);
+    cameraBoard.style.zoom=String(cameraZoom);
+    $("boardZoomLabel").textContent=Math.round(cameraZoom*100)+"%";
+    const ratio=cameraZoom/previous;
+    cameraViewport.scrollLeft=Math.max(0,centerX*ratio-cameraViewport.clientWidth/2);
+    cameraViewport.scrollTop=Math.max(0,centerY*ratio-cameraViewport.clientHeight/2);
+  }
+  $("boardZoomOut").addEventListener("click",()=>cameraSetZoom(cameraZoom-.1));
+  $("boardZoomIn").addEventListener("click",()=>cameraSetZoom(cameraZoom+.1));
+  $("boardFit").addEventListener("click",()=>{const original=cameraZoom;const width=cameraBoard.getBoundingClientRect().width/original;cameraSetZoom(cameraViewport.clientWidth/width);cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
+  $("boardFollow").addEventListener("click",()=>{cameraFollow=!cameraFollow;$("boardFollow").setAttribute("aria-pressed",String(cameraFollow));if(cameraFollow)revealBoardTile(state.position);});
+  let pinchStartDistance=0,pinchStartZoom=1;
+  cameraViewport.addEventListener("touchstart",event=>{if(event.touches.length!==2)return;const [a,b]=event.touches;pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchStartZoom=cameraZoom;},{passive:true});
+  cameraViewport.addEventListener("touchmove",event=>{if(event.touches.length!==2||!pinchStartDistance)return;const [a,b]=event.touches;const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);cameraSetZoom(pinchStartZoom*distance/pinchStartDistance);event.preventDefault();},{passive:false});
+  cameraViewport.addEventListener("touchend",event=>{if(event.touches.length<2)pinchStartDistance=0;},{passive:true});
   $("jumpToDice").addEventListener("click",()=>{const viewport=document.querySelector(".board-viewport");const dice=$("dicePanel");if(!viewport||!dice)return;const box=viewport.getBoundingClientRect();const target=dice.getBoundingClientRect();const desired=viewport.scrollLeft+(target.left+target.width/2-box.left-box.width/2);viewport.scrollTo({left:Math.max(0,desired),behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});});
   updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
