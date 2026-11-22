@@ -212,3 +212,8 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 .travelling-token{position:fixed!important;right:auto!important;bottom:auto!important;z-index:10000;pointer-events:none;transform-origin:center;will-change:transform;filter:drop-shadow(0 12px 9px #0009);animation:none!important}
 .travelling-token .creator-avatar{animation:none!important}
 @media(prefers-reduced-motion:reduce){.travelling-token{display:none!important}}
+
+/* Travel polish: visible spark trail, precise landing, no layout reflow. */
+.travel-spark{position:fixed;z-index:9998;width:7px;height:7px;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffe09b 42%,#e6a2ff 80%);box-shadow:0 0 10px #ffe7ad,0 0 18px #c6a2ff;animation:travelSpark .3s ease-out both;will-change:transform,opacity}
+@keyframes travelSpark{0%{opacity:0;transform:translate(0,0) scale(.5)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--trail-x),var(--trail-y)) scale(.15)}}
+@media(prefers-reduced-motion:reduce){.travel-spark{display:none!important}}
