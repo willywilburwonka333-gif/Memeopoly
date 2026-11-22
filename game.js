@@ -95,7 +95,7 @@
       try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
-      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=6).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
@@ -125,31 +125,23 @@
       return true;
     }catch(e){return false;}
   }
-  function setDiceFace(value){
+  function setDiceFace(first,second=first){
     const icon=$("diceIcon");
-    // Keep the same face node throughout a roll. Replacing it each frame
-    // restarted the CSS tumble animation and made the die appear to jitter.
-    let face=icon.querySelector(".die-face");
-    if(!face){
-      face=document.createElement("span");
-      face.className="die-face";
-      face.setAttribute("role","img");
-      for(let i=0;i<9;i++){
-        const pip=document.createElement("i");
-        pip.className="die-pip";
-        face.append(pip);
+    const patterns={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+    const faces=[first,second];
+    if(icon.querySelectorAll(".die-face").length!==2){
+      icon.replaceChildren();
+      for(let die=0;die<2;die++){
+        const face=document.createElement("span");face.className="die-face";face.setAttribute("role","img");
+        for(let i=0;i<9;i++){const pip=document.createElement("i");pip.className="die-pip";face.append(pip);}
+        icon.append(face);
       }
-      icon.replaceChildren(face);
     }
-    face.setAttribute("aria-label","Dice result "+value);
-    const patterns={
-      1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],
-      5:[0,2,4,6,8],6:[0,2,3,5,6,8]
-    };
-    Array.from(face.children).forEach((pip,i)=>{
-      pip.classList.toggle("visible",patterns[value].includes(i));
+    icon.querySelectorAll(".die-face").forEach((face,die)=>{
+      face.setAttribute("aria-label","Die "+(die+1)+": "+faces[die]);
+      Array.from(face.children).forEach((pip,i)=>pip.classList.toggle("visible",patterns[faces[die]].includes(i)));
     });
-    icon.setAttribute("aria-label","Dice showing "+value);
+    icon.setAttribute("aria-label","Dice showing "+first+" and "+second+", total "+(first+second));
   }
   let effectsOn=true,soundOn=false,audioContext=null;
   try{effectsOn=localStorage.getItem("memeopoly-effects")!=="off";soundOn=localStorage.getItem("memeopoly-sound")==="on";}catch(e){}
@@ -227,7 +219,7 @@
       box.append(btn);
     });
   }
-  function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent=["⚀","⚁","⚂","⚃","⚄","⚅"][result-1];chip.setAttribute("aria-label","Rolled "+result);target.append(chip);}}
+  function renderRollHistory(){const target=$("rollHistoryFaces");if(!target)return;target.replaceChildren();if(!state.rollHistory.length){target.textContent="Roll to begin";return;}for(const result of state.rollHistory){const chip=document.createElement("span");chip.className="roll-history-chip";chip.textContent="🎲 "+result;chip.setAttribute("aria-label","Rolled total "+result);target.append(chip);}}
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -669,7 +661,7 @@
     if(rolling||eventOpen||heistOpen||state.dice<multiplier||state.completed)return;
     rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
     $("postBtn").disabled=true;
-    const roll=1+Math.floor(Math.random()*6),steps=roll*multiplier;
+    const dieOne=1+Math.floor(Math.random()*6),dieTwo=1+Math.floor(Math.random()*6),roll=dieOne+dieTwo,steps=roll*multiplier;
     const diceIcon=$("diceIcon");
     diceIcon.classList.add("rolling");
     $("diceText").textContent="Rolling…";
@@ -677,7 +669,7 @@
     const animateDice=effectsOn&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(animateDice){
       for(let frame=0;frame<12;frame++){
-        setDiceFace(1+Math.floor(Math.random()*6));
+        setDiceFace(1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6));
         if(frame%3===0)gameSound(230+frame*25,.055);
         await wait(65+frame*7);
       }
@@ -685,8 +677,8 @@
     diceIcon.classList.remove("rolling");
     diceIcon.classList.remove("dice-landed");
     if(animateDice){void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");}
-    setDiceFace(roll);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
-    $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
+    setDiceFace(dieOne,dieTwo);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
+    $("diceText").textContent="Rolled "+dieOne+" + "+dieTwo+" = "+roll+" · moving "+steps+" spaces";
     gameSound(520+roll*65,.25);
     await wait(animateDice?300:0);
     for(let i=0;i<steps;i++){
@@ -704,8 +696,8 @@
       await travelToken(previousPosition,nextPosition,multiplier>1?85:155);
       if(i===steps-1)gameSound(680,.12);
     }
-    setDiceFace(roll);
-    $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
+    setDiceFace(dieOne,dieTwo);
+    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" × "+multiplier+" = "+steps+" spaces";
     revealBoardTile(state.position);
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
@@ -824,7 +816,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();revealBoardTile(state.position);
+  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();revealBoardTile(state.position);
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
