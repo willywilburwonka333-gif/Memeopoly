@@ -424,9 +424,20 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #board .tile.player{outline:2px solid #fff0a1;outline-offset:-1px;z-index:2;box-shadow:0 0 10px #f9c851,0 3px 0 #573b6c!important}
 #board .tile .token{position:absolute!important;bottom:0!important;right:0!important;width:75%!important;height:75%!important;pointer-events:none}
 #board .tile .creator-avatar{width:100%!important;height:100%!important}
-@media(max-width:650px){#boardCenter{border-radius:7px;padding:2px!important}#boardCenter h1,#boardCenter h2{font-size:clamp(12px,3vw,18px)!important}#boardCenter p,#boardCenter small{font-size:10px!important}#dicePanel{grid-template-columns:72px minmax(0,1fr)!important;gap:4px!important;padding:5px!important}#diceIcon{min-width:64px!important;gap:1px!important}#diceIcon .die-face{transform:scale(.66)!important;margin:-5px!important}#boardCenter button{min-height:30px;font-size:10px!important;padding:4px!important}#boardCenter .roll-history-chip{font-size:9px!important;padding:3px!important}}
+@media(max-width:650px){#boardCenter{border-radius:7px;padding:2px!important}#boardCenter h1,#boardCenter h2{font-size:clamp(12px,3vw,18px)!important}#boardCenter p,#boardCenter small{font-size:10px!important}#dicePanel{grid-template-columns:72px minmax(0,1fr)!important;gap:4px!important;padding:5px!important}#diceIcon{min-width:64px!important;gap:1px!important}#diceIcon .die-face{width:25px!important;height:25px!important;flex-basis:25px!important;padding:3px!important;gap:1px!important;margin:0!important}#boardCenter button{min-height:30px;font-size:10px!important;padding:4px!important}#boardCenter .roll-history-chip{font-size:9px!important;padding:3px!important}}
 @media(prefers-reduced-motion:reduce){#board .tile{transition:none!important}}
 
 /* Compact, keyboard-accessible space inspector for the 60-space overview. */
 #board .tile{cursor:pointer}#board .tile:focus-visible{outline:3px solid #fff1a1!important;outline-offset:1px;z-index:4}
 .space-inspector[hidden]{display:none!important}.space-inspector{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:10px 0 16px;padding:12px 15px;border:1px solid #b4a1e4;border-radius:14px;background:linear-gradient(135deg,#25214e,#151b38);color:#fff;box-shadow:0 4px 0 #0c1029}.space-inspector strong{font-size:15px}.space-inspector p{margin:5px 0 0;font-size:13px;color:#d6d6ed}.space-inspector button{flex:0 0 44px;min-width:44px;min-height:44px;border-radius:10px;background:#38315e;color:white;border:1px solid #b4a1e4;font-size:24px}
+
+/* Collectible dice skins now appear on the actual two rolling dice. */
+#diceIcon[data-skin="arcade"] .die-face{background:linear-gradient(145deg,#fef7ff,#a9d7f2 62%,#6885cf)!important;border-color:#dae9ff!important}
+#diceIcon[data-skin="storm"] .die-face{background:linear-gradient(145deg,#fff3a2,#75c9f7 45%,#353cba)!important;border-color:#e7e3ff!important;box-shadow:inset 0 2px 3px #ffffff99,0 4px 0 #27317d,0 0 13px #76cfff88!important}
+#diceIcon[data-skin="sakura"] .die-face{background:linear-gradient(145deg,#fff8fa,#ffbedf 58%,#c35baf)!important;border-color:#ffe6f5!important;box-shadow:inset 0 2px 3px #ffffffbb,0 4px 0 #84356d,0 0 12px #ff9ac088!important}
+#diceIcon[data-skin="dragon"] .die-face{background:linear-gradient(145deg,#fff1b0,#d59b3e 55%,#75441f)!important;border-color:#ffe29a!important;box-shadow:inset 0 2px 3px #fff6ccaa,0 4px 0 #593217,0 0 14px #f8c65599!important}
+#diceIcon[data-skin="storm"] .die-pip.visible{background:#172c73!important}
+#diceIcon[data-skin="sakura"] .die-pip.visible{background:#7e276e!important}
+#diceIcon[data-skin="dragon"] .die-pip.visible{background:#52290e!important}
+/* Keep the dice physically compact without cancelling their tumble/landing transforms. */
+@media(max-width:650px){#diceIcon .die-face{width:25px!important;height:25px!important;flex-basis:25px!important;padding:3px!important;gap:1px!important;margin:0!important;transform:none}#diceIcon .die-pip{min-width:0;min-height:0}}

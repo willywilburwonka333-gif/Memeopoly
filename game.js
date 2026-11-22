@@ -498,6 +498,7 @@
       Array.from(face.children).forEach((pip,i)=>pip.classList.toggle("visible",patterns[faces[die]].includes(i)));
     });
     icon.setAttribute("aria-label","Dice showing "+first+" and "+second+", total "+(first+second));
+    icon.dataset.skin=state.cosmeticsEquipped?.dice||"arcade";
   }
   let effectsOn=true,soundOn=false,audioContext=null;
   try{effectsOn=localStorage.getItem("memeopoly-effects")!=="off";soundOn=localStorage.getItem("memeopoly-sound")==="on";}catch(e){}
@@ -669,6 +670,11 @@
     $("achievementCount").textContent=state.achievements.length+" / "+achievements.length;
   }
   function renderUI(){
+    // Apply equipped cosmetics to live gameplay, not just inventory thumbnails.
+    const diceSkin=state.cosmeticsEquipped?.dice||"arcade";
+    const diceDisplay=$("diceIcon");
+    diceDisplay.dataset.skin=cosmeticSets.dice.some(item=>item.id===diceSkin)?diceSkin:"arcade";
+    diceDisplay.setAttribute("title","Equipped dice: "+(cosmeticSets.dice.find(item=>item.id===diceDisplay.dataset.skin)?.name||"Arcade Cubes"));
     regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
     $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
