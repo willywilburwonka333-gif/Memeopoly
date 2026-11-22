@@ -322,3 +322,34 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @media(max-width:680px){.creator-city{height:clamp(45px,12vw,72px);margin-bottom:3px}.city-moon{width:17px}.city-billboard{padding:1px 3px}}
 @media(max-width:380px){.creator-city{height:42px}.city-billboard{font-size:6px}}
 @media(prefers-reduced-motion:reduce){.creator-city *,.creator-city *:before{animation:none!important}}
+
+/* V32: Make the board a full-sized game surface instead of shrinking 25 spaces to phone width. */
+#game{max-width:1500px}
+.board-viewport{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8c86d8 #121a34;border-radius:24px;padding:9px 7px 20px;scroll-snap-type:x proximity}
+.board-viewport:focus-visible{outline:3px solid #9be7e0;outline-offset:2px}
+.board-pan-hint{display:none}
+#board{width:100%;min-height:800px;grid-template-rows:repeat(5,minmax(145px,1fr));gap:12px;padding:16px}
+#board .tile{padding:10px 7px;gap:7px;border-radius:14px}
+#board .tile-icon{font-size:clamp(25px,2.5vw,40px)}
+#board .tile strong{font-size:clamp(12px,1.1vw,17px)}
+#board .tile small{font-size:clamp(10px,.8vw,13px)}
+#board .token{font-size:clamp(21px,2vw,32px)}
+@media(max-width:900px){
+ .board-pan-hint{display:block;margin:0 0 6px;text-align:center;color:#c7d9fa;font-size:12px;font-weight:750;letter-spacing:.03em}
+ .board-viewport{padding:8px 6px 20px}
+ #board{width:900px;min-height:840px;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(5,minmax(155px,1fr));gap:10px;padding:12px;border-width:4px}
+ #board .tile{padding:9px 6px;gap:6px;border-radius:13px}
+ #board .tile-icon{font-size:34px;width:auto;height:auto}
+ #board .tile strong{font-size:14px}
+ #board .tile small{display:block;font-size:11px}
+ #board .token{font-size:26px;width:auto;height:auto}
+ #boardCenter{padding:16px;border-radius:19px}
+ #boardCenter h2{font-size:27px}
+ #boardCenter>p{font-size:12px}
+ #boardCenter .creator-city{height:105px}
+ #dicePanel{grid-template-columns:50px 1fr;padding:12px;gap:7px 10px}
+ #diceIcon{font-size:38px}
+ #dicePanel strong{font-size:13px}
+ #dicePanel small{font-size:11px}
+ #postBtn{padding:13px;font-size:13px}
+}
