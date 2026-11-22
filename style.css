@@ -359,3 +359,13 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 .board-jump-btn{display:none;min-height:44px;padding:10px 16px;border:1px solid #a9a0fa;border-radius:999px;color:#fff;background:linear-gradient(135deg,#6244be,#8e4bba);font-size:13px;font-weight:850;box-shadow:0 5px 16px #0006}
 .board-jump-btn:focus-visible{outline:3px solid #9be7e0;outline-offset:3px}
 @media(max-width:900px){.board-jump-btn{display:inline-flex;align-items:center;justify-content:center}.board-pan-hint{margin:0}}
+
+/* V33: Camera controls and native two-axis scroll for the detailed game world. */
+.board-camera{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid #7883b6;border-radius:14px;background:#131d39;box-shadow:0 5px 20px #0005}
+.board-camera button{min-width:44px;min-height:44px;border:0;border-radius:10px;background:#344674;color:#fff;font-weight:900;font-size:17px}
+.board-camera button[aria-pressed="true"]{background:#356b6b;color:#e6ffff}
+.board-camera output{min-width:46px;text-align:center;color:#f5e6ac;font-size:12px;font-weight:850}
+.board-camera button:focus-visible{outline:3px solid #9be7e0;outline-offset:2px}
+.board-viewport{overflow:auto;max-height:min(82vh,920px);touch-action:pan-x pan-y;scroll-snap-type:none}
+#board{transform-origin:top left}
+@media(max-width:900px){.board-navigation{justify-content:space-between}.board-camera{margin:auto}.board-viewport{max-height:min(76vh,800px)}}
