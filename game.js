@@ -660,18 +660,21 @@
     const diceIcon=$("diceIcon");
     diceIcon.classList.add("rolling");
     $("diceText").textContent="Rolling…";
-    // Animate the die independently of board movement, including a one-space roll.
-    for(let frame=0;frame<12;frame++){
-      setDiceFace(1+Math.floor(Math.random()*6));
-      if(frame%3===0)gameSound(230+frame*25,.055);
-      await wait(effectsOn?65+frame*7:18);
+    // Motion preferences must skip the entire tumble, not merely shorten CSS transitions.
+    const animateDice=effectsOn&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(animateDice){
+      for(let frame=0;frame<12;frame++){
+        setDiceFace(1+Math.floor(Math.random()*6));
+        if(frame%3===0)gameSound(230+frame*25,.055);
+        await wait(65+frame*7);
+      }
     }
     diceIcon.classList.remove("rolling");
     diceIcon.classList.remove("dice-landed");void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");
     setDiceFace(roll);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
     $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
     gameSound(520+roll*65,.25);
-    await wait(effectsOn?300:40);
+    await wait(animateDice?300:0);
     for(let i=0;i<steps;i++){
       await wait(effectsOn?(multiplier>1?70:150):20);
       state.position=(state.position+1)%board.length;
