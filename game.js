@@ -523,7 +523,7 @@
   // Always render the destination even when motion is disabled or unavailable.
   async function travelToken(fromIndex,toIndex,duration){
     const boardElement=$("board");
-    const source=boardElement.querySelector('.tile.player .token');
+    const source=boardElement.querySelector(".tile.player .token");
     const tiles=Array.from(boardElement.querySelectorAll(".tile"));
     const destination=tiles[toIndex];
     const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -533,28 +533,46 @@
     const start=source.getBoundingClientRect();
     const end=destination.getBoundingClientRect();
     if(!start.width||!end.width){renderBoard();return;}
+    // The player token is anchored to the tile's bottom-right, not its centre.
+    // Landing on the centre made the animation visibly snap at every step.
+    const targetLeft=end.right-start.width-5;
+    const targetTop=end.bottom-start.height-4;
+    const dx=targetLeft-start.left,dy=targetTop-start.top;
     const ghost=source.cloneNode(true);
     ghost.classList.add("travelling-token");
     ghost.removeAttribute("aria-label");
     ghost.setAttribute("aria-hidden","true");
-    ghost.style.left=start.left+"px";
-    ghost.style.top=start.top+"px";
-    ghost.style.width=start.width+"px";
-    ghost.style.height=start.height+"px";
+    ghost.style.left=start.left+"px";ghost.style.top=start.top+"px";
+    ghost.style.width=start.width+"px";ghost.style.height=start.height+"px";
     document.body.append(ghost);
     source.style.visibility="hidden";
-    const dx=end.left+end.width/2-(start.left+start.width/2);
-    const dy=end.top+end.height/2-(start.top+start.height/2);
-    const lift=Math.min(38,Math.max(14,Math.abs(dx)*.12+Math.abs(dy)*.12));
+    const lift=Math.min(46,Math.max(18,Math.hypot(dx,dy)*.19));
+    // Keep the travel path deterministic; trail particles are purely decorative.
+    const trail=[];
+    if(duration>=120){
+      for(let i=1;i<=3;i++){
+        const spark=document.createElement("span");
+        spark.className="travel-spark";
+        spark.setAttribute("aria-hidden","true");
+        spark.style.left=(start.left+start.width/2)+"px";
+        spark.style.top=(start.top+start.height/2)+"px";
+        spark.style.setProperty("--trail-x",(dx*i/4)+"px");
+        spark.style.setProperty("--trail-y",(dy*i/4-lift*Math.sin(Math.PI*i/4))+"px");
+        spark.style.animationDelay=(duration*i/5)+"ms";
+        document.body.append(spark);trail.push(spark);
+      }
+    }
     try{
       const motion=ghost.animate([
         {transform:"translate(0,0) scale(1)",offset:0},
-        {transform:"translate("+dx*.5+"px,"+(dy*.5-lift)+"px) scale(1.18)",offset:.5},
+        {transform:"translate("+dx*.5+"px,"+(dy*.5-lift)+"px) scale(1.25) rotate(-8deg)",offset:.5},
+        {transform:"translate("+dx+"px,"+(dy-7)+"px) scale(1.09) rotate(4deg)",offset:.84},
+        {transform:"translate("+dx+"px,"+dy+"px) scale(.96)",offset:.94},
         {transform:"translate("+dx+"px,"+dy+"px) scale(1)",offset:1}
-      ],{duration,easing:"cubic-bezier(.3,.65,.25,1)",fill:"forwards"});
+      ],{duration,easing:"cubic-bezier(.25,.7,.2,1)",fill:"forwards"});
       await motion.finished.catch(()=>{});
     }finally{
-      ghost.remove();
+      ghost.remove();trail.forEach(el=>el.remove());
       renderBoard();
     }
   }
