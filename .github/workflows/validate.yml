@@ -18,6 +18,8 @@ jobs:
           node-version: 22
       - name: Check JavaScript syntax
         run: node --check game.js
+      - name: Test offline service worker routing
+        run: node tests/sw.test.cjs
       - name: Validate manifest and app references
         run: |
           node -e "JSON.parse(require('node:fs').readFileSync('manifest.webmanifest', 'utf8'))"
