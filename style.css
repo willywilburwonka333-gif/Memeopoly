@@ -391,3 +391,13 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #board .tile.player{border-color:#ffe98b;box-shadow:0 0 0 3px #fbd87a80,0 0 25px #f5b850a8,inset 0 2px 0 #fff9b8}
 #board .tile-icon{filter:drop-shadow(0 3px 2px #0b103b) drop-shadow(0 0 5px #9b70ec88)}
 @media(prefers-reduced-motion:no-preference){#board .tile.player{animation:animeTileGlow 2.5s ease-in-out infinite}@keyframes animeTileGlow{50%{filter:brightness(1.16)}}}
+
+/* Dual dice: independent anime arcade tumbling and accurate final pip faces. */
+#diceIcon{display:flex;align-items:center;justify-content:center;gap:8px;min-width:106px;perspective:650px}
+#diceIcon .die-face{flex:0 0 auto}
+#diceIcon.rolling .die-face:first-child{animation:diceTumble .42s cubic-bezier(.3,.8,.3,1) infinite}
+#diceIcon.rolling .die-face:nth-child(2){animation:diceTumble .54s cubic-bezier(.3,.8,.3,1) infinite reverse;animation-delay:-.16s}
+#diceIcon.dice-landed .die-face:nth-child(2){animation-delay:.1s}
+#dicePanel{grid-template-columns:minmax(106px,auto) 1fr}
+@media(max-width:900px){#diceIcon{gap:5px;min-width:82px}#diceIcon .die-face{transform:scale(.84)}#dicePanel{grid-template-columns:82px 1fr}}
+@media(prefers-reduced-motion:reduce){#diceIcon.rolling .die-face,#diceIcon.dice-landed .die-face{animation:none!important}}
