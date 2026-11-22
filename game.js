@@ -968,7 +968,7 @@
   function revealBoardTile(index){
     const viewport=document.querySelector(".board-viewport");
     const boardElement=$("board");
-    if(!viewport||!cameraFollow)return;
+    if(!viewport||!cameraFollow||cameraZoom===1)return;
     const tile=boardElement.querySelectorAll(".tile")[index];
     if(!tile)return;
     const target=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
@@ -1176,7 +1176,7 @@
   }
   $("boardZoomOut").addEventListener("click",()=>cameraSetZoom(cameraZoom-.1));
   $("boardZoomIn").addEventListener("click",()=>cameraSetZoom(cameraZoom+.1));
-  $("boardFit").addEventListener("click",()=>{const original=cameraZoom;const width=cameraBoard.getBoundingClientRect().width/original;cameraSetZoom(cameraViewport.clientWidth/width);cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
+  $("boardFit").addEventListener("click",()=>{cameraSetZoom(1);cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
   $("boardFollow").addEventListener("click",()=>{cameraFollow=!cameraFollow;$("boardFollow").setAttribute("aria-pressed",String(cameraFollow));if(cameraFollow)revealBoardTile(state.position);});
   let pinchStartDistance=0,pinchStartZoom=1;
   cameraViewport.addEventListener("touchstart",event=>{if(event.touches.length!==2)return;const [a,b]=event.touches;pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchStartZoom=cameraZoom;},{passive:true});
@@ -1195,7 +1195,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();revealBoardTile(state.position);
+  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();cameraSetZoom(1);
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
