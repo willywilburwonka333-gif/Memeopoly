@@ -127,20 +127,28 @@
   }
   function setDiceFace(value){
     const icon=$("diceIcon");
-    const face=document.createElement("span");
-    face.className="die-face";
-    face.setAttribute("role","img");
+    // Keep the same face node throughout a roll. Replacing it each frame
+    // restarted the CSS tumble animation and made the die appear to jitter.
+    let face=icon.querySelector(".die-face");
+    if(!face){
+      face=document.createElement("span");
+      face.className="die-face";
+      face.setAttribute("role","img");
+      for(let i=0;i<9;i++){
+        const pip=document.createElement("i");
+        pip.className="die-pip";
+        face.append(pip);
+      }
+      icon.replaceChildren(face);
+    }
     face.setAttribute("aria-label","Dice result "+value);
     const patterns={
       1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],
       5:[0,2,4,6,8],6:[0,2,3,5,6,8]
     };
-    for(let i=0;i<9;i++){
-      const pip=document.createElement("i");
-      pip.className="die-pip"+(patterns[value].includes(i)?" visible":"");
-      face.append(pip);
-    }
-    icon.replaceChildren(face);
+    Array.from(face.children).forEach((pip,i)=>{
+      pip.classList.toggle("visible",patterns[value].includes(i));
+    });
     icon.setAttribute("aria-label","Dice showing "+value);
   }
   let effectsOn=true,soundOn=false,audioContext=null;
