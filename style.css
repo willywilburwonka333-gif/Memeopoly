@@ -369,3 +369,17 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 .board-viewport{overflow:auto;max-height:min(82vh,920px);touch-action:pan-x pan-y;scroll-snap-type:none}
 #board{transform-origin:top left}
 @media(max-width:900px){.board-navigation{justify-content:space-between}.board-camera{margin:auto}.board-viewport{max-height:min(76vh,800px)}}
+
+/* V35: Expressive anime avatar animation states. GPU-friendly transform/opacity only. */
+.creator-avatar{position:relative;transform-origin:50% 85%;will-change:transform;animation:animeIdle 2.8s ease-in-out infinite}
+.creator-avatar::after{content:"";position:absolute;inset:-4px;border:2px solid transparent;border-top-color:#fff8cc;border-radius:50%;opacity:.65;animation:animeAura 3.6s linear infinite;pointer-events:none}
+.character-option .creator-avatar{width:60px;height:60px;transition:transform .22s cubic-bezier(.2,1.5,.4,1)}
+.character-option:hover .creator-avatar,.character-option:focus-visible .creator-avatar{animation:animeGreet .65s ease-in-out infinite alternate}
+.character-option.chosen .creator-avatar{filter:drop-shadow(0 0 9px #fff2ab)}
+.tile.player .creator-avatar{animation:animeIdle 1.8s ease-in-out infinite}
+.tile.token-hopped .creator-avatar,.tile.player.token-hopped .creator-avatar{animation:animeLeap .34s cubic-bezier(.2,.7,.3,1) both}
+@keyframes animeIdle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes animeAura{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes animeGreet{from{transform:rotate(-12deg) translateY(-2px) scale(1.04)}to{transform:rotate(12deg) translateY(-5px) scale(1.1)}}
+@keyframes animeLeap{0%{transform:translateY(8px) scale(.82,1.14)}45%{transform:translateY(-19px) rotate(-8deg) scale(1.12,.93)}80%{transform:translateY(3px) scale(1.15,.85)}100%{transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.creator-avatar,.creator-avatar::after,.character-option:hover .creator-avatar,.character-option:focus-visible .creator-avatar,.tile.player .creator-avatar,.tile.token-hopped .creator-avatar{animation:none!important;will-change:auto}}
