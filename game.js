@@ -481,8 +481,12 @@
     const prizeIndex=Math.floor(Math.random()*3);
     for(let i=0;i<3;i++){
       const button=document.createElement("button");button.type="button";button.className="heist-vault";
-      button.append(sprite("raid","heist-vault-icon"));
+      const shell=document.createElement("span");shell.className="vault-machine";
+      const door=document.createElement("span");door.className="vault-door";door.append(sprite("raid","heist-vault-icon"));
+      const loot=document.createElement("span");loot.className="vault-loot";loot.textContent=i===prizeIndex?"★":"✦";loot.setAttribute("aria-hidden","true");
+      shell.append(loot,door);button.append(shell);
       const caption=document.createElement("strong");caption.textContent="VAULT "+(i+1);button.append(caption);
+      button.setAttribute("aria-label","Open vault "+(i+1));
       button.addEventListener("click",()=>{
         if(heistFinished)return;
         heistFinished=true;
@@ -492,9 +496,9 @@
           if(target.shields>0){target.shields--;target.cooldownTurn=state.turn+2;coins=jackpot?1200:500;state.coins+=coins;addLog("🛡️ "+target.name+"'s shield blocked the main vault. Shield broken; consolation +"+number(coins)+" coins.");}
           else{coins=Math.min(target.coins,jackpot?Math.max(1800,Math.floor(target.coins*.18)):Math.max(400,Math.floor(target.coins*.045)));fans=jackpot?1800+target.power*500:500+target.power*150;target.coins-=coins;target.raids++;target.cooldownTurn=state.turn+3;state.daily.raids++;state.coins+=coins;state.followers+=fans;addLog("🏦 "+(jackpot?"JACKPOT! ":"")+"Raided "+target.name+" for "+number(coins)+" coins and "+number(fans)+" followers.");}
         }else{coins=jackpot?5500:1500+Math.floor(Math.random()*700);state.coins+=coins;addLog("🏦 Algorithm vault "+(jackpot?"JACKPOT! ":"")+"+"+number(coins)+" coins.");}
-        vaults.querySelectorAll("button").forEach((b,j)=>{b.disabled=true;b.classList.add(j===prizeIndex?"vault-jackpot":"vault-empty");if(j===i)b.classList.add("vault-picked");});
+        vaults.querySelectorAll("button").forEach((b,j)=>{b.disabled=true;b.classList.add("vault-revealed",j===prizeIndex?"vault-jackpot":"vault-empty");if(j===i)b.classList.add("vault-picked");b.setAttribute("aria-label","Vault "+(j+1)+(j===prizeIndex?" contained the jackpot":" contained regular loot")+(j===i?", your selection":""));});
         $("heistResult").textContent=jackpot?"🎉 JACKPOT! +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":""):"💰 +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":"");
-        $("heistContinue").classList.remove("hidden");
+        $("heistContinue").classList.remove("hidden");$("heistContinue").focus();
         burst(jackpot?["🏆","🪙","✨"]:["🪙","💰"],jackpot?36:15);gameSound(jackpot?940:640,.24);
         checkAchievements();renderUI();save();
       });
