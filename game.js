@@ -384,9 +384,38 @@
   function upgradeLandmark(index){
     const lm=state.landmarks[index];if(!lm||lm.level>=5||state.completed)return;
     const cost=costFor(lm.level);if(state.coins<cost){addLog("Not enough coins. You need "+number(cost)+" coins.");return;}
-    state.coins-=cost;lm.level++;state.followers+=lm.level*500;const upgradedIndex=index;window.requestAnimationFrame(()=>{const cards=$("landmarks").children;const card=cards[upgradedIndex];if(card){card.classList.add("building-upgraded");window.setTimeout(()=>card.classList.remove("building-upgraded"),1150);}});state.daily.upgrades++;
+    state.coins-=cost;lm.level++;state.followers+=lm.level*500;state.daily.upgrades++;
     addLog("🏗️ "+lm.name+" upgraded to level "+lm.level+". +"+number(lm.level*500)+" followers.");
     checkCompletion();checkAchievements();renderUI();save();
+    animateConstruction(index,lm.level);
+  }
+  function animateConstruction(index,level){
+    const card=$("landmarks").children[index];
+    if(!card)return;
+    const scene=card.querySelector(".landmark-scene");
+    if(!scene)return;
+    const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if(reduceMotion)return;
+    card.classList.remove("building-upgraded");
+    // Reflow the freshly rendered card once so the upgrade animation reliably starts.
+    void card.offsetWidth;
+    card.classList.add("building-upgraded");
+    const beams=scene.querySelectorAll(".scene-building");
+    beams.forEach((beam,i)=>{
+      if(typeof beam.animate!=="function")return;
+      beam.animate([
+        {transform:"translateY(100%) scaleX(.8)",opacity:.3},
+        {transform:"translateY(-8px) scaleX(1.04)",opacity:1,offset:.8},
+        {transform:"translateY(0) scaleX(1)",opacity:1}
+      ],{duration:680+i*115,delay:i*110,easing:"cubic-bezier(.2,.8,.25,1)"});
+    });
+    const label=document.createElement("span");
+    label.className="construction-reward";
+    label.textContent=level===5?"★ MAX LEVEL ★":"LEVEL "+level+" ↑";
+    label.setAttribute("aria-hidden","true");
+    scene.append(label);
+    label.addEventListener("animationend",()=>label.remove(),{once:true});
+    window.setTimeout(()=>{if(card.isConnected)card.classList.remove("building-upgraded");label.remove();},1500);
   }
   function upgradeCheapest(){
     const choices=state.landmarks.map((l,i)=>({l,i})).filter(x=>x.l.level<5).sort((a,b)=>costFor(a.l.level)-costFor(b.l.level));
