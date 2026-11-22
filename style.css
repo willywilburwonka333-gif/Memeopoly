@@ -353,3 +353,9 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
  #dicePanel small{font-size:11px}
  #postBtn{padding:13px;font-size:13px}
 }
+
+/* Accessible return control: the large board must never strand the roll button off-screen. */
+.board-navigation{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:2px 0 8px}
+.board-jump-btn{display:none;min-height:44px;padding:10px 16px;border:1px solid #a9a0fa;border-radius:999px;color:#fff;background:linear-gradient(135deg,#6244be,#8e4bba);font-size:13px;font-weight:850;box-shadow:0 5px 16px #0006}
+.board-jump-btn:focus-visible{outline:3px solid #9be7e0;outline-offset:3px}
+@media(max-width:900px){.board-jump-btn{display:inline-flex;align-items:center;justify-content:center}.board-pan-hint{margin:0}}
