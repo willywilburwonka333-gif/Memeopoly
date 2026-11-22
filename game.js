@@ -786,6 +786,7 @@
   }
   $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
   $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
+  $("jumpToDice").addEventListener("click",()=>{const viewport=document.querySelector(".board-viewport");const dice=$("dicePanel");if(!viewport||!dice)return;const box=viewport.getBoundingClientRect();const target=dice.getBoundingClientRect();const desired=viewport.scrollLeft+(target.left+target.width/2-box.left-box.width/2);viewport.scrollTo({left:Math.max(0,desired),behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});});
   updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
