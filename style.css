@@ -401,3 +401,10 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #dicePanel{grid-template-columns:minmax(106px,auto) 1fr}
 @media(max-width:900px){#diceIcon{gap:5px;min-width:82px}#diceIcon .die-face{transform:scale(.84)}#dicePanel{grid-template-columns:82px 1fr}}
 @media(prefers-reduced-motion:reduce){#diceIcon.rolling .die-face,#diceIcon.dice-landed .die-face{animation:none!important}}
+
+/* V36: sixty-space anime city circuit: sixteen-by-sixteen perimeter. */
+#board{width:2680px!important;min-height:2680px!important;grid-template-columns:repeat(16,minmax(0,1fr))!important;grid-template-rows:repeat(16,minmax(0,1fr))!important;gap:7px!important;padding:14px!important}
+#boardCenter{grid-column:3 / 15!important;grid-row:3 / 15!important;align-self:center;justify-self:center;width:min(100%,850px);max-width:850px}
+#board .tile{min-width:0;min-height:0}
+.board-viewport{max-height:min(78vh,850px)}
+@media(max-width:900px){#board{width:2400px!important;min-height:2400px!important;gap:5px!important;padding:10px!important}#boardCenter{width:min(100%,700px)}}
