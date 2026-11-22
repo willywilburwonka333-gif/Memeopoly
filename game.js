@@ -389,6 +389,13 @@
     {id:"creator-life",name:"Creator Life",icon:"🎬",stickers:[["Ring Light Royalty","💡"],["Stream Goblin","🎮"],["Mic Check","🎤"],["Sponsored","💸"],["Viral Overnight","🚀"]]},
     {id:"internet-legends",name:"Internet Legends",icon:"🏆",stickers:[["Keyboard Warrior","⌨️"],["Comment Section","💬"],["Algorithm Whisperer","🌐"],["Meme Mogul","👑"],["Certified Icon","⭐"]]}
   ];
+  // Cosmetic collectibles never change dice odds or shield capacity.
+  const cosmeticSets={
+    dice:[{id:"arcade",name:"Arcade Cubes",icon:"🎲",rarity:"Starter"},{id:"storm",name:"Thunder Twins",icon:"⚡",rarity:"Rare"},{id:"sakura",name:"Sakura Roll",icon:"🌸",rarity:"Epic"},{id:"dragon",name:"Dragon Eyes",icon:"🐉",rarity:"Legendary"}],
+    tokens:[{id:"creator",name:"Creator Hero",icon:"🧑‍🎤",rarity:"Starter"},{id:"kitsune",name:"Neon Kitsune",icon:"🦊",rarity:"Rare"},{id:"mecha",name:"Mecha Guardian",icon:"🤖",rarity:"Epic"},{id:"cat",name:"Crowned Cat",icon:"🐈",rarity:"Legendary"}],
+    shields:[{id:"classic",name:"Creator Guard",icon:"🛡️",rarity:"Starter"},{id:"holo",name:"Holo Barrier",icon:"💠",rarity:"Rare"},{id:"oni",name:"Oni Crest",icon:"👹",rarity:"Epic"},{id:"phoenix",name:"Phoenix Ward",icon:"🔥",rarity:"Legendary"}]
+  };
+  const cosmeticDefaults={dice:"arcade",tokens:"creator",shields:"classic"};
   const allStickers=albumBlueprints.flatMap(a=>a.stickers.map(s=>({id:a.id+":"+s[0],album:a.id,name:s[0],icon:s[1]})));
   const achievements=[
     {id:"first-roll",name:"First Post",icon:"📱",description:"Take your first turn.",reward:500,done:s=>s.turn>=1},
@@ -412,7 +419,7 @@
   const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[]});
+  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[],cosmeticsOwned:{dice:["arcade"],tokens:["creator"],shields:["classic"]},cosmeticsEquipped:{...cosmeticDefaults}});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
@@ -440,6 +447,11 @@
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
       state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state.cosmeticsOwned={};state.cosmeticsEquipped={};for(const kind of Object.keys(cosmeticSets)){
+        const valid=cosmeticSets[kind].map(x=>x.id);
+        state.cosmeticsOwned[kind]=[...new Set([cosmeticDefaults[kind],...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
+        const selected=saved.cosmeticsEquipped?.[kind];state.cosmeticsEquipped[kind]=state.cosmeticsOwned[kind].includes(selected)?selected:cosmeticDefaults[kind];
+      }
       state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
@@ -595,7 +607,30 @@
     renderCharacterChoices();$("empireLevel").textContent=totalLevels();
     $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(20-totalLevels()%20)+" more upgrade(s) until the next era milestone.";
   }
+  function awardCosmetic(kind){
+    const missing=cosmeticSets[kind].filter(item=>!state.cosmeticsOwned[kind].includes(item.id));
+    if(!missing.length){state.coins+=750;addLog("✨ Duplicate cosmetic converted to 750 coins.");return;}
+    const item=missing[Math.floor(Math.random()*missing.length)];state.cosmeticsOwned[kind].push(item.id);
+    addLog("✨ "+item.rarity.toUpperCase()+" UNLOCK: "+item.name+" added to your collection!");
+  }
+  function renderCosmetics(){
+    const host=$("cosmeticCollection");if(!host)return;host.replaceChildren();
+    for(const [kind,items] of Object.entries(cosmeticSets)){
+      const section=document.createElement("section");section.className="cosmetic-category";
+      const heading=document.createElement("h3");heading.textContent=kind==="dice"?"🎲 Dice Skins":kind==="tokens"?"🧑‍🎤 Anime Tokens":"🛡️ Shield Designs";section.append(heading);
+      const grid=document.createElement("div");grid.className="cosmetic-grid";
+      for(const item of items){
+        const owned=state.cosmeticsOwned[kind].includes(item.id),equipped=state.cosmeticsEquipped[kind]===item.id;
+        const button=document.createElement("button");button.type="button";button.className="cosmetic-card"+(equipped?" equipped":"");button.disabled=!owned;button.setAttribute("aria-pressed",String(equipped));
+        const art=document.createElement("span");art.className="cosmetic-art";art.textContent=owned?item.icon:"🔒";
+        const name=document.createElement("strong");name.textContent=owned?item.name:"Undiscovered";
+        const rarity=document.createElement("small");rarity.textContent=owned?(equipped?"EQUIPPED":item.rarity+" · Equip"):item.rarity+" · Locked";
+        button.append(art,name,rarity);button.addEventListener("click",()=>{state.cosmeticsEquipped[kind]=item.id;renderUI();save();});grid.append(button);
+      }section.append(grid);host.append(section);
+    }
+  }
   function renderCollection(){
+    renderCosmetics();
     const box=$("collection");box.replaceChildren();
     memeCards.forEach((name,i)=>{const owned=state.cards.includes(name),card=document.createElement("article");card.className="collect-card"+(owned?" owned":"");const icon=document.createElement("span");icon.className="collect-icon";icon.textContent=owned?cardIcons[i]:"❔";const title=document.createElement("strong");title.textContent=owned?name:"Unknown meme";const status=document.createElement("small");status.textContent=owned?"COLLECTED":"NOT DISCOVERED";card.append(icon,title,status);box.append(card);});
     $("collectionCount").textContent=state.cards.length+"/8";$("cardCount").textContent=state.cards.length;$("centerCards").textContent=state.cards.length;
@@ -802,7 +837,7 @@
     const card=missing[Math.floor(Math.random()*missing.length)];state.cards.push(card);state.followers+=3000;state.daily.cards++;
     addLog("🃏 RARE DROP: "+card+" collected! +3,000 followers.");
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
-    collectSticker();checkAchievements();
+    collectSticker();if(Math.random()<.3)awardCosmetic(["dice","tokens","shields"][Math.floor(Math.random()*3)]);checkAchievements();
   }
   let heistOpen=false,heistFinished=false;
   function raid(){
@@ -848,7 +883,7 @@
     heistOpen=false;heistFinished=false;rolling=false;$("heistOverlay").classList.add("hidden");renderUI();save();
   });
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
-  function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
+  function shieldDrop(){if(Math.random()<.2)awardCosmetic("shields");if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
   const eventScenarios=[
     {title:"Brand deal or viral gamble?",description:"A sponsor offers guaranteed coins, but a risky viral campaign could bring a huge audience.",options:[
       {label:"🤝 Take the brand deal",detail:"+2,800 coins",run:()=>{state.coins+=2800;addLog("🤝 You signed a brand deal! +2,800 coins.");}},
