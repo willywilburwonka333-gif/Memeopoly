@@ -411,3 +411,18 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 
 /* Original collectible cosmetics: functional equip cards, artwork passes to follow. */
 #cosmeticCollection{display:grid;gap:20px;margin:18px 0 26px}.cosmetic-category h3{margin:0 0 10px;color:#f7e2aa}.cosmetic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.cosmetic-card{display:flex;min-height:155px;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px solid #6574a6;border-radius:17px;background:linear-gradient(145deg,#27356c,#151a39);color:white;padding:12px;cursor:pointer}.cosmetic-card .cosmetic-art{font-size:43px;filter:drop-shadow(0 5px 7px #0008)}.cosmetic-card small{color:#b6c5ee}.cosmetic-card.equipped{border-color:#ffe39a;box-shadow:0 0 20px #e8b74c66}.cosmetic-card:disabled{opacity:.48;cursor:not-allowed}.cosmetic-card:focus-visible{outline:3px solid #9de8e9;outline-offset:3px}
+
+/* V38 emergency usability fix: whole 60-space circuit visible without panning.
+   Perspective is applied to individual spaces, not to the board camera. */
+.board-viewport{overflow:visible!important;max-height:none!important;padding:8px 2px 16px!important;touch-action:auto!important}
+#board{box-sizing:border-box!important;width:100%!important;min-height:0!important;height:auto!important;aspect-ratio:1/1!important;grid-template-columns:repeat(16,minmax(0,1fr))!important;grid-template-rows:repeat(16,minmax(0,1fr))!important;gap:clamp(1px,.25vw,4px)!important;padding:clamp(3px,.6vw,9px)!important;border-radius:clamp(10px,2vw,22px)!important;transform:none!important;perspective:900px;background:linear-gradient(145deg,#18234c77,#38225c66),url("assets/anime-city.svg") center/cover no-repeat,#11152d!important;box-shadow:inset 0 0 0 2px #b7a1f1,0 10px 0 #090c20,0 16px 24px #0009!important}
+#boardCenter{grid-column:3/15!important;grid-row:3/15!important;width:100%!important;max-width:none!important;max-height:100%!important;min-width:0!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain;border-radius:12px;scrollbar-width:thin}
+#board .tile{min-width:0!important;min-height:0!important;padding:1px!important;border-radius:clamp(2px,.5vw,7px)!important;box-shadow:inset 0 1px 0 #ffffff88,0 2px 0 #1c183a,0 3px 3px #0007!important;transform:translateZ(0);transition:transform .18s ease,filter .18s ease;overflow:hidden}
+#board .tile:hover,#board .tile:focus-within{transform:translateY(-2px) rotateX(7deg);filter:brightness(1.14)}
+#board .tile strong,#board .tile small{display:none!important}
+#board .tile .tile-icon{width:72%!important;height:72%!important;max-width:34px!important;max-height:34px!important;margin:auto!important}
+#board .tile.player{outline:2px solid #fff0a1;outline-offset:-1px;z-index:2;box-shadow:0 0 10px #f9c851,0 3px 0 #573b6c!important}
+#board .tile .token{position:absolute!important;bottom:0!important;right:0!important;width:75%!important;height:75%!important;pointer-events:none}
+#board .tile .creator-avatar{width:100%!important;height:100%!important}
+@media(max-width:650px){#boardCenter{border-radius:7px;padding:2px!important}#boardCenter h1,#boardCenter h2{font-size:clamp(12px,3vw,18px)!important}#boardCenter p,#boardCenter small{font-size:10px!important}#dicePanel{grid-template-columns:72px minmax(0,1fr)!important;gap:4px!important;padding:5px!important}#diceIcon{min-width:64px!important;gap:1px!important}#diceIcon .die-face{transform:scale(.66)!important;margin:-5px!important}#boardCenter button{min-height:30px;font-size:10px!important;padding:4px!important}#boardCenter .roll-history-chip{font-size:9px!important;padding:3px!important}}
+@media(prefers-reduced-motion:reduce){#board .tile{transition:none!important}}
