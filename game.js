@@ -670,13 +670,15 @@
       }
     }
     diceIcon.classList.remove("rolling");
-    diceIcon.classList.remove("dice-landed");void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");
+    diceIcon.classList.remove("dice-landed");
+    if(animateDice){void diceIcon.offsetWidth;diceIcon.classList.add("dice-landed");}
     setDiceFace(roll);state.rollHistory.unshift(roll);state.rollHistory=state.rollHistory.slice(0,5);renderRollHistory();
     $("diceText").textContent="Rolled "+roll+" · moving "+steps+" spaces";
     gameSound(520+roll*65,.25);
     await wait(animateDice?300:0);
     for(let i=0;i<steps;i++){
-      await wait(effectsOn?(multiplier>1?70:150):20);
+      // Reduced-motion users should not wait through invisible movement steps.
+      await wait(animateDice?(multiplier>1?70:150):0);
       state.position=(state.position+1)%board.length;
       if(state.position===0){
         const lap=1500*multiplier;
