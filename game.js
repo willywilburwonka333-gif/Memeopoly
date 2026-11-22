@@ -592,6 +592,18 @@
       case"SHIELD":shieldDrop();break;
     }
   }
+  // Keep the creator visible when the board is wider than the phone screen.
+  // Only pan during gameplay; manual board exploration remains possible between rolls.
+  function revealBoardTile(index){
+    const viewport=document.querySelector(".board-viewport");
+    const boardElement=$("board");
+    if(!viewport||viewport.scrollWidth<=viewport.clientWidth)return;
+    const tile=boardElement.querySelectorAll(".tile")[index];
+    if(!tile)return;
+    const target=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
+    const limit=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+    viewport.scrollLeft=Math.max(0,Math.min(limit,target));
+  }
   // Travel uses a temporary fixed-position avatar; game state remains authoritative.
   // Always render the destination even when motion is disabled or unavailable.
   async function travelToken(fromIndex,toIndex,duration){
@@ -599,6 +611,7 @@
     const source=boardElement.querySelector(".tile.player .token");
     const tiles=Array.from(boardElement.querySelectorAll(".tile"));
     const destination=tiles[toIndex];
+    revealBoardTile(toIndex);
     const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!source||!destination||!effectsOn||reduceMotion||!source.animate){
       renderBoard();return;
@@ -693,6 +706,7 @@
     }
     setDiceFace(roll);
     $("diceText").textContent="🎲 "+roll+" × "+multiplier+" = "+steps+" spaces";
+    revealBoardTile(state.position);
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
     if(effectsOn)burst(["✨","⭐"],roll===6?18:8);
