@@ -418,7 +418,7 @@
   const number=n=>Math.floor(n).toLocaleString();
   const levelCount=s=>s.landmarks.reduce((sum,item)=>sum+item.level,0);
   const totalLevels=()=>levelCount(state);
-  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/5));
+  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/20));
   const costFor=level=>500+level*750+currentEra()*350;
   const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));$("saveStatus").textContent="✓ Progress saved";}catch(e){$("saveStatus").textContent="Save unavailable in this browser";}};
   const addLog=message=>{state.log.unshift({message,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});state.log=state.log.slice(0,40);renderLog();save();};
@@ -461,7 +461,7 @@
       state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Math.min(Date.now(),Math.max(0,Number(state.diceUpdatedAt)||Date.now()));
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       // Completion is derived from the actual empire, never trusted from an old save flag.
-      state.completed=totalLevels()>=25;
+      state.completed=totalLevels()>=100;
       normalizeDaily();
       if(state.completed&&!state.completionRewarded)checkCompletion();
       checkAlbumRewards();
@@ -593,7 +593,7 @@
       bottom.append(cost,btn);card.append(top,scene,bar,bottom);box.append(card);
     });
     renderCharacterChoices();$("empireLevel").textContent=totalLevels();
-    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(5-totalLevels()%5)+" more upgrade(s) until the next era milestone.";
+    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(20-totalLevels()%20)+" more upgrade(s) until the next era milestone.";
   }
   function renderCollection(){
     const box=$("collection");box.replaceChildren();
@@ -623,7 +623,7 @@
   function renderUI(){
     regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
-    $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 25 upgrades";$("progressFill").style.width=totalLevels()/25*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/25*100)+"%";
+    $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
@@ -792,9 +792,9 @@
   }
   function checkCompletion(){
     const levels=totalLevels();
-    if(levels>0&&levels%5===0&&levels<25){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/5]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
-    if(levels>=25&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 25 upgrades built. You are the ultimate meme mogul!");}
-    if(levels>=25)state.completed=true;
+    if(levels>0&&levels%20===0&&levels<100){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/20]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
+    if(levels>=100&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 100 property upgrades built. You are the ultimate meme mogul!");}
+    if(levels>=100)state.completed=true;
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
