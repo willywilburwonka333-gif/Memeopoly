@@ -245,7 +245,7 @@
   function renderLandmarks(){
     const box=$("landmarks");box.replaceChildren();
     state.landmarks.forEach((lm,i)=>{
-      const card=document.createElement("article");card.className="landmark-card";
+      const card=document.createElement("article");card.className="landmark-card";card.style.setProperty("--card-order",i);
       const top=document.createElement("div");top.className="landmark-top";
       const icon=document.createElement("span");icon.className="landmark-icon";icon.textContent=landmarkIcons[i];const scene=document.createElement("div");scene.className="landmark-scene stage-"+lm.level;scene.setAttribute("aria-label",lm.name+" building level "+lm.level);for(let tower=0;tower<3;tower++){const building=document.createElement("span");building.className="scene-building tower-"+tower;building.style.setProperty("--height",Math.max(12,18+lm.level*12+(tower===1?15:0))+"px");scene.append(building);}const sparkle=document.createElement("span");sparkle.className="scene-sparkle";sparkle.textContent="✦";scene.append(sparkle);
       const title=document.createElement("div"),name=document.createElement("strong"),level=document.createElement("small");
@@ -743,7 +743,27 @@
     reader.onerror=()=>{$("saveStatus").textContent="Could not read backup file";$("importSaveFile").value="";};
     reader.readAsText(file);
   }
-  function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("hidden",s.id!==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("activeTab",t.dataset.screen===id));}
+  function switchScreen(id){
+    const target=$(id);
+    if(!target||!target.classList.contains("screen")||rolling||eventOpen||heistOpen)return;
+    const current=document.querySelector(".screen:not(.hidden)");
+    if(current===target)return;
+    // Hide the old scene immediately so there is never an interactive invisible screen.
+    if(current){current.classList.add("hidden");current.classList.remove("screen-entering");}
+    target.classList.remove("hidden","screen-entering");
+    document.querySelectorAll(".tab").forEach(tab=>{
+      const selected=tab.dataset.screen===id;
+      tab.classList.toggle("activeTab",selected);
+      if(selected)tab.setAttribute("aria-current","page");
+      else tab.removeAttribute("aria-current");
+    });
+    const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if(effectsOn&&!reduced){
+      // Restart entry animation even when revisiting a previously viewed section.
+      void target.offsetWidth;
+      target.classList.add("screen-entering");
+    }
+  }
   $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
   $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
   updateGameOptions();
