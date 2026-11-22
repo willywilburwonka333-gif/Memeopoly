@@ -300,3 +300,25 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #boardCenter{transition:box-shadow .3s}
 #boardCenter:focus-within{box-shadow:0 0 0 2px #9be7e0,0 12px 30px #0007}
 @media(prefers-reduced-motion:reduce){.screen.screen-entering,.screen-entering .landmark-card,.screen-entering .district-card,.screen-entering .rival-card,.screen-entering .collect-card,.screen-entering .album-card{animation:none!important}}
+
+
+/* V24: Original living creator-city diorama. CSS artwork, no external assets or network calls. */
+#boardCenter{isolation:isolate}
+.creator-city{position:relative;width:min(100%,420px);height:clamp(62px,12vw,116px);margin:0 auto 7px;border-radius:14px 14px 5px 5px;overflow:hidden;flex-shrink:0;background:radial-gradient(ellipse at 70% 15%,#517ca4 0%,#263b70 45%,#151d42 100%);box-shadow:inset 0 0 24px #07102c,0 5px 12px #0005}
+.creator-city:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 22%,#fff9 0 1px,transparent 2px),radial-gradient(circle at 34% 16%,#fff9 0 1px,transparent 2px),radial-gradient(circle at 88% 33%,#fff9 0 1px,transparent 2px),radial-gradient(circle at 52% 37%,#fff9 0 1px,transparent 2px);opacity:.75}
+.city-moon{position:absolute;right:15%;top:12%;width:25px;aspect-ratio:1;border-radius:50%;background:#fff1c2;box-shadow:0 0 12px #ffecb5,0 0 32px #ffd99570;animation:cityMoonGlow 5s ease-in-out infinite alternate}
+.city-cloud{position:absolute;width:36%;height:15px;border-radius:50%;background:#b4c9f21e;filter:blur(4px);animation:cityDrift 14s ease-in-out infinite alternate}
+.cloud-one{top:25%;left:3%}.cloud-two{top:45%;right:4%;animation-delay:-8s}
+.city-tower{position:absolute;bottom:9px;width:17%;border:2px solid #7195be;border-bottom:0;border-radius:4px 4px 0 0;background:repeating-linear-gradient(90deg,#243a69 0 7px,#42689a 7px 12px,#1b2c51 12px 17px);box-shadow:inset 0 5px #91b8dc44,0 0 15px #0007}
+.city-tower:before{content:"";position:absolute;inset:7px 3px 2px;background:repeating-linear-gradient(0deg,transparent 0 7px,#f8d88b88 7px 10px,transparent 10px 14px);opacity:.85;animation:cityWindows 3.5s steps(2,end) infinite alternate}
+.tower-one{left:9%;height:47%}.tower-two{left:28%;height:79%;width:19%;border-color:#aa8ad6}.tower-three{left:53%;height:58%;width:16%;border-color:#76d5d4}.tower-four{right:8%;height:68%;width:18%}
+.tower-two:after{content:"";position:absolute;left:45%;top:-11px;width:4px;height:11px;background:#e1bbff;box-shadow:0 -2px 9px #efb7ff}
+.city-ground{position:absolute;bottom:0;left:0;right:0;height:10px;background:linear-gradient(#74d5d6,#24425c);box-shadow:0 -3px 12px #67d2e85c}
+.city-billboard{position:absolute;right:9%;bottom:29%;padding:2px 6px;border:2px solid #f6dfaa;border-radius:3px;background:#523a77;color:#fff0b5;font-size:clamp(7px,1vw,12px);font-weight:1000;letter-spacing:1px;transform:rotate(-4deg);box-shadow:0 0 12px #e6b4ff8c;animation:cityBillboard 3s ease-in-out infinite alternate}
+@keyframes cityMoonGlow{to{box-shadow:0 0 20px #ffecb5,0 0 46px #ffd9958c}}
+@keyframes cityDrift{to{transform:translateX(17px)}}
+@keyframes cityWindows{to{opacity:.42}}
+@keyframes cityBillboard{to{filter:brightness(1.4)}}
+@media(max-width:680px){.creator-city{height:clamp(45px,12vw,72px);margin-bottom:3px}.city-moon{width:17px}.city-billboard{padding:1px 3px}}
+@media(max-width:380px){.creator-city{height:42px}.city-billboard{font-size:6px}}
+@media(prefers-reduced-motion:reduce){.creator-city *,.creator-city *:before{animation:none!important}}
