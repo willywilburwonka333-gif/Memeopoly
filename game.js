@@ -330,17 +330,49 @@
       btn.disabled=!unlocked||cooling||state.completed;btn.addEventListener("click",()=>attackRival(r.id));card.append(head,stats,btn);box.append(card);
     });
   }
+  // Visual-only battle feedback. Economy and rival cooldowns remain authoritative.
+  function showRivalImpact(id,blocked,coins,fans){
+    const index=state.rivals.findIndex(r=>r.id===id);
+    const card=$("rivals")?.children[index];
+    if(!card)return;
+    const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const effect=document.createElement("div");
+    effect.className="rival-impact "+(blocked?"rival-impact-blocked":"rival-impact-hit");
+    effect.setAttribute("role","status");
+    effect.setAttribute("aria-live","polite");
+    const symbol=document.createElement("span");symbol.className="rival-impact-symbol";
+    symbol.textContent=blocked?"🛡️":"💥";
+    const copy=document.createElement("strong");
+    copy.textContent=blocked?"SHIELD BROKEN":"STUDIO RAID!";
+    const detail=document.createElement("small");
+    detail.textContent=blocked?"Their vault is exposed next time.":"+"+number(coins)+" coins · +"+number(fans)+" followers";
+    effect.append(symbol,copy,detail);
+    card.append(effect);
+    if(!reduced){
+      card.classList.add(blocked?"rival-card-blocked":"rival-card-hit");
+      for(let i=0;i<7;i++){
+        const spark=document.createElement("i");spark.className="rival-impact-spark";
+        spark.style.setProperty("--angle",(i*360/7)+"deg");
+        spark.style.setProperty("--distance",(42+i%3*11)+"px");
+        effect.append(spark);
+      }
+      gameSound(blocked?340:620,.16);
+      window.setTimeout(()=>gameSound(blocked?240:860,.19),110);
+    }
+    window.setTimeout(()=>{effect.remove();card.classList.remove("rival-card-blocked","rival-card-hit");},reduced?1900:1600);
+  }
   function attackRival(id){
     normalizeDaily();const r=state.rivals.find(x=>x.id===id),requirement=r&&districts.find(d=>d.name===r.district);
     if(!r||state.completed||totalLevels()<(requirement?.unlock??0)||state.turn<r.cooldownTurn)return;
-    if(r.shields>0){r.shields--;r.cooldownTurn=state.turn+2;addLog("🛡️ "+r.name+" blocked your raid! One rival shield destroyed.");}
+    let blocked=false,earnedCoins=0,earnedFans=0;
+    if(r.shields>0){blocked=true;r.shields--;r.cooldownTurn=state.turn+2;addLog("🛡️ "+r.name+" blocked your raid! One rival shield destroyed.");}
     else{
       const rate=5+Math.floor(Math.random()*8),loot=Math.min(r.coins,Math.max(500,Math.floor(r.coins*rate/100)));
       r.coins-=loot;const fans=750+r.power*350+Math.floor(Math.random()*500);
-      state.coins+=loot;state.followers+=fans;r.raids++;state.daily.raids++;r.cooldownTurn=state.turn+3;
+      state.coins+=loot;state.followers+=fans;earnedCoins=loot;earnedFans=fans;r.raids++;state.daily.raids++;r.cooldownTurn=state.turn+3;
       addLog("⚔️ STUDIO RAID SUCCESS! You hit "+r.name+" for "+number(loot)+" coins and gained "+number(fans)+" followers.");
     }
-    checkAchievements();renderUI();save();
+    checkAchievements();renderUI();save();showRivalImpact(id,blocked,earnedCoins,earnedFans);
   }
   function renderStickerAlbums(){
     const box=$("stickerAlbums");if(!box)return;box.replaceChildren();$("stickerStats").textContent=state.stickerStars;
