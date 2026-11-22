@@ -749,7 +749,7 @@
           localStorage.setItem(SAVE_KEY,JSON.stringify(candidate));
           state=freshState();
           if(!load())throw new Error("Save could not be restored");
-          checkAchievements();renderUI();save();addLog("📦 Backup restored successfully.");
+          checkAchievements();renderUI();revealBoardTile(state.position);save();addLog("📦 Backup restored successfully.");
           $("saveStatus").textContent="Backup restored";
         }catch(error){
           if(previous===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,previous);
@@ -770,6 +770,7 @@
     // Hide the old scene immediately so there is never an interactive invisible screen.
     if(current){current.classList.add("hidden");current.classList.remove("screen-entering");}
     target.classList.remove("hidden","screen-entering");
+    if(id==="boardScreen")revealBoardTile(state.position);
     document.querySelectorAll(".tab").forEach(tab=>{
       const selected=tab.dataset.screen===id;
       tab.classList.toggle("activeTab",selected);
@@ -793,11 +794,11 @@
   $("exportSaveBtn").addEventListener("click",exportSave);
   $("importSaveBtn").addEventListener("click",()=>$("importSaveFile").click());
   $("importSaveFile").addEventListener("change",event=>importSave(event.target.files?.[0]));
-  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen||heistOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();addLog("🎲 A fresh game begins. Build your meme empire!");save();});
+  $("newGameBtn").addEventListener("click",()=>{if(rolling||eventOpen||heistOpen)return;if(!window.confirm("Start a new Memeopoly game? Your saved game will be replaced."))return;state=freshState();switchScreen("boardScreen");renderUI();revealBoardTile(state.position);addLog("🎲 A fresh game begins. Build your meme empire!");save();});
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();
+  const resumed=load();normalizeDaily();setDiceFace(1);renderUI();revealBoardTile(state.position);
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");
