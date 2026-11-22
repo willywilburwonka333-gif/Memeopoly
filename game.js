@@ -468,6 +468,33 @@
     if(state.cards.length===8){state.coins+=10000;addLog("🌟 FULL COLLECTION! Bonus +10,000 coins.");}
     collectSticker();checkAchievements();
   }
+  // Keep keyboard navigation inside mandatory game decisions and return focus on completion.
+  let dialogReturnFocus=null;
+  function activateGameDialog(id){
+    const dialog=$(id);
+    dialogReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    dialog.classList.remove("hidden");
+    const first=dialog.querySelector('button:not(:disabled):not(.hidden)');
+    first?.focus();
+  }
+  function closeGameDialog(id){
+    $(id).classList.add("hidden");
+    const restore=dialogReturnFocus?.isConnected?dialogReturnFocus:$("postBtn");
+    dialogReturnFocus=null;
+    restore?.focus();
+  }
+  document.addEventListener("keydown",event=>{
+    const dialog=heistOpen?$("heistOverlay"):eventOpen?$("eventChoice"):null;
+    if(!dialog||dialog.classList.contains("hidden")||event.key!=="Tab")return;
+    const controls=Array.from(dialog.querySelectorAll("button:not(:disabled)")).filter(button=>!button.classList.contains("hidden")&&button.getClientRects().length);
+    if(!controls.length){event.preventDefault();return;}
+    const first=controls[0],last=controls[controls.length-1];
+    if(event.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){
+      event.preventDefault();last.focus();
+    }else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){
+      event.preventDefault();first.focus();
+    }
+  });
   let heistOpen=false,heistFinished=false;
   function raid(){
     if(heistOpen||eventOpen)return;
@@ -504,12 +531,11 @@
       });
       vaults.append(button);
     }
-    $("heistOverlay").classList.remove("hidden");
-    vaults.querySelector("button")?.focus();
+    activateGameDialog("heistOverlay");
   }
   $("heistContinue").addEventListener("click",()=>{
     if(!heistOpen||!heistFinished)return;
-    heistOpen=false;heistFinished=false;rolling=false;$("heistOverlay").classList.add("hidden");renderUI();save();
+    heistOpen=false;heistFinished=false;rolling=false;closeGameDialog("heistOverlay");renderUI();save();
   });
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
   function shieldDrop(){if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
@@ -542,14 +568,13 @@
       btn.addEventListener("click",()=>{
         if(!eventOpen||option.can&&!option.can())return;
         option.run();state.eventChoices++;eventOpen=false;rolling=false;
-        $("eventChoice").classList.add("hidden");$("boardCenter").classList.remove("landed");
+        closeGameDialog("eventChoice");$("boardCenter").classList.remove("landed");
         burst(["🎉","⭐","⚡"],20);gameSound(820,.22);
         checkAchievements();renderUI();save();
       });
       options.append(btn);
     });
-    $("eventChoice").classList.remove("hidden");
-    options.querySelector("button:not(:disabled)")?.focus();
+    activateGameDialog("eventChoice");
     addLog("⚡ CREATOR EVENT: "+event.title+" Choose your next move.");
   }
   function renderContracts(){
