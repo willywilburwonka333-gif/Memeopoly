@@ -383,3 +383,11 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 @keyframes animeGreet{from{transform:rotate(-12deg) translateY(-2px) scale(1.04)}to{transform:rotate(12deg) translateY(-5px) scale(1.1)}}
 @keyframes animeLeap{0%{transform:translateY(8px) scale(.82,1.14)}45%{transform:translateY(-19px) rotate(-8deg) scale(1.12,.93)}80%{transform:translateY(3px) scale(1.15,.85)}100%{transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.creator-avatar,.creator-avatar::after,.character-option:hover .creator-avatar,.character-option:focus-visible .creator-avatar,.tile.player .creator-avatar,.tile.token-hopped .creator-avatar{animation:none!important;will-change:auto}}
+
+/* V36: Original illustrated anime-city art direction for the game board. */
+#board{background:linear-gradient(155deg,#131b4eaa,#361e60aa),url("assets/anime-city.svg") center/cover no-repeat,#141a3b;box-shadow:0 0 0 2px #ffe4a744,0 24px 65px #030818dd,inset 0 0 75px #8e5de833}
+#boardCenter{background:linear-gradient(160deg,#171c49ed,#37245cdd);border:2px solid #efc78a;box-shadow:0 0 0 4px #512e84aa,0 12px 40px #060820c9,inset 0 0 32px #9a56cf44;backdrop-filter:blur(5px)}
+#board .tile{border:2px solid #d2b7ff9c;background:linear-gradient(145deg,#34437fe8,#241d53eb);box-shadow:inset 0 2px 0 #ffffff55,0 7px 0 #121333,0 12px 22px #080b23ad;transition:box-shadow .2s,filter .2s}
+#board .tile.player{border-color:#ffe98b;box-shadow:0 0 0 3px #fbd87a80,0 0 25px #f5b850a8,inset 0 2px 0 #fff9b8}
+#board .tile-icon{filter:drop-shadow(0 3px 2px #0b103b) drop-shadow(0 0 5px #9b70ec88)}
+@media(prefers-reduced-motion:no-preference){#board .tile.player{animation:animeTileGlow 2.5s ease-in-out infinite}@keyframes animeTileGlow{50%{filter:brightness(1.16)}}}
