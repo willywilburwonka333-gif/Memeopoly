@@ -201,9 +201,9 @@ namespace Memeopoly
                 // Touch anywhere on the plot even when no building has been constructed.
                 GameObject colliderGo = new GameObject("TAP TO BUILD");
                 colliderGo.transform.SetParent(root,false);
-                colliderGo.transform.localPosition=new Vector3(0,1.2f,0);
+                colliderGo.transform.localPosition=new Vector3(0,2.6f,0);
                 BoxCollider bc=colliderGo.AddComponent<BoxCollider>();
-                bc.size=new Vector3(3.7f,2.6f,3.95f);
+                bc.size=new Vector3(3.7f,6.0f,3.95f);
                 colliderGo.AddComponent<LandmarkHit>().index=i;
                 for (int corner=0;corner<4;corner++)
                 {
@@ -341,7 +341,7 @@ namespace Memeopoly
                 }
             }
             if (animate && level>0)
-                Root.GetComponent<MemeopolyGame>().StartCoroutine(Construct(stage));
+                Root.GetComponentInParent<MemeopolyGame>().StartCoroutine(Construct(stage));
         }
 
         private IEnumerator Construct(Transform stage)
