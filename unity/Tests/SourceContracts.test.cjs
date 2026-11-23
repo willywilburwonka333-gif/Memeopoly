@@ -66,4 +66,21 @@ assert.match(city,/Color\.Lerp\(buildingColours\[index\],cream\.color,\.48f\)/,
 assert.doesNotMatch(city,/Color\.Lerp\([^\n]*,(?:ink|cream),/,
   'never pass a UnityEngine.Material to Color.Lerp');
 
+// Unity Cloud Build #2: a literal \n between NUnit assertions broke C# compilation.
+// Test all C# sources so accidental backslash-n statement separators cannot return.
+for (const sourcePath of [
+  'unity/Assets/Scripts/MemeopolyGame.cs',
+  'unity/Assets/Scripts/MemeopolyCity.cs',
+  'unity/Assets/Scripts/MemeopolyRules.cs',
+  'unity/Assets/Editor/MemeopolyProjectSetup.cs',
+  'unity/Assets/Editor/MemeopolyWebGLBuild.cs',
+  'unity/Assets/Tests/Editor/RulesTests.cs'
+]) {
+  assert.doesNotMatch(read(sourcePath), /;\\n(?=\s*[A-Za-z_])/,
+    sourcePath+' has a literal backslash-n after a statement, not a C# line break');
+}
+assert.match(read('unity/Assets/Tests/Editor/RulesTests.cs'),
+  /Assert\.AreEqual\(6,s\.lastDieA\);\s+Assert\.AreEqual\(4,s\.lastDieB\);/,
+  'roll assertions remain intact as two valid C# statements');
+
 console.log('Unity 3D migration source contracts pass: 60 spaces, 6x5 buildings, dice, track, legacy save. Unity compilation and play-mode still require the Editor.');

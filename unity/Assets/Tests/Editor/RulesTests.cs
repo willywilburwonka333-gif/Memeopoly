@@ -25,7 +25,8 @@ namespace Memeopoly.Tests
             Assert.AreEqual(8,result.destination);
             Assert.AreEqual(1,result.laps);
             Assert.AreEqual(8,s.position);
-            Assert.AreEqual(6,s.lastDieA);\n            Assert.AreEqual(4,s.lastDieB);
+            Assert.AreEqual(6,s.lastDieA);
+            Assert.AreEqual(4,s.lastDieB);
             Assert.AreEqual(29,s.dice);
         }
 
