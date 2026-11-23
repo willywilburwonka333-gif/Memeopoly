@@ -641,3 +641,10 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 @keyframes frameVanish{0%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1)}}
 @media(max-width:650px){#boardCenter .city-plot-name{font-size:clamp(6px,1.7vw,9px)}#boardCenter .city-plot-level{font-size:9px!important;padding:0 2px!important}#boardCenter .city-structure{inset:7% 13% 22%!important}}
 @media(prefers-reduced-motion:reduce){#boardCenter .city-plot.city-just-built .city-construction-frame{animation:none!important}}
+
+/* Timber Dash — lightweight independent token bob; honors reduced-motion preferences. */
+.collectible-token[data-token="wooden-runner"] .creator-sprite{filter:drop-shadow(0 2px 2px #0b153d88);transform-origin:center 88%}
+.tile.player .collectible-token[data-token="wooden-runner"] .creator-sprite{animation:timberStride .8s ease-in-out infinite}
+.cosmetic-card.equipped .collectible-token[data-token="wooden-runner"] .creator-sprite{animation:timberStride 1.4s ease-in-out infinite}
+@keyframes timberStride{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.collectible-token[data-token="wooden-runner"] .creator-sprite{animation:none!important}}
