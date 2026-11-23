@@ -421,7 +421,7 @@
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
   const freshState=()=>({worldIndex:0,worldsCompleted:0,position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[],cosmeticsOwned:{dice:["arcade"],tokens:["creator"],shields:["classic"]},cosmeticsEquipped:{...cosmeticDefaults}});
-  let state=freshState(),rolling=false,installPrompt=null;
+  let state=freshState(),rolling=false,installPrompt=null,activeRewardMultiplier=1;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
   const levelCount=s=>s.landmarks.reduce((sum,item)=>sum+item.level,0);
@@ -919,9 +919,9 @@
         const jackpot=i===prizeIndex;
         let coins=0,fans=0;
         if(target){
-          if(target.shields>0){target.shields--;target.cooldownTurn=state.turn+2;coins=jackpot?1200:500;state.coins+=coins;addLog("🛡️ "+target.name+"'s shield blocked the main vault. Shield broken; consolation +"+number(coins)+" coins.");}
-          else{coins=Math.min(target.coins,jackpot?Math.max(1800,Math.floor(target.coins*.18)):Math.max(400,Math.floor(target.coins*.045)));fans=jackpot?1800+target.power*500:500+target.power*150;target.coins-=coins;target.raids++;target.cooldownTurn=state.turn+3;state.daily.raids++;state.coins+=coins;state.followers+=fans;addLog("🏦 "+(jackpot?"JACKPOT! ":"")+"Raided "+target.name+" for "+number(coins)+" coins and "+number(fans)+" followers.");}
-        }else{coins=jackpot?5500:1500+Math.floor(Math.random()*700);state.coins+=coins;addLog("🏦 Algorithm vault "+(jackpot?"JACKPOT! ":"")+"+"+number(coins)+" coins.");}
+          if(target.shields>0){target.shields--;target.cooldownTurn=state.turn+2;coins=(jackpot?1200:500)*activeRewardMultiplier;state.coins+=coins;addLog("🛡️ "+target.name+"'s shield blocked the main vault. Shield broken; consolation +"+number(coins)+" coins.");}
+          else{coins=Math.min(target.coins,jackpot?Math.max(1800,Math.floor(target.coins*.18)):Math.max(400,Math.floor(target.coins*.045)));fans=jackpot?1800+target.power*500:500+target.power*150;target.coins-=coins;coins*=activeRewardMultiplier;fans*=activeRewardMultiplier;target.raids++;target.cooldownTurn=state.turn+3;state.daily.raids++;state.coins+=coins;state.followers+=fans;addLog("🏦 "+(jackpot?"JACKPOT! ":"")+"Raided "+target.name+" for "+number(coins)+" coins and "+number(fans)+" followers.");}
+        }else{coins=(jackpot?5500:1500+Math.floor(Math.random()*700))*activeRewardMultiplier;state.coins+=coins;addLog("🏦 Algorithm vault "+(jackpot?"JACKPOT! ":"")+"+"+number(coins)+" coins.");}
         vaults.querySelectorAll("button").forEach((b,j)=>{b.disabled=true;b.classList.add("vault-revealed",j===prizeIndex?"vault-jackpot":"vault-empty");if(j===i)b.classList.add("vault-picked");b.setAttribute("aria-label","Vault "+(j+1)+(j===prizeIndex?" contained the jackpot":" contained regular loot")+(j===i?", your selection":""));});
         $("heistResult").textContent=jackpot?"🎉 JACKPOT! +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":""):"💰 +"+number(coins)+" coins"+(fans?" · +"+number(fans)+" followers":"");
         $("heistContinue").classList.remove("hidden");$("heistContinue").focus();
@@ -938,7 +938,7 @@
     heistOpen=false;heistFinished=false;rolling=false;$("heistOverlay").classList.add("hidden");renderUI();save();
   });
   function rivalAttack(){if(state.shields>0){state.shields--;addLog("🛡️ SHUTDOWN BLOCKED! Your shield protected your creator studio. "+state.shields+" shield(s) remain.");return;}const loss=Math.min(state.coins,500+Math.floor(Math.random()*1501));state.coins-=loss;state.hype=Math.max(0,state.hype-10);addLog("💥 RIVAL SHUTDOWN! Your studio was hit. -"+number(loss)+" coins. Earn a shield to block the next attack.");}
-  function shieldDrop(){if(Math.random()<.2)awardCosmetic("shields");if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{state.coins+=1500;addLog("🛡️ Shield stash full. Converted to +1,500 coins.");}}
+  function shieldDrop(){if(Math.random()<.2)awardCosmetic("shields");if(state.shields<3){state.shields++;addLog("🛡️ SHIELD COLLECTED! Your studio has "+state.shields+" shield(s).");}else{const payout=1500*activeRewardMultiplier;state.coins+=payout;addLog("🛡️ Shield stash full. Converted to +"+number(payout)+" coins.");}}
   const eventScenarios=[
     {title:"Brand deal or viral gamble?",description:"A sponsor offers guaranteed coins, but a risky viral campaign could bring a huge audience.",options:[
       {label:"🤝 Take the brand deal",detail:"+2,800 coins",run:()=>{state.coins+=2800;addLog("🤝 You signed a brand deal! +2,800 coins.");}},
@@ -1011,10 +1011,10 @@
     switch(tile.type){
       // The board-lap reward is paid when crossing Go; landing on Go must not pay it twice.
       case"GO":addLog("🚀 GO VIRAL! Board-lap creator bonus collected.");break;
-      case"COINS":{const reward=1000+currentEra()*500;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
+      case"COINS":{const reward=(1000+currentEra()*500)*activeRewardMultiplier;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
       case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
-      case"HYPE":awardHype(30);addLog("⚡ Hype boost! +30 hype.");break;
+      case"HYPE":awardHype(30*activeRewardMultiplier);addLog("⚡ Hype boost! +"+number(30*activeRewardMultiplier)+" hype.");break;
       case"SHIELD":shieldDrop();break;
     }
   }
@@ -1093,9 +1093,9 @@
     regenerateDice();normalizeDaily();
     const multiplier=Number($("rollMultiplier").value)||1;
     if(rolling||eventOpen||heistOpen||state.dice<multiplier||state.completed)return;
-    rolling=true;state.dice-=multiplier;state.turn++;state.daily.rolls++;
+    rolling=true;activeRewardMultiplier=multiplier;state.dice-=multiplier;state.turn++;state.daily.rolls++;
     $("postBtn").disabled=true;
-    const dieOne=1+Math.floor(Math.random()*6),dieTwo=1+Math.floor(Math.random()*6),roll=dieOne+dieTwo,steps=roll*multiplier;
+    const dieOne=1+Math.floor(Math.random()*6),dieTwo=1+Math.floor(Math.random()*6),roll=dieOne+dieTwo,steps=roll;
     const diceIcon=$("diceIcon");
     diceIcon.classList.add("rolling");
     $("diceText").textContent="Rolling…";
@@ -1120,9 +1120,9 @@
       await wait(animateDice?(multiplier>1?70:150):0);
       state.position=(state.position+1)%board.length;
       if(state.position===0){
-        const lap=1500*multiplier;
-        state.coins+=lap;state.followers+=250*multiplier;
-        addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*multiplier)+" followers.");
+        const lap=1500*activeRewardMultiplier;
+        state.coins+=lap;state.followers+=250*activeRewardMultiplier;
+        addLog("🏁 BOARD LAP! +"+number(lap)+" coins and "+number(250*activeRewardMultiplier)+" followers.");
       }
       // Animate the same creator across adjacent spaces rather than spawning a new hop.
       const nextPosition=state.position;
@@ -1131,7 +1131,7 @@
       if(i===steps-1)gameSound(680,.12);
     }
     setDiceFace(dieOne,dieTwo);
-    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" × "+multiplier+" = "+steps+" spaces";
+    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" spaces · rewards ×"+multiplier";
     revealBoardTile(state.position);
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
