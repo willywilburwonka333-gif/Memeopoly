@@ -17,6 +17,15 @@ namespace Memeopoly
     }
 
     // Subtle ambient animation without per-frame material allocations or physics.
+    public sealed class OrbitProp : MonoBehaviour
+    {
+        public float degreesPerSecond=18f;
+        private void Update()
+        {
+            transform.Rotate(0,degreesPerSecond*Time.deltaTime,0,Space.Self);
+        }
+    }
+
     public sealed class FloatProp : MonoBehaviour
     {
         public float amplitude=.10f;
@@ -46,6 +55,20 @@ namespace Memeopoly
         private readonly Material[] tileMaterials = new Material[8];
         private readonly Material[] trackSurfaceMaterials = new Material[8];
         private readonly Material ocean, pavement, grass, edge, gold, ink, cream, light;
+        private static readonly Color[] WorldOcean =
+        {
+            new Color(.055f,.15f,.28f),new Color(.09f,.16f,.32f),
+            new Color(.10f,.10f,.31f),new Color(.14f,.07f,.29f),
+            new Color(.065f,.15f,.26f),new Color(.11f,.11f,.21f),
+            new Color(.14f,.06f,.22f),new Color(.10f,.06f,.27f)
+        };
+        private static readonly Color[] WorldGrass =
+        {
+            new Color(.07f,.31f,.31f),new Color(.09f,.29f,.28f),
+            new Color(.08f,.28f,.34f),new Color(.24f,.11f,.29f),
+            new Color(.07f,.29f,.30f),new Color(.17f,.22f,.28f),
+            new Color(.20f,.13f,.27f),new Color(.19f,.17f,.29f)
+        };
         private readonly Color[] buildingColours =
         {
             new Color(.08f,.73f,.89f), new Color(.20f,.79f,.46f),
@@ -217,6 +240,17 @@ namespace Memeopoly
                 new Vector3(.34f,.7f,.34f),gold);
             Sphere("meme beacon",plaza,new Vector3(0,1.85f,0),
                 new Vector3(.85f,.84f,.85f),light);
+            var satellites=new GameObject("ORBITING VIRAL SATELLITES").transform;
+            satellites.SetParent(plaza,false);
+            satellites.localPosition=new Vector3(0,1.6f,0);
+            satellites.gameObject.AddComponent<OrbitProp>().degreesPerSecond=19f;
+            for(int j=0;j<4;j++)
+            {
+                float a=j*Mathf.PI*.5f;
+                Sphere("floating meme orb "+j,satellites,
+                    new Vector3(Mathf.Cos(a)*1.62f,(j%2)*.36f,Mathf.Sin(a)*1.62f),
+                    new Vector3(.26f,.30f,.26f),tileMaterials[(j*2)%8]);
+            }
             for(int i=0;i<12;i++)
             {
                 float a=i*Mathf.PI/6f;
@@ -273,7 +307,7 @@ namespace Memeopoly
                 Material tile = trackSurfaceMaterials[KindIndex(MemeopolyRules.TileKinds[i])];
                 Cube("gold border",tileRoot,new Vector3(0,.11f,0),new Vector3(.97f,.24f,.97f),gold);
                 Cube("space",tileRoot,new Vector3(0,.25f,0),new Vector3(.85f,.16f,.85f),tile);
-                Cube("inset",tileRoot,new Vector3(0,.34f,0),new Vector3(.46f,.03f,.46f),ink);
+                // Keep the centre clear so the original textured tile icon stays visible.
                 // Distinct icon sculptures remain legible even at full-board phone size.
                 string k = MemeopolyRules.TileKinds[i];
                 if (k=="COINS") Cylinder("coin",tileRoot,new Vector3(0,.48f,0),new Vector3(.22f,.06f,.22f),gold);
@@ -565,6 +599,13 @@ namespace Memeopoly
             if(stage!=null) stage.localScale=initial;
             UnityEngine.Object.Destroy(crane.gameObject);
             UnityEngine.Object.Destroy(particles.gameObject,1.5f);
+        }
+
+        public void ApplyWorldTheme(int worldIndex)
+        {
+            int world=Mathf.Abs(worldIndex)%WorldOcean.Length;
+            ocean.color=WorldOcean[world];
+            grass.color=WorldGrass[world];
         }
 
         public void HighlightSelection(int chosen)
