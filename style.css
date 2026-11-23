@@ -543,3 +543,30 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 #boardCenter .board-city-caption{pointer-events:none}
 @media(max-width:650px){.city-build-action{right:-25%;bottom:-17%;width:19px;height:19px;font-size:13px;border-width:1px}.meme-city-building{width:14%}}
 @media(prefers-reduced-motion:reduce){.city-just-built .meme-building-face,.city-build-burst{animation:none!important}.meme-city-building{transition:none!important}}
+
+/* Board V3: playable construction city. Scoped to the existing 60-space board. */
+#boardCenter{background:#161b3c!important;border:2px solid #8c6ce4!important;box-shadow:inset 0 0 24px #080a30,0 5px 14px #0008!important}
+#boardCenter .meme-city-district{position:absolute;inset:0;display:block;overflow:hidden;pointer-events:auto;background:radial-gradient(ellipse at 55% 15%,#a17cff66,transparent 52%),linear-gradient(160deg,#323a82 0%,#1a2859 55%,#101a42 100%)}
+#boardCenter .meme-city-district:before{display:none!important}
+.city-skyline{position:absolute;inset:0 0 40%;background:radial-gradient(circle at 75% 20%,#ffd58c 0 4%,transparent 4.5%),linear-gradient(0deg,#29316e88,transparent 70%);pointer-events:none}
+.city-road-network{position:absolute;inset:5%;border-radius:12px;background:repeating-linear-gradient(90deg,transparent 0 18%,#090e36 18% 21%),repeating-linear-gradient(0deg,transparent 0 22%,#111b4e 22% 26%);transform:skewY(-3deg);opacity:.7;pointer-events:none}
+.city-plot-grid{position:absolute;inset:7% 5% 10%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:2%;z-index:2}
+.city-plot{appearance:none;-webkit-appearance:none;position:relative;display:block;min-width:0;min-height:0;padding:0;border:1px solid #8ad5ff66;border-radius:7px;background:linear-gradient(145deg,#5a52a2bb,#202d5a);box-shadow:inset 0 1px #fff4,0 3px 0 #0d1439;cursor:pointer;touch-action:manipulation;overflow:visible}
+.city-plot:focus-visible{outline:3px solid #ffe08b;outline-offset:1px;z-index:5}
+.city-plot:disabled{cursor:default;opacity:1}
+.city-plot[data-level="0"]{border-style:dashed;background:linear-gradient(145deg,#464f91,#22274e)}
+.city-structure{position:absolute;inset:7% 12% 10%;filter:drop-shadow(2px 3px 1px #060c32aa);transform-origin:bottom;transform:scaleY(var(--city-scale,.45));transition:transform .65s cubic-bezier(.15,1.5,.35,1)}
+.city-structure-facade{position:absolute;inset:22% 4% 0;background:linear-gradient(90deg,hsl(var(--city-hue) 70% 38%),hsl(var(--city-hue) 82% 60%) 65%,hsl(var(--city-hue) 62% 30%));border:1px solid #f9e6ff99;border-radius:2px;box-shadow:inset -4px 0 #070e3477}
+.city-structure-roof{position:absolute;inset:3% 0 73%;background:linear-gradient(145deg,#ffefb6,#d17bdf 65%,#784fc1);clip-path:polygon(0 100%,18% 0,85% 0,100% 100%);z-index:2}
+.city-structure-windows{position:absolute;inset:34% 17% 12%;background:repeating-linear-gradient(90deg,#7ff6ff 0 16%,transparent 16% 30%),repeating-linear-gradient(0deg,#ffe6a5 0 14%,transparent 14% 28%);opacity:.8}
+.city-structure-emblem{position:absolute;inset:35% 0 auto;font-size:clamp(7px,1.6vw,15px);line-height:1;filter:drop-shadow(0 1px 2px #000)}
+.city-plot-level{position:absolute;bottom:-2px;right:-2px;z-index:3;padding:1px 3px;border-radius:5px;background:#0e1749;color:#fff1aa;font-size:clamp(7px,1.25vw,12px);font-weight:900;line-height:1.2;border:1px solid #d2acff}
+.city-plot[data-level="0"]{--city-scale:.3}.city-plot[data-level="1"]{--city-scale:.48}.city-plot[data-level="2"]{--city-scale:.62}.city-plot[data-level="3"]{--city-scale:.76}.city-plot[data-level="4"]{--city-scale:.9}.city-plot[data-level="5"]{--city-scale:1}
+.city-plot[data-level="5"]{border-color:#ffe59b;box-shadow:0 0 8px #f9c85d88,inset 0 1px #fff7}
+.city-plot.city-just-built .city-structure{animation:city-rise .8s cubic-bezier(.15,.9,.2,1) both}
+.city-build-burst{position:absolute;left:50%;top:0;z-index:10;transform:translateX(-50%);white-space:nowrap;padding:3px 5px;border-radius:12px;background:#ffdb7e;color:#1b1753;font-size:clamp(8px,1.5vw,15px);font-weight:900;animation:city-burst 1.1s ease-out both;pointer-events:none}
+@keyframes city-rise{0%{transform:scaleY(.12);filter:brightness(2)}65%{transform:scaleY(1.13)}100%{transform:scaleY(var(--city-scale,1))}}
+@keyframes city-burst{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-32px) scale(1.1)}}
+#boardCenter .board-city-caption{pointer-events:none;z-index:4!important;text-shadow:0 2px 5px #080e35,0 0 8px #1b1547!important}
+@media(max-width:650px){.city-plot-grid{gap:1.5%}.city-plot{border-radius:3px}.city-plot-level{padding:0 2px}.city-structure-emblem{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.city-plot.city-just-built .city-structure,.city-build-burst{animation:none!important}.city-structure{transition:none!important}}
