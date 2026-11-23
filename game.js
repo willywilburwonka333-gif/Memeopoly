@@ -454,7 +454,7 @@
       state={...freshState(),...saved};state.worldIndex=Math.max(0,Math.min(999,Math.floor(Number(saved.worldIndex)||0)));state.worldsCompleted=Math.max(0,Math.min(state.worldIndex,Math.floor(Number(saved.worldsCompleted)||0)));state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
       state.cosmeticsOwned={};state.cosmeticsEquipped={};for(const kind of Object.keys(cosmeticSets)){
         const valid=cosmeticSets[kind].map(x=>x.id);
-        state.cosmeticsOwned[kind]=[...new Set([kind==="tokens"?"creator":cosmeticDefaults[kind],cosmeticDefaults[kind],...(kind==="tokens"?["croc-aviator","coffee-ballerina"]:[]),...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
+        state.cosmeticsOwned[kind]=[...new Set([kind==="tokens"?"creator":cosmeticDefaults[kind],cosmeticDefaults[kind],...(kind==="tokens"?["croc-aviator","coffee-ballerina","wooden-runner"]:[]),...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
         const selected=saved.cosmeticsEquipped?.[kind];state.cosmeticsEquipped[kind]=state.cosmeticsOwned[kind].includes(selected)?selected:cosmeticDefaults[kind];
       }
       // Convert legacy 20-plot worlds into six plots without discarding earned progress.
