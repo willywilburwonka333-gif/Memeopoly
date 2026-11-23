@@ -25,7 +25,7 @@ namespace Memeopoly.Tests
             Assert.AreEqual(8,result.destination);
             Assert.AreEqual(1,result.laps);
             Assert.AreEqual(8,s.position);
-            Assert.AreEqual(5,s.lastDieA+s.lastDieB - 5); // Both exact dice persisted.
+            Assert.AreEqual(6,s.lastDieA);\n            Assert.AreEqual(4,s.lastDieB);
             Assert.AreEqual(29,s.dice);
         }
 
@@ -73,9 +73,7 @@ namespace Memeopoly.Tests
         [Test]
         public void ImportedBrowserSaveKeepsTheSixBuildings()
         {
-            string json="{\\\"worldIndex\\\":2,\\\"position\\\":9,\\\"coins\\\":9300,\\\"dice\\\":16,"+
-                "\\\"landmarks\\\":[{\\\"name\\\":\\\"Sharko Surf Shack\\\",\\\"level\\\":3}]," +
-                "\\\"cards\\\":[\\\"Doge\\\"]}";
+            string json = @"{""worldIndex"":2,""position"":9,""coins"":9300,""dice"":16,""landmarks"":[{""name"":""Sharko Surf Shack"",""level"":3}],""cards"":[""Doge""]}";
             GameSave s;
             Assert.IsTrue(MemeopolyRules.TryImportLegacy(json,1000000,out s));
             Assert.AreEqual(3,s.buildings[0]);
