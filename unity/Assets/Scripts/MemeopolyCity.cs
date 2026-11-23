@@ -197,7 +197,7 @@ namespace Memeopoly
                 root.localPosition=Plots[i];
                 Buildings[i]=root;
                 Cube("plot foundation",root,new Vector3(0,.08f,0),new Vector3(3.8f,.22f,4.15f),gold);
-                Cube("city block",root,new Vector3(0,.19f,0),new Vector3(3.59f,.20f,3.95f),Mat(Color.Lerp(buildingColours[i],ink,.68f)));
+                Cube("city block",root,new Vector3(0,.19f,0),new Vector3(3.59f,.20f,3.95f),Mat(Color.Lerp(buildingColours[i],ink.color,.68f)));
                 // Touch anywhere on the plot even when no building has been constructed.
                 GameObject colliderGo = new GameObject("TAP TO BUILD");
                 colliderGo.transform.SetParent(root,false);
@@ -227,7 +227,7 @@ namespace Memeopoly
             var stage=new GameObject("VISIBLE BUILDING STAGE").transform;
             stage.SetParent(baseRoot,false);
             Material primary = Mat(buildingColours[index],.28f);
-            Material secondary = Mat(Color.Lerp(buildingColours[index],cream,.48f),.09f);
+            Material secondary = Mat(Color.Lerp(buildingColours[index],cream.color,.48f),.09f);
             if(level==0)
             {
                 Cube("empty build site - visibly unbuilt",stage,new Vector3(0,.37f,0),
