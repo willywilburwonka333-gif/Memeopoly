@@ -38,4 +38,24 @@ assert.match(read('unity/Assets/Plugins/WebGL/MemeopolyLegacy.jslib'),/memeopoly
 for (const file of ['unity/Packages/manifest.json','unity/Assets/Scripts/Memeopoly.Runtime.asmdef',
                     'unity/Assets/Tests/Editor/Memeopoly.EditorTests.asmdef'])
     JSON.parse(read(file));
+
+// Build-safety guards: the Unity project must compile a real UGUI runtime
+// and ship a registered gameplay scene even on a clean cloud checkout.
+assert.doesNotMatch(game, /;\\n[ \t]*(?:private|int|diceSettled|Notify)/,
+  'literal backslash-n outside a C# string makes compilation fail');
+const runtimeAssembly = JSON.parse(read('unity/Assets/Scripts/Memeopoly.Runtime.asmdef'));
+assert.ok(runtimeAssembly.references.includes('UnityEngine.UI'),
+  'the custom runtime assembly must reference the Unity UGUI package');
+const scene = read('unity/Assets/Scenes/Memeopoly.unity');
+const sceneMeta = read('unity/Assets/Scenes/Memeopoly.unity.meta');
+const scriptMeta = read('unity/Assets/Scripts/MemeopolyGame.cs.meta');
+const buildSettings = read('unity/ProjectSettings/EditorBuildSettings.asset');
+const sceneGuid = sceneMeta.match(/^guid: ([a-f0-9]{32})$/m)?.[1];
+const scriptGuid = scriptMeta.match(/^guid: ([a-f0-9]{32})$/m)?.[1];
+assert.ok(sceneGuid && scriptGuid,'Unity scene and gameplay script have stable asset GUIDs');
+assert.ok(scene.includes('guid: '+scriptGuid+', type: 3'),'scene attaches the actual MemeopolyGame component');
+assert.ok(buildSettings.includes('path: Assets/Scenes/Memeopoly.unity'));
+assert.ok(buildSettings.includes('guid: '+sceneGuid),'scene is registered for cloud builds');
+assert.ok(scene.includes('m_Name: Memeopoly'),'the launch scene contains the player');
+
 console.log('Unity 3D migration source contracts pass: 60 spaces, 6x5 buildings, dice, track, legacy save. Unity compilation and play-mode still require the Editor.');
