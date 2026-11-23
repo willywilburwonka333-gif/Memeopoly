@@ -268,7 +268,7 @@ namespace Memeopoly
             }
 
             // A little height and architectural mass between six landmarks.
-            for (int i=0;i<12;i>
+            for (int i=0;i<12;i++)
             {
                 float x = -6f + (i%6)*2.4f;
                 float z = i<6 ? -.17f : .17f;
