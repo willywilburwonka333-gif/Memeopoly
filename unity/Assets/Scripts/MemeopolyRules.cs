@@ -48,6 +48,20 @@ namespace Memeopoly
         public int lastDieB = 1;
         public long diceUpdatedAt;
         public bool worldRewardPaid;
+        // Persistent extra gameplay state; older v1 saves deserialize with safe defaults.
+        public int selectedToken;
+        public bool soundMuted;
+        public bool pendingHeist;
+        public bool pendingAttack;
+        public int pendingMultiplier = 1;
+        public int totalHeists;
+        public int totalAttacks;
+        public bool albumRewardPaid;
+        public int dailyDay;
+        public int dailyRolls;
+        public int dailyBuilds;
+        public int dailyHeists;
+        public int dailyRewardMask;
     }
 
     public struct TurnOutcome
@@ -161,7 +175,8 @@ namespace Memeopoly
         {
             if (multiplier != 1 && multiplier != 2 && multiplier != 5 && multiplier != 10)
                 throw new ArgumentOutOfRangeException("multiplier");
-            if (s.dice < multiplier || Completed(s)) throw new InvalidOperationException("Cannot roll.");
+            if (s.dice < multiplier || Completed(s) || s.pendingHeist || s.pendingAttack)
+                throw new InvalidOperationException("Cannot roll until the pending event is completed.");
             if (dieA < 1 || dieA > 6 || dieB < 1 || dieB > 6)
                 throw new ArgumentOutOfRangeException("dieA", "Dice must be 1 through 6.");
 
@@ -211,6 +226,8 @@ namespace Memeopoly
                     next[next.Length - 1] = card;
                     s.cards = next;
                     s.followers += 3000;
+                    if (MemeopolyProgression.AwardCompleteAlbum(s))
+                        return "MEME ALBUM COMPLETE! +18,000 coins, +10 dice!";
                     return "Rare meme collected: " + card + "!";
                 case "SHIELD":
                     s.shields = Math.Min(3, s.shields + 1);
@@ -226,14 +243,13 @@ namespace Memeopoly
                     }
                     return "Trending now! Hype +" + 30 * mult;
                 case "RAID":
-                    int loot = (rng.Next(3, 11) * 500) * mult;
-                    s.coins += loot;
-                    return "ALGORITHM HEIST! Stole " + loot.ToString("N0") + " coins.";
+                    s.pendingHeist = true;
+                    s.pendingMultiplier = mult;
+                    return "ALGORITHM HEIST! Choose a vault to raid.";
                 case "ATTACK":
-                    if (s.shields > 0) { s.shields--; return "Shadowban blocked by your shield!"; }
-                    int loss = Math.Min(s.coins, 900 * mult);
-                    s.coins -= loss;
-                    return "Rival strike! Lost " + loss.ToString("N0") + " coins.";
+                    s.pendingAttack = true;
+                    s.pendingMultiplier = mult;
+                    return "RIVAL CHALLENGE! Choose a creator to confront.";
                 case "EVENT":
                     if (rng.Next(2) == 0)
                     {
@@ -305,6 +321,17 @@ namespace Memeopoly
             }
             for (int i = 0; i < 6; i++) s.buildings[i] = Mathf.Clamp(s.buildings[i], 0, 5);
             if (s.cards == null) s.cards = new string[0];
+            s.selectedToken = Mathf.Clamp(s.selectedToken,0,2);
+            s.pendingMultiplier = s.pendingMultiplier==2 || s.pendingMultiplier==5 ||
+                s.pendingMultiplier==10 ? s.pendingMultiplier : 1;
+            // Both events cannot be active at once; an old save wins by heist priority.
+            if (s.pendingHeist) s.pendingAttack = false;
+            s.totalHeists = Mathf.Max(0,s.totalHeists);
+            s.totalAttacks = Mathf.Max(0,s.totalAttacks);
+            s.dailyRolls = Mathf.Clamp(s.dailyRolls,0,100000);
+            s.dailyBuilds = Mathf.Clamp(s.dailyBuilds,0,100000);
+            s.dailyHeists = Mathf.Clamp(s.dailyHeists,0,100000);
+            s.dailyRewardMask &= 7;
             if (s.diceUpdatedAt <= 0) s.diceUpdatedAt = nowMs;
             return s;
         }
