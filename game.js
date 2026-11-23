@@ -1223,6 +1223,15 @@
   }
   $("effectsToggle").addEventListener("click",()=>{effectsOn=!effectsOn;try{localStorage.setItem("memeopoly-effects",effectsOn?"on":"off");}catch(e){}updateGameOptions();});
   $("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;try{localStorage.setItem("memeopoly-sound",soundOn?"on":"off");}catch(e){}updateGameOptions();gameSound(660,.12);});
+  // A single playable board: the dice and controls live in a separate dock,
+  // leaving the middle of the board available for the city diorama.
+  const boardViewport=document.querySelector(".board-viewport");
+  const gameDock=document.createElement("section");gameDock.className="gameplay-dock";gameDock.setAttribute("aria-label","Dice and game controls");
+  boardViewport.parentElement.insertBefore(gameDock,boardViewport);
+  for(const selector of [".center-mini-stats","#rollHistory","#dicePanel",".game-options","#publishBtn"]){
+    const node=$("boardCenter").querySelector(selector);if(node)gameDock.append(node);
+  }
+  const boardCaption=document.createElement("div");boardCaption.className="board-city-caption";boardCaption.textContent="MEME STREET";boardCaption.setAttribute("aria-hidden","true");$("boardCenter").append(boardCaption);
   // Camera zoom changes only the board surface, never the HUD or save schema.
   const cameraViewport=document.querySelector(".board-viewport");
   const cameraBoard=$("board");
