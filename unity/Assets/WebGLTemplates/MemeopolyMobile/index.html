@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#080d1d">
+  <title>MEMEOPOLY — The Meme Empire</title>
+  <style>
+    :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:#080d1d;}
+    body{overscroll-behavior:none;touch-action:none;}
+    #unity-container{position:fixed;inset:0;width:100%;height:100%;height:100dvh;
+      overflow:hidden;background:radial-gradient(circle at 50% 50%,#152749,#080d1d 70%);}
+    #unity-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;outline:none;
+      touch-action:none;user-select:none;-webkit-user-select:none;}
+    #loading{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;
+      flex-direction:column;gap:18px;background:#080d1d;z-index:5;transition:opacity .35s;}
+    #brand{font-weight:900;letter-spacing:.14em;color:#ffd66d;font-size:clamp(22px,7vw,40px);}
+    #sub{color:#9bb2d1;font-size:12px;letter-spacing:.11em;}
+    #track{width:min(72vw,320px);height:8px;border-radius:12px;overflow:hidden;background:#202c48;}
+    #fill{height:100%;width:0;background:linear-gradient(90deg,#28e3c5,#ffc85e);}
+    #failure{display:none;color:#ffd4d4;max-width:85vw;text-align:center;white-space:pre-line;font-size:13px;}
+    #fullscreen{position:absolute;right:max(12px,env(safe-area-inset-right));
+      top:max(12px,env(safe-area-inset-top));width:38px;height:38px;border:1px solid #6785a5;
+      background:#0d1733a3;color:white;border-radius:12px;z-index:3;opacity:.73;}
+    @media (display-mode:standalone){#fullscreen{display:none;}}
+  </style>
+</head>
+<body>
+<div id="unity-container">
+  <canvas id="unity-canvas" tabindex="-1" aria-label="Memeopoly Unity game board"></canvas>
+  <button id="fullscreen" aria-label="Fullscreen game" title="Fullscreen">⛶</button>
+  <div id="loading" aria-live="polite">
+    <div id="brand">MEMEOPOLY</div>
+    <div id="sub">LOADING YOUR MEME CITY</div>
+    <div id="track"><div id="fill"></div></div>
+    <div id="failure"></div>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var canvas=document.getElementById("unity-canvas");
+  var loader=document.getElementById("loading");
+  var fill=document.getElementById("fill");
+  var failure=document.getElementById("failure");
+  var full=document.getElementById("fullscreen");
+  var game;
+  var buildUrl="Build";
+  var config={
+    dataUrl:buildUrl+"/{{{ DATA_FILENAME }}}",
+    frameworkUrl:buildUrl+"/{{{ FRAMEWORK_FILENAME }}}",
+    codeUrl:buildUrl+"/{{{ CODE_FILENAME }}}",
+    streamingAssetsUrl:"StreamingAssets",
+    companyName:"{{{ COMPANY_NAME }}}",
+    productName:"{{{ PRODUCT_NAME }}}",
+    productVersion:"{{{ PRODUCT_VERSION }}}",
+    matchWebGLToCanvasSize:true,
+    devicePixelRatio:Math.min(window.devicePixelRatio||1,2)
+  };
+
+  // Unity will update its render-buffer size when the CSS canvas size changes.
+  // The default WebGL template used a fixed desktop-sized player that was
+  // cropped inside Unity Cloud's iPhone preview.
+  function resize() {
+    canvas.style.width="100%";
+    canvas.style.height="100%";
+  }
+  window.addEventListener("resize",resize,{passive:true});
+  window.addEventListener("orientationchange",resize,{passive:true});
+  resize();
+
+  function fail(message) {
+    failure.textContent="Unable to launch Memeopoly.\n"+message;
+    failure.style.display="block";
+    document.getElementById("sub").textContent="WEBGL STARTUP ERROR";
+    fill.style.background="#ff667b";
+  }
+  full.addEventListener("click",function () {
+    if(game && document.fullscreenEnabled && !document.fullscreenElement)
+      document.getElementById("unity-container").requestFullscreen().catch(function(){});
+    else if(document.fullscreenElement)
+      document.exitFullscreen().catch(function(){});
+    else if(game && game.SetFullscreen)
+      game.SetFullscreen(1);
+  });
+
+  var script=document.createElement("script");
+  script.src=buildUrl+"/{{{ LOADER_FILENAME }}}";
+  script.onerror=function(){fail("The Unity game loader could not be downloaded.");};
+  script.onload=function(){
+    createUnityInstance(canvas,config,function(progress){
+      fill.style.width=Math.round(100*progress)+"%";
+    }).then(function(instance) {
+      game=instance;
+      loader.style.opacity="0";
+      window.setTimeout(function(){loader.style.display="none";},400);
+      resize();
+    }).catch(function(error){fail(String(error));});
+  };
+  document.body.appendChild(script);
+})();
+</script>
+</body>
+</html>

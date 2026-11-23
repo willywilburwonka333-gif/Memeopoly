@@ -21,6 +21,7 @@ namespace Memeopoly
     {
         public readonly Vector3[] Path = new Vector3[MemeopolyRules.BoardSpaces];
         public readonly Transform[] Buildings = new Transform[6];
+        private readonly Transform[] selectionFrames = new Transform[6];
         public readonly Transform[] Dice = new Transform[2];
         public Transform Token { get; private set; }
         public readonly Transform Root;
@@ -135,8 +136,38 @@ namespace Memeopoly
                 var lamp = Sphere("district lantern",Root,new Vector3(Mathf.Cos(angle)*radius,.21f,Mathf.Sin(angle)*radius),
                     Vector3.one*.16f,light);
             }
+            // A recognisable centrepiece, visible from the locked mobile camera.
+            // Empty world 1 should resemble a living game board, not a blank slab.
+            var plaza=new GameObject("CENTRAL VIRAL PLAZA").transform;
+            plaza.SetParent(Root,false);
+            Cylinder("golden plaza ring",plaza,new Vector3(0,.09f,0),
+                new Vector3(2.6f,.10f,2.6f),gold);
+            Cylinder("plaza interior",plaza,new Vector3(0,.17f,0),
+                new Vector3(2.35f,.08f,2.35f),ink);
+            Cylinder("meme monument base",plaza,new Vector3(0,.36f,0),
+                new Vector3(.95f,.26f,.95f),pavement);
+            Cylinder("meme monument pillar",plaza,new Vector3(0,1.05f,0),
+                new Vector3(.34f,.7f,.34f),gold);
+            Sphere("meme beacon",plaza,new Vector3(0,1.85f,0),
+                new Vector3(.85f,.84f,.85f),light);
+            for(int i=0;i<12;i++)
+            {
+                float a=i*Mathf.PI/6f;
+                Vector3 p=new Vector3(Mathf.Cos(a)*2.0f,.26f,Mathf.Sin(a)*2.0f);
+                Cube("circular LED",plaza,p,new Vector3(.27f,.10f,.27f),tileMaterials[i%8]);
+            }
+            for(int i=0;i<4;i++)
+            {
+                float x=i<2?-2.75f:2.75f;
+                float z=i%2==0?-1.65f:1.65f;
+                Cylinder("decorative city tree trunk",Root,new Vector3(x,.34f,z),
+                    new Vector3(.11f,.42f,.11f),gold);
+                Sphere("decorative city tree canopy",Root,new Vector3(x,.92f,z),
+                    new Vector3(.68f,.83f,.68f),tileMaterials[(i+1)%8]);
+            }
+
             // A little height and architectural mass between six landmarks.
-            for (int i=0;i<12;i++)
+            for (int i=0;i<12;i>
             {
                 float x = -6f + (i%6)*2.4f;
                 float z = i<6 ? -.17f : .17f;
@@ -196,6 +227,21 @@ namespace Memeopoly
                 root.SetParent(Root,false);
                 root.localPosition=Plots[i];
                 Buildings[i]=root;
+
+                // A visible glowing rectangle identifies the currently tapped
+                // plot without requiring users to decipher the bottom HUD.
+                Transform frame=new GameObject("SELECTION • lit construction border").transform;
+                frame.SetParent(root,false);
+                Cube("top light",frame,new Vector3(0,.36f,2.05f),
+                    new Vector3(3.85f,.10f,.12f),light);
+                Cube("bottom light",frame,new Vector3(0,.36f,-2.05f),
+                    new Vector3(3.85f,.10f,.12f),light);
+                Cube("left light",frame,new Vector3(-1.91f,.36f,0),
+                    new Vector3(.12f,.10f,4.08f),light);
+                Cube("right light",frame,new Vector3(1.91f,.36f,0),
+                    new Vector3(.12f,.10f,4.08f),light);
+                selectionFrames[i]=frame;
+                frame.gameObject.SetActive(false);
                 Cube("plot foundation",root,new Vector3(0,.08f,0),new Vector3(3.8f,.22f,4.15f),gold);
                 Cube("city block",root,new Vector3(0,.19f,0),new Vector3(3.59f,.20f,3.95f),Mat(Color.Lerp(buildingColours[i],ink.color,.68f)));
                 // Touch anywhere on the plot even when no building has been constructed.
@@ -232,6 +278,19 @@ namespace Memeopoly
             {
                 Cube("empty build site - visibly unbuilt",stage,new Vector3(0,.37f,0),
                     new Vector3(2.72f,.12f,2.8f),pavement);
+                // Before purchase, show a proper construction-ready foundation:
+                // players can see what will transform when they press BUILD.
+                Cube("foundation blueprints",stage,new Vector3(0,.47f,0),
+                    new Vector3(2.48f,.035f,2.45f),Mat(Color.Lerp(buildingColours[index],ink.color,.40f)));
+                for(int edgeIndex=0;edgeIndex<4;edgeIndex++)
+                {
+                    float x=edgeIndex%2==0?-1.12f:1.12f;
+                    Cube("blueprint scaffolding pole",stage,
+                        new Vector3(x,.82f,edgeIndex<2?-1.07f:1.07f),
+                        new Vector3(.07f,.85f,.07f),secondary);
+                }
+                Cube("future landmark billboard",stage,new Vector3(0,1.15f,0),
+                    new Vector3(1.45f,.42f,.08f),primary);
                 for(int i=0;i<4;i++)
                 {
                     float z=i<2?-1.16f:1.16f, x=i%2==0?-1.1f:1.1f;
@@ -403,6 +462,15 @@ namespace Memeopoly
             if(stage!=null) stage.localScale=initial;
             UnityEngine.Object.Destroy(crane.gameObject);
             UnityEngine.Object.Destroy(particles.gameObject,1.5f);
+        }
+
+        public void HighlightSelection(int chosen)
+        {
+            for(int i=0;i<selectionFrames.Length;i++)
+            {
+                if(selectionFrames[i]!=null)
+                    selectionFrames[i].gameObject.SetActive(i==chosen);
+            }
         }
 
         private void CreateToken()

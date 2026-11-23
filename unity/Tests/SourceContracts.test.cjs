@@ -83,4 +83,27 @@ assert.match(read('unity/Assets/Tests/Editor/RulesTests.cs'),
   /Assert\.AreEqual\(6,s\.lastDieA\);\s+Assert\.AreEqual\(4,s\.lastDieB\);/,
   'roll assertions remain intact as two valid C# statements');
 
+
+// Mobile WebGL / presentation regression guards.
+// The old default fixed-size WebGL page clipped the board inside iPhone Safari.
+const mobileTemplate = read('unity/Assets/WebGLTemplates/MemeopolyMobile/index.html');
+const mobileHook = read('unity/Assets/Editor/MemeopolyMobileWebGLPrebuild.cs');
+assert.match(mobileTemplate,/viewport-fit=cover/,'supports iPhone safe areas');
+assert.match(mobileTemplate,/width:100%;height:100%;height:100dvh/,'fills mobile browser viewport');
+assert.match(mobileTemplate,/matchWebGLToCanvasSize:true/,'Unity render target follows resize');
+assert.match(mobileTemplate,/createUnityInstance\(canvas,config/,'boots the actual Unity player');
+assert.match(mobileHook,/IPreprocessBuildWithReport/,'works with Unity Cloud Build Automation');
+assert.match(mobileHook,/PROJECT:MemeopolyMobile/,'Unity Cloud selects our mobile HTML template');
+assert.match(game,/Screen\.width > Screen\.height \? 1f : 0f/,
+  'landscape embedded players use height-based UI scale');
+assert.match(game,/boardCamera\.orthographicSize\s*=/,
+  'camera fits projected board bounds');
+assert.match(game,/private void FitWholeBoard\(\)/);
+assert.match(game,/new Vector2\(0,-92\)/,'compact top HUD');
+assert.match(game,/new Vector2\(0,162\)/,'compact bottom dock');
+assert.doesNotMatch(game,/new Vector2\(0,202\)/,'old oversized dock removed');
+assert.match(city,/CENTRAL VIRAL PLAZA/,'empty boards still have a central feature');
+assert.match(city,/void HighlightSelection\(int chosen\)/,'selected buildable plot highlighted');
+assert.match(city,/foundation blueprints/,'zero-level buildings have visible foundations');
+
 console.log('Unity 3D migration source contracts pass: 60 spaces, 6x5 buildings, dice, track, legacy save. Unity compilation and play-mode still require the Editor.');
