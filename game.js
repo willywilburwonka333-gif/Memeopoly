@@ -613,14 +613,22 @@
     state.landmarks.forEach((landmark,i)=>{
       const building=document.createElement("div");building.className="meme-city-building";
       const level=Math.max(0,Math.min(5,Number(landmark.level)||0));
-      building.dataset.level=String(level);building.style.setProperty("--city-column",String(i%5));building.style.setProperty("--city-row",String(Math.floor(i/5)));
+      building.dataset.level=String(level);building.style.setProperty("--level",String(level));building.style.setProperty("--city-column",String(i%5));building.style.setProperty("--city-row",String(Math.floor(i/5)));
       building.style.setProperty("--city-hue",String((i*41+state.worldIndex*35)%360));
       building.setAttribute("title",landmark.name+" · Level "+level+" of 5");
       const roof=document.createElement("span");roof.className="meme-building-roof";roof.setAttribute("aria-hidden","true");
       const face=document.createElement("span");face.className="meme-building-face";face.setAttribute("aria-hidden","true");
       const windows=document.createElement("span");windows.className="meme-building-windows";windows.setAttribute("aria-hidden","true");
       const label=document.createElement("span");label.className="meme-building-icon";label.textContent=landmarkIcons[i]||"🏢";label.setAttribute("aria-hidden","true");
-      building.append(roof,face,windows,label);district.append(building);
+      building.append(roof,face,windows,label);
+      const action=document.createElement("button");action.type="button";action.className="city-build-action";
+      const price=costFor(level);
+      action.textContent=level===5?"★":level===0?"+":"↑";
+      action.title=landmark.name+" · "+(level===5?"Max level":("Upgrade to level "+(level+1)+" for "+number(price)+" coins"));
+      action.setAttribute("aria-label",action.title);
+      action.disabled=level===5||state.completed||state.coins<price;
+      action.addEventListener("click",event=>{event.stopPropagation();upgradeLandmark(i);});
+      building.append(action);district.append(building);
     });
   }
   function renderBoard(){
@@ -871,6 +879,15 @@
     addLog("🏗️ "+lm.name+" upgraded to level "+lm.level+". +"+number(lm.level*500)+" followers.");
     checkCompletion();checkAchievements();renderUI();save();
     animateConstruction(index,lm.level);
+    const cityBuilding=$("boardCenter")?.querySelectorAll(".meme-city-building")[index];
+    if(cityBuilding){
+      cityBuilding.classList.add("city-just-built");
+      cityBuilding.addEventListener("animationend",()=>cityBuilding.classList.remove("city-just-built"),{once:true});
+      if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+        const burst=document.createElement("span");burst.className="city-build-burst";burst.textContent="LEVEL "+lm.level+" ✦";
+        cityBuilding.append(burst);window.setTimeout(()=>burst.remove(),1300);
+      }
+    }
   }
   function animateConstruction(index,level){
     const card=$("landmarks").children[index];
