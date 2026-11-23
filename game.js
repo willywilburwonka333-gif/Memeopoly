@@ -2,6 +2,7 @@
   "use strict";
   const SAVE_KEY="memeopoly-save-v2",LEGACY_SAVE_KEY="memeopoly-save-v1";
   const MAX_DICE=50,DICE_REGEN_MS=5*60*1000;
+  const worlds=["Meme Street","Viral Avenue","Influencer District","Brainrot Boulevard","Otaku City","Meme Metropolis","Glitch Kingdom","Legendary Meme Empire"];
   const eras=["Bedroom Meme Era","Vine House Era","YouTube Shorts Era","TikTok Empire Era","Meme HQ Era"];
   const board=[
   {
@@ -419,12 +420,13 @@
   const contracts=[{id:"roll-15",name:"Algorithm Marathon",icon:"🎲",goal:15,reward:6000,progress:s=>s.turn,description:"Take 15 turns"},{id:"roll-50",name:"Creator Grind",icon:"🚀",goal:50,reward:18000,progress:s=>s.turn,description:"Take 50 turns"},{id:"publish-10",name:"Content Factory",icon:"📣",goal:10,reward:7500,progress:s=>s.totalPostsPublished,description:"Publish 10 posts"},{id:"followers-25k",name:"Fan Favourite",icon:"❤️",goal:25000,reward:9000,progress:s=>s.followers,description:"Reach 25,000 followers"},{id:"raid-5",name:"Rival Takedown",icon:"⚔️",goal:5,reward:12000,progress:s=>s.rivals.reduce((n,r)=>n+r.raids,0),description:"Win 5 rival raids"},{id:"upgrade-15",name:"Studio Tycoon",icon:"🏗️",goal:15,reward:15000,progress:s=>levelCount(s),description:"Reach 15 upgrades"},{id:"cards-8",name:"Meme Collector",icon:"🃏",goal:8,reward:11000,progress:s=>s.cards.length,description:"Collect all 8 meme cards"}];
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
   const freshDaily=()=>({date:today(),rolls:0,upgrades:0,cards:0,posts:0,raids:0,claims:[]});
-  const freshState=()=>({position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[],cosmeticsOwned:{dice:["arcade"],tokens:["creator"],shields:["classic"]},cosmeticsEquipped:{...cosmeticDefaults}});
+  const freshState=()=>({worldIndex:0,worldsCompleted:0,position:0,coins:5000,followers:0,posts:12,dice:30,diceUpdatedAt:Date.now(),shields:1,hype:0,turn:0,landmarks:landmarkNames.map(name=>({name,level:0})),cards:[],completed:false,completionRewarded:false,tutorialSeen:false,totalPostsPublished:0,log:[],daily:freshDaily(),dailyBonusDate:"",achievements:[],districtClaims:[],rivals:rivalBlueprints.map(r=>({...r,cooldownTurn:0,raids:0})),stickers:[],stickerStars:0,completedAlbums:[],contractClaims:[],eventChoices:0,creatorStyle:0,rollHistory:[],cosmeticsOwned:{dice:["arcade"],tokens:["creator"],shields:["classic"]},cosmeticsEquipped:{...cosmeticDefaults}});
   let state=freshState(),rolling=false,installPrompt=null;
   const $=id=>document.getElementById(id);
   const number=n=>Math.floor(n).toLocaleString();
   const levelCount=s=>s.landmarks.reduce((sum,item)=>sum+item.level,0);
   const totalLevels=()=>levelCount(state);
+  const worldName=()=>worlds[state.worldIndex%worlds.length];
   const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/20));
   const costFor=level=>500+level*750+currentEra()*350;
   const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));$("saveStatus").textContent="✓ Progress saved";}catch(e){$("saveStatus").textContent="Save unavailable in this browser";}};
@@ -446,7 +448,7 @@
       try{saved=primary?JSON.parse(primary):null;}catch(e){saved=null;}
       if(!saved&&legacy){try{saved=JSON.parse(legacy);}catch(e){saved=null;}}
       if(!saved||!Array.isArray(saved.landmarks)||!Array.isArray(saved.cards))return false;
-      state={...freshState(),...saved};state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
+      state={...freshState(),...saved};state.worldIndex=Math.max(0,Math.min(999,Math.floor(Number(saved.worldIndex)||0)));state.worldsCompleted=Math.max(0,Math.min(state.worldIndex,Math.floor(Number(saved.worldsCompleted)||0)));state.rollHistory=Array.isArray(saved.rollHistory)?saved.rollHistory.filter(x=>Number.isInteger(x)&&x>=1&&x<=12).slice(0,5):[];state.creatorStyle=Number.isInteger(saved.creatorStyle)&&saved.creatorStyle>=0&&saved.creatorStyle<4?saved.creatorStyle:0;
       state.cosmeticsOwned={};state.cosmeticsEquipped={};for(const kind of Object.keys(cosmeticSets)){
         const valid=cosmeticSets[kind].map(x=>x.id);
         state.cosmeticsOwned[kind]=[...new Set([cosmeticDefaults[kind],...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
@@ -686,7 +688,24 @@
     achievements.forEach(a=>{const earned=state.achievements.includes(a.id),card=document.createElement("article");card.className="achievement-card"+(earned?" earned":"");const icon=document.createElement("span");icon.textContent=earned?a.icon:"🔒";const info=document.createElement("div"),title=document.createElement("strong"),desc=document.createElement("small");title.textContent=a.name;desc.textContent=earned?"Unlocked · reward paid":a.description;info.append(title,desc);const reward=document.createElement("b");reward.textContent=earned?"✓":"+"+number(a.reward);card.append(icon,info,reward);box.append(card);});
     $("achievementCount").textContent=state.achievements.length+" / "+achievements.length;
   }
+  function renderWorldProgress(){
+    let banner=$("worldProgressBanner");if(!banner){banner=document.createElement("section");banner.id="worldProgressBanner";banner.className="world-progress-banner";banner.setAttribute("aria-label","Board world progression");const anchor=$("board");anchor.parentElement.insertBefore(banner,anchor);}
+    banner.replaceChildren();const heading=document.createElement("strong");heading.textContent="🌆 Board "+(state.worldIndex+1)+" · "+worldName();const detail=document.createElement("span");detail.textContent=totalLevels()+"/100 upgrades · "+state.worldsCompleted+" boards completed";banner.append(heading,detail);
+    if(state.completed){const next=document.createElement("button");next.type="button";next.className="world-next-button";next.textContent="✨ Complete board · Unlock "+worlds[(state.worldIndex+1)%worlds.length];next.addEventListener("click",advanceWorld);banner.append(next);}
+    document.body.dataset.worldTheme=String(state.worldIndex%worlds.length);
+  }
+  function advanceWorld(){
+    if(!state.completed||rolling||eventOpen||heistOpen)return;
+    if(!window.confirm("Complete "+worldName()+" and begin the next board? Your collections, coins, followers and achievements are kept. Property levels restart at zero."))return;
+    state.worldIndex=Math.min(999,state.worldIndex+1);state.worldsCompleted=Math.max(state.worldsCompleted,state.worldIndex);
+    state.landmarks=landmarkNames.map(name=>({name,level:0}));state.position=0;state.completed=false;state.completionRewarded=false;
+    state.districtClaims=[];state.contractClaims=[];
+    state.coins+=10000;state.dice=Math.min(MAX_DICE,state.dice+10);
+    addLog("🌆 NEW BOARD: "+worldName()+" unlocked! +10,000 coins and +10 dice. Your collections carry forward.");
+    renderUI();save();
+  }
   function renderUI(){
+    renderWorldProgress();
     // Apply equipped cosmetics to live gameplay, not just inventory thumbnails.
     const diceSkin=state.cosmeticsEquipped?.dice||"arcade";
     const diceDisplay=$("diceIcon");
@@ -694,7 +713,7 @@
     diceDisplay.setAttribute("title","Equipped dice: "+(cosmeticSets.dice.find(item=>item.id===diceDisplay.dataset.skin)?.name||"Arcade Cubes"));
     regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
-    $("eraName").textContent=state.completed?"Memeopoly Champion":eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
+    $("eraName").textContent=state.completed?worldName()+" · COMPLETE":worldName()+" · "+eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
@@ -864,7 +883,7 @@
   function checkCompletion(){
     const levels=totalLevels();
     if(levels>0&&levels%20===0&&levels<100){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/20]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
-    if(levels>=100&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 MEMEOPOLY COMPLETED! All 100 property upgrades built. You are the ultimate meme mogul!");}
+    if(levels>=100&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 "+worldName()+" COMPLETED! Claim your next board in the board banner. +50,000 coins and +100,000 followers!");}
     if(levels>=100)state.completed=true;
   }
   function collectCard(){
