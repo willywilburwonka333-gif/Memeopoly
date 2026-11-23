@@ -598,6 +598,31 @@
     $("spaceInspector").hidden=false;
   }
   $("spaceInspectorClose").addEventListener("click",()=>{$("spaceInspector").hidden=true;});
+  // Board V2: persistent miniature city buildings driven by saved property levels.
+  // The city is scenery only; interactive perimeter tiles remain separate.
+  function renderCityBuildings(){
+    const center=$("boardCenter");if(!center)return;
+    let district=center.querySelector(".meme-city-district");
+    if(!district){district=document.createElement("div");district.className="meme-city-district";district.setAttribute("aria-label","Your growing Meme Street city");center.append(district);}
+    const count=state.landmarks.length;
+    const signature=state.worldIndex+":"+state.landmarks.map(l=>l.level).join(",");
+    if(district.dataset.signature===signature)return;
+    district.dataset.signature=signature;
+    district.replaceChildren();
+    const road=document.createElement("div");road.className="meme-city-road";road.setAttribute("aria-hidden","true");district.append(road);
+    state.landmarks.forEach((landmark,i)=>{
+      const building=document.createElement("div");building.className="meme-city-building";
+      const level=Math.max(0,Math.min(5,Number(landmark.level)||0));
+      building.dataset.level=String(level);building.style.setProperty("--city-column",String(i%5));building.style.setProperty("--city-row",String(Math.floor(i/5)));
+      building.style.setProperty("--city-hue",String((i*41+state.worldIndex*35)%360));
+      building.setAttribute("title",landmark.name+" · Level "+level+" of 5");
+      const roof=document.createElement("span");roof.className="meme-building-roof";roof.setAttribute("aria-hidden","true");
+      const face=document.createElement("span");face.className="meme-building-face";face.setAttribute("aria-hidden","true");
+      const windows=document.createElement("span");windows.className="meme-building-windows";windows.setAttribute("aria-hidden","true");
+      const label=document.createElement("span");label.className="meme-building-icon";label.textContent=landmarkIcons[i]||"🏢";label.setAttribute("aria-hidden","true");
+      building.append(roof,face,windows,label);district.append(building);
+    });
+  }
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
     board.forEach((item,i)=>{
@@ -718,7 +743,7 @@
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
     $("publishBtn").textContent=state.posts>0?"📣 PUBLISH POST · "+state.posts+" LEFT":"NO POSTS LEFT";
-    renderRollHistory();renderBoard();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();renderContracts();
+    renderRollHistory();renderBoard();renderCityBuildings();renderLandmarks();renderCollection();renderLog();renderDaily();renderAchievements();renderDistricts();renderRivals();renderStickerAlbums();renderContracts();
   }
   function renderDistricts(){
     const render=boxId=>{const box=$(boxId);if(!box)return;box.replaceChildren();districts.forEach(d=>{
