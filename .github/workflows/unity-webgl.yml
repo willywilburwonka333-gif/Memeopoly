@@ -1,0 +1,77 @@
+name: Build and publish Memeopoly Unity WebGL
+
+# Use Actions > Build and publish Memeopoly Unity WebGL > Run workflow
+# Only a successfully compiled Unity player is published. No web imitation.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: memeopoly-unity-pages
+  cancel-in-progress: false
+
+jobs:
+  unity-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Unity build activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${UNITY_LICENSE}" && -z "${UNITY_SERIAL}" ]]; then
+            echo "::error::A Unity license is required before CI can compile WebGL. Activate Unity in Hub and add UNITY_LICENSE, UNITY_EMAIL and UNITY_PASSWORD to repository Actions secrets (or use a Pro UNITY_SERIAL). No Unity build has been produced."
+            exit 1
+          fi
+
+      - name: Compile the actual Unity WebGL player
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: unity
+          unityVersion: 6000.0.60f1
+          targetPlatform: WebGL
+          buildMethod: Memeopoly.Editor.MemeopolyWebGLBuild.Build
+          allowDirtyBuild: true
+
+      - name: Confirm actual compiled Unity output exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/WebGL/Memeopoly/index.html
+          test -d build/WebGL/Memeopoly/Build
+          find build/WebGL/Memeopoly/Build -type f | grep -q .
+          echo "Unity WebGL output verified."
+
+      - name: Upload distributable WebGL build
+        uses: actions/upload-artifact@v4
+        with:
+          name: memeopoly-actual-unity-webgl
+          path: build/WebGL/Memeopoly
+          if-no-files-found: error
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Unity WebGL to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/WebGL/Memeopoly
+
+      - name: Publish clickable Unity game
+        id: deployment
+        uses: actions/deploy-pages@v4
