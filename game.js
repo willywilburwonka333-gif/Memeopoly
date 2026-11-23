@@ -623,7 +623,7 @@
     state.landmarks.forEach((landmark,i)=>{
       const level=Math.max(0,Math.min(5,Number(landmark.level)||0));
       const cost=costFor(level),canBuild=level<5&&!state.completed&&state.coins>=cost;
-      const plot=document.createElement("button");plot.type="button";plot.className="city-plot";plot.dataset.level=String(level);plot.dataset.index=String(i);
+      const plot=document.createElement("button");plot.type="button";plot.className="city-plot";plot.dataset.level=String(level);plot.dataset.index=String(i);plot.dataset.landmark=String(i);
       plot.style.setProperty("--city-hue",String((i*41+state.worldIndex*35)%360));
       plot.disabled=level===5||state.completed;
       plot.setAttribute("aria-label",landmark.name+", level "+level+" of 5. "+(level===5?"Fully upgraded":("Build for "+number(cost)+" coins"+(canBuild?"":"; insufficient coins"))));
@@ -632,9 +632,14 @@
       const facade=document.createElement("span");facade.className="city-structure-facade";
       const windows=document.createElement("span");windows.className="city-structure-windows";
       const emblem=document.createElement("span");emblem.className="city-structure-emblem";emblem.textContent=landmarkIcons[i]||"🏢";
-      building.append(roof,facade,windows,emblem);
+      const ornament=document.createElement("span");ornament.className="city-structure-ornament";
+      const awning=document.createElement("span");awning.className="city-structure-awning";
+      const spire=document.createElement("span");spire.className="city-structure-spire";
+      building.append(roof,facade,windows,awning,spire,ornament,emblem);
       const levelBadge=document.createElement("span");levelBadge.className="city-plot-level";levelBadge.textContent=level===5?"★":level===0?"+":"Lv"+level;
-      plot.append(building,levelBadge);
+      const plotName=document.createElement("span");plotName.className="city-plot-name";plotName.textContent=landmark.name;
+      const construction=document.createElement("span");construction.className="city-construction-frame";construction.setAttribute("aria-hidden","true");
+      plot.append(construction,building,plotName,levelBadge);
       plot.addEventListener("click",()=>{
         if(state.coins<cost){addLog("🏗️ "+landmark.name+" needs "+number(cost)+" coins to build.");renderUI();return;}
         upgradeLandmark(i);
