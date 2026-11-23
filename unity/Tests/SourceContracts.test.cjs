@@ -147,6 +147,8 @@ assert.match(art,/new Texture2D\(N,N,TextureFormat\.RGBA32,false\)/);
 assert.match(audio,/AudioClip\.Create/);
 assert.match(audio,/public void SetMuted/);
 assert.match(audio,/public void Play\(MemeopolySfx kind\)/);
+assert.match(read('unity/Assets/Scripts/MemeopolyUIArt.cs'),/Sprite\.Create/);
+assert.match(game,/MemeopolyUIArt\.Rounded/,'all HUD panels and buttons use original rounded visuals');
 assert.match(effects,/public static void Burst/);
 assert.match(effects,/new ParticleSystem\.MinMaxGradient/);
 assert.match(read('unity/Assets/Tests/Editor/RulesTests.cs'),/AlbumCollectingAllEightAwardsOnce/);
