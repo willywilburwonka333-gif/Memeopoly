@@ -89,7 +89,7 @@ assert.match(read('unity/Assets/Tests/Editor/RulesTests.cs'),
 const mobileTemplate = read('unity/Assets/WebGLTemplates/MemeopolyMobile/index.html');
 const mobileHook = read('unity/Assets/Editor/MemeopolyMobileWebGLPrebuild.cs');
 assert.match(mobileTemplate,/viewport-fit=cover/,'supports iPhone safe areas');
-assert.match(mobileTemplate,/width:100%;height:100dvh/,'fills mobile browser viewport');
+assert.match(mobileTemplate,/width:100%;height:100%;height:100dvh/,'fills mobile browser viewport');
 assert.match(mobileTemplate,/matchWebGLToCanvasSize:true/,'Unity render target follows resize');
 assert.match(mobileTemplate,/createUnityInstance\(canvas,config/,'boots the actual Unity player');
 assert.match(mobileHook,/IPreprocessBuildWithReport/,'works with Unity Cloud Build Automation');
