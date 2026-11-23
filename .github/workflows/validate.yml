@@ -41,3 +41,5 @@ jobs:
           }
           console.log('Manifest, DOM references, save tools and progression features verified.');
           NODE
+      - name: Verify Unity 3D source contracts (not Unity compilation)
+        run: node unity/Tests/SourceContracts.test.cjs
