@@ -44,3 +44,5 @@ jobs:
           NODE
       - name: Verify Unity 3D source contracts (not Unity compilation)
         run: node unity/Tests/SourceContracts.test.cjs
+      - name: Scan every Unity C-sharp file for invalid escapes and syntax structure
+        run: node unity/Tests/CSharpSourceSanity.test.cjs
