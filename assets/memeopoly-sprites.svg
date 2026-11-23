@@ -55,4 +55,21 @@
 <path d="m24 5 8-4 8 4-8 5Z" fill="#ef8bbb" stroke="#9b4d78" stroke-width="1.8"/>
 <circle cx="32" cy="5" r="2" fill="#fff5dc"/>
 <path d="M24 4q-3-4 0-5m8 4q-2-4 1-6" fill="none" stroke="#e8e6f7" stroke-width="1.6" stroke-linecap="round"/>
+</symbol><symbol id="token-wooden-runner" viewBox="0 0 64 64">
+<title>Timber Dash, original wooden chibi sprinter</title>
+<ellipse cx="31" cy="60" rx="25" ry="3" fill="#09132d" opacity=".3"/>
+<path d="M28 41 17 53 11 49 24 35M39 41l10 13 6-4-12-16" fill="#bd7745" stroke="#653d43" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="m9 48 10 5-3 6H4q-3-5 5-11Zm43 1 8 5q3 6-4 6H44l-2-6Z" fill="#f3a451" stroke="#6a3e5d" stroke-width="2.5"/>
+<path d="M23 34q-12-1-17 11l5 4 15-10m16-5q11 2 16-9l-6-4-13 10" fill="#b7774c" stroke="#674453" stroke-width="3" stroke-linecap="round"/>
+<path d="M23 30 18 45q14 7 28-1L41 29Z" fill="#39c6c5" stroke="#235b75" stroke-width="2.8"/>
+<path d="M25 34h14l2 8q-10 5-20 0Z" fill="#fff3a8"/>
+<path d="M22 8q-13 7-11 20 1 13 20 16 20-2 22-17 1-14-12-20Z" fill="#c88b57" stroke="#69434b" stroke-width="3"/>
+<path d="M18 12q-3 14 2 23M26 8q-3 16 0 32M36 8q3 16 0 31M45 12q3 13-1 22" stroke="#8d563f" stroke-width="2" fill="none" opacity=".72"/>
+<path d="M17 14q13-9 29 0" stroke="#f6c28b" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M16 13 23 5 39 4l10 9-4 5H19Z" fill="#f8c35d" stroke="#77506a" stroke-width="2.5"/>
+<path d="M40 6q13 0 16 7l-11 3" fill="#ee875f" stroke="#77506a" stroke-width="2.5"/>
+<path d="M20 25q4-4 9 0m6 0q5-4 9 0" stroke="#523b47" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<circle cx="25" cy="28" r="2.3" fill="#273a55"/><circle cx="39" cy="28" r="2.3" fill="#273a55"/>
+<path d="M27 35q5 4 10 0" fill="none" stroke="#784447" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M11 40 4 35m9 10-9-2" stroke="#fff4a2" stroke-width="2" stroke-linecap="round"/>
 </symbol></defs></svg>
