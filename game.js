@@ -600,28 +600,47 @@
   $("spaceInspectorClose").addEventListener("click",()=>{$("spaceInspector").hidden=true;});
   // Board V2: persistent miniature city buildings driven by saved property levels.
   // The city is scenery only; interactive perimeter tiles remain separate.
+  // The board city is the build screen: choose a plot and construct it in place.
   function renderCityBuildings(){
     const center=$("boardCenter");if(!center)return;
     let district=center.querySelector(".meme-city-district");
-    if(!district){district=document.createElement("div");district.className="meme-city-district";district.setAttribute("aria-label","Your growing Meme Street city");center.append(district);}
-    const count=state.landmarks.length;
-    const signature=state.worldIndex+":"+state.landmarks.map(l=>l.level).join(",");
+    if(!district){district=document.createElement("div");district.className="meme-city-district";district.setAttribute("aria-label","Interactive city construction plots");center.append(district);}
+    const signature=state.worldIndex+":"+state.coins+":"+state.completed+":"+state.landmarks.map(l=>l.level).join(",");
     if(district.dataset.signature===signature)return;
     district.dataset.signature=signature;
     district.replaceChildren();
-    const road=document.createElement("div");road.className="meme-city-road";road.setAttribute("aria-hidden","true");district.append(road);
+    const skyline=document.createElement("div");skyline.className="city-skyline";skyline.setAttribute("aria-hidden","true");district.append(skyline);
+    const roads=document.createElement("div");roads.className="city-road-network";roads.setAttribute("aria-hidden","true");district.append(roads);
+    const blocks=document.createElement("div");blocks.className="city-plot-grid";district.append(blocks);
     state.landmarks.forEach((landmark,i)=>{
-      const building=document.createElement("div");building.className="meme-city-building";
       const level=Math.max(0,Math.min(5,Number(landmark.level)||0));
-      building.dataset.level=String(level);building.style.setProperty("--city-column",String(i%5));building.style.setProperty("--city-row",String(Math.floor(i/5)));
-      building.style.setProperty("--city-hue",String((i*41+state.worldIndex*35)%360));
-      building.setAttribute("title",landmark.name+" · Level "+level+" of 5");
-      const roof=document.createElement("span");roof.className="meme-building-roof";roof.setAttribute("aria-hidden","true");
-      const face=document.createElement("span");face.className="meme-building-face";face.setAttribute("aria-hidden","true");
-      const windows=document.createElement("span");windows.className="meme-building-windows";windows.setAttribute("aria-hidden","true");
-      const label=document.createElement("span");label.className="meme-building-icon";label.textContent=landmarkIcons[i]||"🏢";label.setAttribute("aria-hidden","true");
-      building.append(roof,face,windows,label);district.append(building);
+      const cost=costFor(level),canBuild=level<5&&!state.completed&&state.coins>=cost;
+      const plot=document.createElement("button");plot.type="button";plot.className="city-plot";plot.dataset.level=String(level);plot.dataset.index=String(i);
+      plot.style.setProperty("--city-hue",String((i*41+state.worldIndex*35)%360));
+      plot.disabled=level===5||state.completed;
+      plot.setAttribute("aria-label",landmark.name+", level "+level+" of 5. "+(level===5?"Fully upgraded":("Build for "+number(cost)+" coins"+(canBuild?"":"; insufficient coins"))));
+      const building=document.createElement("span");building.className="city-structure";building.setAttribute("aria-hidden","true");
+      const roof=document.createElement("span");roof.className="city-structure-roof";
+      const facade=document.createElement("span");facade.className="city-structure-facade";
+      const windows=document.createElement("span");windows.className="city-structure-windows";
+      const emblem=document.createElement("span");emblem.className="city-structure-emblem";emblem.textContent=landmarkIcons[i]||"🏢";
+      building.append(roof,facade,windows,emblem);
+      const levelBadge=document.createElement("span");levelBadge.className="city-plot-level";levelBadge.textContent=level===5?"★":level===0?"+":"Lv"+level;
+      plot.append(building,levelBadge);
+      plot.addEventListener("click",()=>{
+        if(state.coins<cost){addLog("🏗️ "+landmark.name+" needs "+number(cost)+" coins to build.");renderUI();return;}
+        upgradeLandmark(i);
+      });
+      blocks.append(plot);
     });
+  }
+  function animateCityConstruction(index,level){
+    const plot=document.querySelector('.city-plot[data-index="'+index+'"]');if(!plot)return;
+    if(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)return;
+    plot.classList.add("city-just-built");
+    const burst=document.createElement("span");burst.className="city-build-burst";burst.textContent=level===5?"★ MAX!":"⬆ LV "+level;burst.setAttribute("aria-hidden","true");plot.append(burst);
+    burst.addEventListener("animationend",()=>burst.remove(),{once:true});
+    window.setTimeout(()=>{burst.remove();plot.classList.remove("city-just-built");},1250);
   }
   function renderBoard(){
     const el=$("board");el.querySelectorAll(".tile").forEach(t=>t.remove());
@@ -871,6 +890,7 @@
     addLog("🏗️ "+lm.name+" upgraded to level "+lm.level+". +"+number(lm.level*500)+" followers.");
     checkCompletion();checkAchievements();renderUI();save();
     animateConstruction(index,lm.level);
+    animateCityConstruction(index,lm.level);
   }
   function animateConstruction(index,level){
     const card=$("landmarks").children[index];
