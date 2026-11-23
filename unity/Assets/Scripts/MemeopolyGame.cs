@@ -56,6 +56,7 @@ namespace Memeopoly
             audioEngine=new MemeopolyAudio(transform,save.soundMuted);
             SetupCameraAndLight();
             city = new MemeopolyCity(transform);
+            city.ApplyWorldTheme(save.worldIndex);
             city.SetToken(save.position);
             city.SelectToken(save.selectedToken);
             city.SetDice(save.lastDieA,save.lastDieB);
@@ -86,6 +87,8 @@ namespace Memeopoly
             for(int i=0;i<6;i++) city.RenderLandmark(i,save.buildings[i],false);
             city.SetToken(save.position);
             city.SetDice(save.lastDieA,save.lastDieB);
+            city.ApplyWorldTheme(save.worldIndex);
+            city.SelectToken(save.selectedToken);
             MemeopolyProgression.SyncDaily(save,NowMs());
             Persist();
             Notify("Existing Memeopoly browser save imported safely.");
@@ -157,7 +160,7 @@ namespace Memeopoly
                 for (int z=-1; z<=1; z+=2)
                     for (int y=0; y<=1; y++)
                     {
-                        Vector3 point=new Vector3(x*8.65f,y*5.3f,z*8.65f);
+                        Vector3 point=new Vector3(x*8.65f,y*6.3f,z*8.65f);
                         Vector3 projected=boardCamera.transform.InverseTransformPoint(point);
                         min=Vector2.Min(min,new Vector2(projected.x,projected.y));
                         max=Vector2.Max(max,new Vector2(projected.x,projected.y));
@@ -261,7 +264,7 @@ namespace Memeopoly
                 new Vector2(.57f,.96f),23,Gold,TextAnchor.MiddleLeft,true);
             worldText=Label("",header,new Vector2(.49f,.56f),
                 new Vector2(.82f,.96f),12,Aqua,TextAnchor.MiddleRight,true);
-            MakeButton("≡",header,new Vector2(.84f,.57f),new Vector2(.975f,.96f),
+            MakeButton("MENU",header,new Vector2(.84f,.57f),new Vector2(.975f,.96f),
                 Navy,Gold,OpenHub);
             resources=Label("",header,new Vector2(.045f,.07f),
                 new Vector2(.965f,.58f),13,Pale,TextAnchor.MiddleLeft,true);
@@ -447,6 +450,7 @@ namespace Memeopoly
         {
             if(playing||!MemeopolyRules.NextWorld(save))return;
             for(int i=0;i<6;i++)city.RenderLandmark(i,0,false);
+            city.ApplyWorldTheme(save.worldIndex);
             city.SetToken(0);
             ApplySelection(0);
             audioEngine.Play(MemeopolySfx.Reward);
