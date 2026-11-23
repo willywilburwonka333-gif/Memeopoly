@@ -1133,7 +1133,7 @@
       if(i===steps-1)gameSound(680,.12);
     }
     setDiceFace(dieOne,dieTwo);
-    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" spaces · rewards ×"+multiplier";
+    $("diceText").textContent="🎲 "+dieOne+" + "+dieTwo+" = "+roll+" spaces · rewards ×"+multiplier;
     revealBoardTile(state.position);
     handleTile(board[state.position]);
     tileCelebration(board[state.position]);
