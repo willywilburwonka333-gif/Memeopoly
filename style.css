@@ -465,3 +465,10 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 .world-progress-banner strong{font-size:clamp(13px,2vw,17px)}.world-progress-banner span{font-size:12px;color:#d7d0ff}.world-next-button{margin-left:auto;border:1px solid #ffe99a;background:linear-gradient(135deg,#ffcf69,#ff9f62);color:#25153d;border-radius:12px;font-weight:800;min-height:42px;padding:8px 14px;cursor:pointer}.world-next-button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme="2"] #board{filter:hue-rotate(45deg)}body[data-world-theme="3"] #board{filter:hue-rotate(90deg)}body[data-world-theme="4"] #board{filter:hue-rotate(140deg)}body[data-world-theme="5"] #board{filter:hue-rotate(185deg)}body[data-world-theme="6"] #board{filter:hue-rotate(235deg)}body[data-world-theme="7"] #board{filter:hue-rotate(285deg)}
 @media(max-width:650px){.world-progress-banner{padding:9px 10px;gap:5px 10px}.world-next-button{width:100%;margin:4px 0 0}}
+
+/* Sharko: first original Memeopoly brainrot token, animated independently of board tiles. */
+.collectible-token[data-token="sharko"]{filter:drop-shadow(0 2px 3px #101638bb)}
+.tile.player .collectible-token[data-token="sharko"] .creator-sprite{animation:sharkoBob 1.5s ease-in-out infinite;transform-origin:center 85%}
+.cosmetic-card.equipped .collectible-token[data-token="sharko"] .creator-sprite{animation:sharkoBob 1.8s ease-in-out infinite;transform-origin:center 85%}
+@keyframes sharkoBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.collectible-token[data-token="sharko"] .creator-sprite{animation:none!important}}
