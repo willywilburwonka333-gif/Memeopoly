@@ -1,5 +1,5 @@
 const CACHE_PREFIX="memeopoly-shell-v";
-const CACHE=CACHE_PREFIX+"23";
+const CACHE=CACHE_PREFIX+"24";
 const ASSETS=["./","./index.html","./style.css","./game.js","./manifest.webmanifest","./icon.svg","./assets/memeopoly-sprites.svg"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
