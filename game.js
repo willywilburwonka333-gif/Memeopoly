@@ -605,7 +605,7 @@
     let district=center.querySelector(".meme-city-district");
     if(!district){district=document.createElement("div");district.className="meme-city-district";district.setAttribute("aria-label","Your growing Meme Street city");center.append(district);}
     const count=state.landmarks.length;
-    const signature=state.worldIndex+":"+state.landmarks.map(l=>l.level).join(",");
+    const signature=state.worldIndex+":"+state.coins+":"+state.completed+":"+state.landmarks.map(l=>l.level).join(",");
     if(district.dataset.signature===signature)return;
     district.dataset.signature=signature;
     district.replaceChildren();
