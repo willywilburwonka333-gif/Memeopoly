@@ -44,6 +44,7 @@ namespace Memeopoly
         public readonly Transform Root;
 
         private readonly Material[] tileMaterials = new Material[8];
+        private readonly Material[] trackSurfaceMaterials = new Material[8];
         private readonly Material ocean, pavement, grass, edge, gold, ink, cream, light;
         private readonly Color[] buildingColours =
         {
@@ -77,6 +78,19 @@ namespace Memeopoly
             tileMaterials[5] = Mat(new Color(.26f,.85f,.85f),.17f);
             tileMaterials[6] = Mat(new Color(.99f,.48f,.7f),.18f);
             tileMaterials[7] = Mat(new Color(.55f,.7f,1f),.18f);
+            // Eight original procedural tile icon materials. The 3D character
+            // paint is kept untextured; only the board's upper surfaces use icons.
+            for(int k=0;k<trackSurfaceMaterials.Length;k++)
+            {
+                trackSurfaceMaterials[k]=new Material(tileMaterials[k]);
+                trackSurfaceMaterials[k].name="Memeopoly tile "+k;
+                trackSurfaceMaterials[k].color=Color.white;
+                Texture2D icon=MemeopolyArt.MakeTile(k);
+                if(trackSurfaceMaterials[k].HasProperty("_MainTex"))
+                    trackSurfaceMaterials[k].SetTexture("_MainTex",icon);
+                if(trackSurfaceMaterials[k].HasProperty("_BaseMap"))
+                    trackSurfaceMaterials[k].SetTexture("_BaseMap",icon);
+            }
             CreateEnvironment();
             CreateTrack();
             CreatePlots();
@@ -138,6 +152,35 @@ namespace Memeopoly
         private GameObject Cylinder(string name, Transform parent, Vector3 local, Vector3 size, Material material)
         {
             return Shape(PrimitiveType.Cylinder,name,parent,local,size,material);
+        }
+
+        private GameObject Roof(string name,Transform parent,Vector3 local,
+            float width,float height,float depth,Material material)
+        {
+            // Real six-vertex custom prism mesh, rather than a scaled cube.
+            // Roof line changes across building silhouettes and upgrade levels.
+            float w=width*.5f,d=depth*.5f;
+            Vector3[] points={
+                new Vector3(-w,0,-d),new Vector3(w,0,-d),new Vector3(0,height,-d),
+                new Vector3(-w,0,d),new Vector3(w,0,d),new Vector3(0,height,d)
+            };
+            int[] triangles={
+                0,2,1, 3,4,5,        // triangular gables
+                0,1,4, 0,4,3,        // underside
+                0,3,5, 0,5,2,        // roof slope A
+                1,2,5, 1,5,4         // roof slope B
+            };
+            var mesh=new Mesh();
+            mesh.name="Original sloped roof";
+            mesh.vertices=points;
+            mesh.triangles=triangles;
+            mesh.RecalculateNormals();
+            var obj=new GameObject(name);
+            obj.transform.SetParent(parent,false);
+            obj.transform.localPosition=local;
+            obj.AddComponent<MeshFilter>().sharedMesh=mesh;
+            obj.AddComponent<MeshRenderer>().sharedMaterial=material;
+            return obj;
         }
 
         private void CreateEnvironment()
@@ -227,7 +270,7 @@ namespace Memeopoly
                 var tileRoot = new GameObject(i.ToString("00")+" "+MemeopolyRules.TileKinds[i]).transform;
                 tileRoot.SetParent(Root,false);
                 tileRoot.localPosition=p;
-                Material tile = tileMaterials[KindIndex(MemeopolyRules.TileKinds[i])];
+                Material tile = trackSurfaceMaterials[KindIndex(MemeopolyRules.TileKinds[i])];
                 Cube("gold border",tileRoot,new Vector3(0,.11f,0),new Vector3(.97f,.24f,.97f),gold);
                 Cube("space",tileRoot,new Vector3(0,.25f,0),new Vector3(.85f,.16f,.85f),tile);
                 Cube("inset",tileRoot,new Vector3(0,.34f,0),new Vector3(.46f,.03f,.46f),ink);
@@ -330,6 +373,18 @@ namespace Memeopoly
                     new Vector3(2.20f,height*.49f,.12f),secondary);
                 Cube("gold roof trim",stage,new Vector3(0,.48f+height,0),
                     new Vector3(2.93f,.19f,2.78f),gold);
+                // Real staged construction: each level adds a gold structural
+                // beam and a second illuminated floor marker to the model.
+                for(int floor=0;floor<level;floor++)
+                {
+                    float beamY=.73f+floor*.46f;
+                    Cube("stage floor edge",stage,new Vector3(0,beamY,1.26f),
+                        new Vector3(2.82f,.09f,.10f),gold);
+                    for(int s=-1;s<=1;s+=2)
+                        Cube("stage edge LED",stage,
+                            new Vector3(s*1.33f,beamY+.09f,0),
+                            new Vector3(.065f,.13f,2.56f),light);
+                }
                 // Every upgrade visibly adds another floor and architectural details.
                 for (int floor=0;floor<level;floor++)
                 {
@@ -410,6 +465,30 @@ namespace Memeopoly
                         new Vector3(.66f,.53f,.66f),gold);
                     Sphere("palace gem",stage,new Vector3(0,1.42f+height,0),Vector3.one*.38f,light);
                 }
+                // Distinct roofline geometry per land plot, increasingly
+                // pronounced from stage 2 to 5 rather than a single taller box.
+                if(index==1)
+                    Roof("Crocwing hangar A-frame",stage,
+                        new Vector3(0,height+.60f,.44f),2.25f,.62f,1.55f,secondary);
+                else if(index==2)
+                {
+                    Roof("Mocha café pitched roof",stage,
+                        new Vector3(0,height+.64f,.40f),2.3f,.50f,1.4f,primary);
+                    Cylinder("mocha rooftop bean",stage,
+                        new Vector3(.7f,height+1.31f,.10f),
+                        new Vector3(.14f,.30f,.14f),gold);
+                }
+                else if(index==4)
+                {
+                    Roof("Meme factory sawtooth",stage,
+                        new Vector3(-.58f,height+.61f,0),1.35f,.66f,2.2f,ink);
+                    Roof("Meme factory sawtooth two",stage,
+                        new Vector3(.58f,height+.61f,0),1.35f,.66f,2.2f,secondary);
+                }
+                else if(index==5)
+                    Roof("Algorithm Palace royal gable",stage,
+                        new Vector3(0,height+.67f,0),2.8f,.63f,2.70f,secondary);
+
                 if(level>=3)
                 {
                     Sphere("upgrade halo",stage,new Vector3(0,height+1.2f,0),
