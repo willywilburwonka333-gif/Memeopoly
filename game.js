@@ -371,7 +371,7 @@
   const landmarkNames=["Sharko Surf Shack","Crocwing Flight Academy","Prima Mocha Café","Viral Video Tower","Meme Factory","Algorithm Palace"];
   const BOARD_UPGRADES=landmarkNames.length*5;
   const boardLandmark=(name)=>state.landmarks[legacyLandmarkNames.indexOf(name)%landmarkNames.length]||state.landmarks[0];
-  const landmarkIcons=["🏠","🎤","💻","💡","🏢","🕹️","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
+  const landmarkIcons=["🦈","🐊","☕","📺","🏭","🏰","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
   const memeCards=["Doge","Pepe","NPC Streamer","Side Eye Cat","Sigma Baby","Ohio Boss","Viral Rat","Distracted Boyfriend"];
   const cardIcons=["🐕","🐸","🕺","🐈","🗿","👑","🐀","💑"];
   const districts=[
@@ -1074,7 +1074,7 @@
       // The board-lap reward is paid when crossing Go; landing on Go must not pay it twice.
       case"GO":addLog("🚀 GO VIRAL! Board-lap creator bonus collected.");break;
       case"COINS":{const reward=(1000+currentEra()*500)*activeRewardMultiplier;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
-      case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
+      case"LANDMARK":{const lm=boardLandmark(tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
       case"HYPE":awardHype(30*activeRewardMultiplier);addLog("⚡ Hype boost! +"+number(30*activeRewardMultiplier)+" hype.");break;
       case"SHIELD":shieldDrop();break;
