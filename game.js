@@ -1032,6 +1032,17 @@
   }
   // Travel uses a temporary fixed-position avatar; game state remains authoritative.
   // Always render the destination even when motion is disabled or unavailable.
+  // Move only the token node. Rebuilding all 60 tiles after each hop caused
+  // repeated glow animations and visible board-wide flashing on mobile.
+  function syncTokenPosition(index){
+    const tiles=$("board").querySelectorAll(".tile");
+    const target=tiles[index];if(!target)return;
+    const previous=$("board").querySelector(".tile.player");
+    let token=previous?.querySelector(".token")||$("board").querySelector(".token");
+    if(previous&&previous!==target){previous.classList.remove("player");previous.removeAttribute("aria-current");}
+    if(!token){token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(equippedTokenAvatar());}
+    token.style.visibility="";target.append(token);target.classList.add("player");target.setAttribute("aria-current","location");
+  }
   async function travelToken(fromIndex,toIndex,duration){
     const boardElement=$("board");
     const source=boardElement.querySelector(".tile.player .token");
@@ -1040,11 +1051,11 @@
     revealBoardTile(toIndex);
     const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!source||!destination||!effectsOn||reduceMotion||!source.animate){
-      renderBoard();return;
+      syncTokenPosition(toIndex);return;
     }
     const start=source.getBoundingClientRect();
     const end=destination.getBoundingClientRect();
-    if(!start.width||!end.width){renderBoard();return;}
+    if(!start.width||!end.width){syncTokenPosition(toIndex);return;}
     // The player token is anchored to the tile's bottom-right, not its centre.
     // Landing on the centre made the animation visibly snap at every step.
     const targetLeft=end.right-start.width-5;
@@ -1085,7 +1096,7 @@
       await motion.finished.catch(()=>{});
     }finally{
       ghost.remove();trail.forEach(el=>el.remove());
-      renderBoard();
+      syncTokenPosition(toIndex);
     }
   }
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
