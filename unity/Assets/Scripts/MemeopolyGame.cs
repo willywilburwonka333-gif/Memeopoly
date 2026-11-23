@@ -18,7 +18,7 @@ namespace Memeopoly
         private MemeopolyCity city;
         private Camera boardCamera;
         private readonly System.Random random = new System.Random();
-        private bool playing;
+        private bool playing;\n        private bool diceSettled=true;
         private int selected;
         private int multiplierIndex;
         private readonly int[] multipliers = {1,2,5,10};
@@ -313,8 +313,7 @@ namespace Memeopoly
             upgradeInfo.text=cost<0?"MAX STAGE · Monument complete":"NEXT BUILD · "+cost.ToString("N0")+" coins";
             int mult=multipliers[multiplierIndex];
             multiplierButton.GetComponentInChildren<Text>().text="x"+mult;
-            diceInfo.text="🎲 "+save.lastDieA+" + "+save.lastDieB+" = "+(save.lastDieA+save.lastDieB)
-                +"     TURN "+save.turn;
+            diceInfo.text=diceSettled ? "DICE "+save.lastDieA+" + "+save.lastDieB+" = "+(save.lastDieA+save.lastDieB)+"     TURN "+save.turn : "DICE ROLLING...";
             if(status!=null) status.text=toast;
             bool complete=MemeopolyRules.Completed(save);
             rollButton.interactable=!playing&&!complete&&save.dice>=mult;
@@ -368,8 +367,7 @@ namespace Memeopoly
 
         private IEnumerator RollSequence(int multiplier)
         {
-            playing=true;
-            int start=save.position;
+            playing=true;\n            diceSettled=false;\n            int start=save.position;
             int a=random.Next(1,7),b=random.Next(1,7);
             TurnOutcome result=MemeopolyRules.Roll(save,multiplier,a,b,random);
             Persist();
@@ -393,8 +391,7 @@ namespace Memeopoly
             }
             city.Dice[0].localPosition=diceInitialA;
             city.Dice[1].localPosition=diceInitialB;
-            city.SetDice(a,b);
-            Notify("ROLLED "+a+" + "+b+" = "+result.steps+"!"); RefreshHUD();
+            city.SetDice(a,b);\n            diceSettled=true;\n            Notify("ROLLED "+a+" + "+b+" = "+result.steps+"!"); RefreshHUD();
             yield return new WaitForSeconds(.19f);
 
             for(int step=1;step<=result.steps;step++)
