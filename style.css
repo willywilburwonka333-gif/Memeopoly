@@ -503,3 +503,17 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 #board .tile .tile-icon{width:85%!important;height:85%!important;max-width:32px!important;max-height:32px!important}
 #board .tile .token{max-width:100%!important;max-height:100%!important}
 @media(min-width:700px){.board-viewport{max-width:760px!important;margin-inline:auto!important}#board{gap:2px!important;padding:5px!important}}
+
+/* MEME STREET BOARD V2 — isometric-feeling miniature city with 20 levelled buildings. */
+#boardCenter .creator-city{display:none!important}
+#boardCenter .board-city-caption{z-index:3;bottom:2%!important;font-size:clamp(10px,2.4vw,21px)!important}
+.meme-city-district{position:absolute;inset:0;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 52% 20%,#c57dff55,transparent 55%),linear-gradient(145deg,#1e265c 5%,#292057 50%,#0d2348 100%);pointer-events:none}
+.meme-city-district:before{content:"";position:absolute;inset:4%;background:repeating-linear-gradient(0deg,transparent 0 19%,#61d8ff33 19% 20%),repeating-linear-gradient(90deg,transparent 0 19%,#61d8ff33 19% 20%);transform:skewY(-5deg);border:2px solid #d59bff55;border-radius:9%;box-shadow:inset 0 0 40px #b45bff55}
+.meme-city-road{position:absolute;inset:12%;border:clamp(3px,1vw,12px) solid #3e377b;border-radius:12%;box-shadow:0 0 0 2px #6ce7ff88,inset 0 0 25px #050e33}
+.meme-city-building{position:absolute;left:calc(10% + var(--city-column)*17%);top:calc(11% + var(--city-row)*20%);width:13%;height:16%;filter:drop-shadow(2px 4px 2px #080b3288);transform:translateY(calc((5 - var(--level,0))*1%));z-index:1}
+.meme-city-building .meme-building-face{position:absolute;left:10%;right:8%;bottom:4%;height:calc(32% + var(--building-growth,0)*9%);background:linear-gradient(100deg,hsl(var(--city-hue) 70% 34%),hsl(var(--city-hue) 85% 60%));border:1px solid #b9ecff99;border-radius:2px 2px 3px 3px;box-shadow:inset -5px 0 #09113b55}
+.meme-city-building .meme-building-roof{position:absolute;left:3%;right:0;bottom:calc(32% + var(--building-growth,0)*9%);height:15%;background:linear-gradient(145deg,#ffe1a5,#b569ee 70%);clip-path:polygon(0 100%,22% 0,88% 0,100% 100%);filter:drop-shadow(0 1px 2px #0009)}
+.meme-city-building .meme-building-windows{position:absolute;left:24%;right:18%;bottom:10%;height:calc(20% + var(--building-growth,0)*7%);background:repeating-linear-gradient(90deg,#7efbff 0 17%,transparent 17% 32%),repeating-linear-gradient(0deg,#f9e48c 0 12%,transparent 12% 30%);opacity:.75}
+.meme-city-building .meme-building-icon{position:absolute;left:50%;bottom:40%;transform:translateX(-50%);font-size:clamp(8px,1.9vw,18px);filter:drop-shadow(0 2px 1px #050a35)}
+.meme-city-building[data-level="0"]{--building-growth:0;opacity:.75}.meme-city-building[data-level="1"]{--building-growth:1}.meme-city-building[data-level="2"]{--building-growth:2}.meme-city-building[data-level="3"]{--building-growth:3}.meme-city-building[data-level="4"]{--building-growth:4}.meme-city-building[data-level="5"]{--building-growth:5;filter:drop-shadow(0 0 6px #ffe58a)}
+@media(prefers-reduced-motion:reduce){.meme-city-building{transition:none!important}}
