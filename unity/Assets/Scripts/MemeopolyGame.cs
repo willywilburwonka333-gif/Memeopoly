@@ -16,6 +16,7 @@ namespace Memeopoly
 #endif
         private GameSave save;
         private MemeopolyCity city;
+        private MemeopolyAudio audioEngine;
         private Camera boardCamera;
         private readonly System.Random random = new System.Random();
         private bool playing;
@@ -31,6 +32,12 @@ namespace Memeopoly
         private float lastRegenCheck;
         private int previousScreenWidth, previousScreenHeight;
         private RectTransform safeRegion;
+        private RectTransform popup;
+        private Text popupTitle, popupDescription;
+        private readonly Button[] popupButtons=new Button[4];
+        private Button popupClose;
+        private enum ScreenPanel { None, Hub, Missions, Album, Tokens, Heist, Rival }
+        private ScreenPanel openPanel=ScreenPanel.None;
         private string toast = "Tap a landmark to build your empire.";
 
         private static readonly Color Deep = new Color(.035f,.05f,.11f,.96f);
@@ -43,15 +50,22 @@ namespace Memeopoly
         {
             gameObject.name="Memeopoly";
             save = GamePersistence.Load();
+            MemeopolyProgression.SyncDaily(save,NowMs());
+            Application.targetFrameRate=60;
+            QualitySettings.antiAliasing=2;
+            audioEngine=new MemeopolyAudio(transform,save.soundMuted);
             SetupCameraAndLight();
             city = new MemeopolyCity(transform);
             city.SetToken(save.position);
+            city.SelectToken(save.selectedToken);
             city.SetDice(save.lastDieA,save.lastDieB);
             for (int i=0;i<6;i++) city.RenderLandmark(i,save.buildings[i],false);
             BuildHUD();
             ApplySelection(0);
             FitWholeBoard();
             RefreshHUD();
+            if(save.pendingHeist) ShowPanel(ScreenPanel.Heist);
+            else if(save.pendingAttack) ShowPanel(ScreenPanel.Rival);
         }
 
         private void Start()
@@ -72,6 +86,7 @@ namespace Memeopoly
             for(int i=0;i<6;i++) city.RenderLandmark(i,save.buildings[i],false);
             city.SetToken(save.position);
             city.SetDice(save.lastDieA,save.lastDieB);
+            MemeopolyProgression.SyncDaily(save,NowMs());
             Persist();
             Notify("Existing Memeopoly browser save imported safely.");
             RefreshHUD();
@@ -102,7 +117,8 @@ namespace Memeopoly
             key.intensity=1.65f;
             key.color=new Color(.98f,.89f,.76f);
             sun.transform.rotation=Quaternion.Euler(48,-36,0);
-            key.shadows=LightShadows.Soft;
+            key.shadows=Application.platform==RuntimePlatform.WebGLPlayer ?
+                LightShadows.None : LightShadows.Soft;
             RenderSettings.ambientLight=new Color(.42f,.49f,.65f);
             RenderSettings.fog=false;
         }
@@ -168,11 +184,12 @@ namespace Memeopoly
             if (Time.unscaledTime-lastRegenCheck>3)
             {
                 lastRegenCheck=Time.unscaledTime;
+                if(MemeopolyProgression.SyncDaily(save,NowMs())) { Persist(); RefreshHUD(); }
                 int before=save.dice;
                 MemeopolyRules.RegenerateDice(save,NowMs());
                 if (before!=save.dice) { Persist(); RefreshHUD(); }
             }
-            if(playing) return;
+            if(playing || openPanel!=ScreenPanel.None) return;
             if(Input.touchCount>0)
             {
                 Touch touch=Input.GetTouch(0);
@@ -242,8 +259,10 @@ namespace Memeopoly
                 new Vector2(0,-92),Vector2.zero,Deep);
             title=Label("MEMEOPOLY",header,new Vector2(.045f,.56f),
                 new Vector2(.57f,.96f),23,Gold,TextAnchor.MiddleLeft,true);
-            worldText=Label("",header,new Vector2(.56f,.56f),
-                new Vector2(.965f,.96f),13,Aqua,TextAnchor.MiddleRight,true);
+            worldText=Label("",header,new Vector2(.49f,.56f),
+                new Vector2(.82f,.96f),12,Aqua,TextAnchor.MiddleRight,true);
+            MakeButton("≡",header,new Vector2(.84f,.57f),new Vector2(.975f,.96f),
+                Navy,Gold,OpenHub);
             resources=Label("",header,new Vector2(.045f,.07f),
                 new Vector2(.965f,.58f),13,Pale,TextAnchor.MiddleLeft,true);
 
@@ -275,6 +294,30 @@ namespace Memeopoly
                 new Vector2(.70f,.19f),12,Aqua,TextAnchor.MiddleLeft,true);
             buildButton=MakeButton("BUILD",dock,new Vector2(.73f,.035f),
                 new Vector2(.965f,.36f),Aqua,Deep,BuildClicked);
+
+            // Full-screen context overlay, created once, used for 3 real
+            // interactive panels plus daily missions/album/token wardrobe.
+            popup=Panel("Memeopoly overlay — swipe-free, tap-friendly",safeRegion,
+                Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,
+                new Color(.014f,.025f,.055f,.96f));
+            RectTransform card=Panel("CENTRAL PANEL",popup,
+                new Vector2(.035f,.16f),new Vector2(.965f,.86f),
+                Vector2.zero,Vector2.zero,Navy);
+            popupTitle=Label("",card,new Vector2(.06f,.86f),
+                new Vector2(.81f,.97f),23,Gold,TextAnchor.MiddleLeft,true);
+            popupClose=MakeButton("X",card,new Vector2(.84f,.88f),
+                new Vector2(.96f,.97f),Deep,Pale,ClosePanel);
+            popupDescription=Label("",card,new Vector2(.07f,.40f),
+                new Vector2(.93f,.84f),17,Pale,TextAnchor.MiddleCenter,false);
+            popupButtons[0]=MakeButton("A",card,new Vector2(.04f,.22f),
+                new Vector2(.48f,.37f),Gold,Deep,()=>PanelAction(0));
+            popupButtons[1]=MakeButton("B",card,new Vector2(.52f,.22f),
+                new Vector2(.96f,.37f),Aqua,Deep,()=>PanelAction(1));
+            popupButtons[2]=MakeButton("C",card,new Vector2(.04f,.045f),
+                new Vector2(.48f,.195f),new Color(.47f,.30f,.88f),Pale,()=>PanelAction(2));
+            popupButtons[3]=MakeButton("D",card,new Vector2(.52f,.045f),
+                new Vector2(.96f,.195f),new Color(.24f,.35f,.54f),Pale,()=>PanelAction(3));
+            popup.gameObject.SetActive(false);
         }
 
         private void UpdateSafeArea()
@@ -367,7 +410,8 @@ namespace Memeopoly
             diceInfo.text=diceSettled ? "DICE "+save.lastDieA+" + "+save.lastDieB+" = "+(save.lastDieA+save.lastDieB)+"    •    TURN "+save.turn : "ROLLING THE DICE...";
             if(status!=null) status.text=toast;
             bool complete=MemeopolyRules.Completed(save);
-            rollButton.interactable=!playing&&!complete&&save.dice>=mult;
+            rollButton.interactable=!playing&&!complete&&save.dice>=mult&&
+                !save.pendingHeist&&!save.pendingAttack;
             buildButton.interactable=!playing&&MemeopolyRules.CanUpgrade(save,selected);
             nextButton.interactable=!playing&&complete;
             buildButton.GetComponentInChildren<Text>().text=
@@ -380,6 +424,7 @@ namespace Memeopoly
         {
             if(playing) return;
             multiplierIndex=(multiplierIndex+1)%multipliers.Length;
+            audioEngine.Play(MemeopolySfx.Menu);
             RefreshHUD();
         }
 
@@ -391,6 +436,8 @@ namespace Memeopoly
                 Notify("Earn more coins to continue construction."); RefreshHUD(); return;
             }
             string message=MemeopolyRules.Upgrade(save,selected);
+            MemeopolyProgression.OnBuild(save,NowMs());
+            audioEngine.Play(MemeopolySfx.Build);
             city.RenderLandmark(selected,save.buildings[selected],true);
             Notify(message);
             Persist(); RefreshHUD();
@@ -402,6 +449,7 @@ namespace Memeopoly
             for(int i=0;i<6;i++)city.RenderLandmark(i,0,false);
             city.SetToken(0);
             ApplySelection(0);
+            audioEngine.Play(MemeopolySfx.Reward);
             Notify("A new meme world is unlocked. Build your next empire!");
             Persist(); RefreshHUD();
         }
@@ -409,10 +457,13 @@ namespace Memeopoly
         private void RollClicked()
         {
             if(playing) return;
+            if(save.pendingHeist) {ShowPanel(ScreenPanel.Heist);return;}
+            if(save.pendingAttack) {ShowPanel(ScreenPanel.Rival);return;}
             MemeopolyRules.RegenerateDice(save,NowMs());
             int mult=multipliers[multiplierIndex];
             if(save.dice<mult) { Notify("Not enough dice. One regenerates every five minutes.");RefreshHUD();return; }
             if(MemeopolyRules.Completed(save)) { Notify("Finish the world! Tap NEXT WORLD.");RefreshHUD();return; }
+            audioEngine.Play(MemeopolySfx.Roll);
             StartCoroutine(RollSequence(mult));
         }
 
@@ -423,6 +474,7 @@ namespace Memeopoly
             int start=save.position;
             int a=random.Next(1,7),b=random.Next(1,7);
             TurnOutcome result=MemeopolyRules.Roll(save,multiplier,a,b,random);
+            MemeopolyProgression.OnRoll(save,NowMs());
             Persist();
             Notify("Rolling..."); RefreshHUD();
             float spinDuration=1.05f;
@@ -463,10 +515,175 @@ namespace Memeopoly
                     yield return null;
                 }
                 city.Token.localPosition=to;
+                if(step%2==0) audioEngine.Play(MemeopolySfx.Step);
             }
             city.SetToken(result.destination);
             Notify(result.message+"   [Roll "+a+" + "+b+" = "+result.steps+"]");
             playing=false;
+            if(save.pendingHeist) ShowPanel(ScreenPanel.Heist);
+            else if(save.pendingAttack) ShowPanel(ScreenPanel.Rival);
+            else if(MemeopolyRules.TileKinds[save.position]=="CARD")
+                audioEngine.Play(MemeopolySfx.Reward);
+            RefreshHUD();
+        }
+
+        private void OpenHub()
+        {
+            if(playing)return;
+            audioEngine.Play(MemeopolySfx.Menu);
+            if(save.pendingHeist) ShowPanel(ScreenPanel.Heist);
+            else if(save.pendingAttack) ShowPanel(ScreenPanel.Rival);
+            else ShowPanel(ScreenPanel.Hub);
+        }
+
+        private void ClosePanel()
+        {
+            // Can't ignore a heist/rival outcome: saved pending choices must
+            // be resolved before another dice roll.
+            if(openPanel==ScreenPanel.Heist || openPanel==ScreenPanel.Rival)return;
+            openPanel=ScreenPanel.None;
+            popup.gameObject.SetActive(false);
+            audioEngine.Play(MemeopolySfx.Menu);
+            RefreshHUD();
+        }
+
+        private void ShowPanel(ScreenPanel mode)
+        {
+            openPanel=mode;
+            popup.gameObject.SetActive(true);
+            popupClose.interactable=mode!=ScreenPanel.Heist&&mode!=ScreenPanel.Rival;
+
+            string headline="",body="";
+            string[] choices={"","","",""};
+            if(mode==ScreenPanel.Hub)
+            {
+                headline="YOUR MEME EMPIRE";
+                body="WORLD "+(save.worldIndex+1)+"   •   "+MemeopolyRules.TotalUpgrades(save)+"/30 BUILDS"+
+                     "\nHEISTS "+save.totalHeists+"   •   RIVALS "+save.totalAttacks+
+                     "\n\nMake your creator empire famous. Select a section.";
+                choices=new[]{"MISSIONS","STICKER ALBUM","CHARACTERS",save.soundMuted?"SOUND OFF":"SOUND ON"};
+            }
+            else if(mode==ScreenPanel.Missions)
+            {
+                MemeopolyProgression.SyncDaily(save,NowMs());
+                headline="DAILY CHALLENGES";
+                body="";
+                for(int i=0;i<3;i++)
+                    body+=MemeopolyProgression.DailyLabel(i)+"   "+
+                        Mathf.Min(MemeopolyProgression.DailyProgress(save,i),
+                            MemeopolyProgression.DailyGoal(i))+"/"+
+                        MemeopolyProgression.DailyGoal(i)+
+                        (((save.dailyRewardMask&(1<<i))!=0)?"  ✓ CLAIMED":"")+"\n\n";
+                choices=new[]{"CLAIM ROLLS","CLAIM BUILDS","CLAIM HEIST","BACK"};
+            }
+            else if(mode==ScreenPanel.Album)
+            {
+                headline="MEME STICKER ALBUM";
+                body="COLLECTED "+MemeopolyProgression.CardCount(save)+"/"+
+                     MemeopolyProgression.Album.Length+"\n\n";
+                foreach(string name in MemeopolyProgression.Album)
+                    body+=(Array.IndexOf(save.cards,name)>=0?"✓ ":"○ ")+name+"\n";
+                if(save.albumRewardPaid)body+="\nALBUM COMPLETED!";
+                choices=new[]{"BACK","","",""};
+            }
+            else if(mode==ScreenPanel.Tokens)
+            {
+                headline="PICK YOUR 3D HERO";
+                body="Change your character anytime.\n\nCURRENT: "+
+                    MemeopolyProgression.Tokens[save.selectedToken]+
+                    "\n\nYour chosen character will travel the board.";
+                choices=new[]{"SHARKO","CROCWING","VIRAL CAT","BACK"};
+            }
+            else if(mode==ScreenPanel.Heist)
+            {
+                headline="ALGORITHM HEIST";
+                body="You found three locked vaults!\n\n"+
+                    "Choose a vault. Riskier options pay more, but security can catch you.\n"+
+                    "Multiplier x"+save.pendingMultiplier;
+                choices=new[]{"SAFE 90%","BOLD 70%","JACKPOT 45%",""};
+            }
+            else if(mode==ScreenPanel.Rival)
+            {
+                headline="CREATOR SHOWDOWN";
+                body="A rival is trying to steal your reach!\n\n"+
+                    "Choose a challenger. Harder opponents pay more when you win.\n"+
+                    "Multiplier x"+save.pendingMultiplier;
+                choices=new[]{"ALGORITHM 88%","COPYCAT 68%","TREND THIEF 48%",""};
+            }
+            popupTitle.text=headline;
+            popupDescription.text=body;
+            for(int i=0;i<4;i++)
+            {
+                popupButtons[i].gameObject.SetActive(choices[i].Length>0);
+                if(choices[i].Length>0)
+                    popupButtons[i].GetComponentInChildren<Text>().text=choices[i];
+                popupButtons[i].interactable=true;
+            }
+        }
+
+        private void PanelAction(int index)
+        {
+            if(openPanel==ScreenPanel.Hub)
+            {
+                if(index==0) ShowPanel(ScreenPanel.Missions);
+                else if(index==1) ShowPanel(ScreenPanel.Album);
+                else if(index==2) ShowPanel(ScreenPanel.Tokens);
+                else if(index==3)
+                {
+                    save.soundMuted=!save.soundMuted;
+                    audioEngine.SetMuted(save.soundMuted);
+                    Persist();
+                    ShowPanel(ScreenPanel.Hub);
+                }
+            }
+            else if(openPanel==ScreenPanel.Missions)
+            {
+                if(index==3) {ShowPanel(ScreenPanel.Hub);return;}
+                string message;
+                bool claimed=MemeopolyProgression.ClaimDaily(save,index,NowMs(),out message);
+                if(claimed)audioEngine.Play(MemeopolySfx.Reward);
+                Notify(message);
+                Persist();
+                ShowPanel(ScreenPanel.Missions);
+                RefreshHUD();
+            }
+            else if(openPanel==ScreenPanel.Album)
+            {
+                ShowPanel(ScreenPanel.Hub);
+            }
+            else if(openPanel==ScreenPanel.Tokens)
+            {
+                if(index==3) {ShowPanel(ScreenPanel.Hub);return;}
+                save.selectedToken=Mathf.Clamp(index,0,2);
+                city.SelectToken(save.selectedToken);
+                audioEngine.Play(MemeopolySfx.Menu);
+                Persist();
+                ShowPanel(ScreenPanel.Tokens);
+            }
+            else if(openPanel==ScreenPanel.Heist && index<3)
+            {
+                string result=MemeopolyProgression.ResolveHeist(save,index,random);
+                Notify(result);
+                audioEngine.Play(result.StartsWith("HEIST BUSTED")?
+                    MemeopolySfx.Failure:MemeopolySfx.Heist);
+                Persist();
+                CloseCompletedEvent();
+            }
+            else if(openPanel==ScreenPanel.Rival && index<3)
+            {
+                string result=MemeopolyProgression.ResolveRival(save,index,random);
+                Notify(result);
+                audioEngine.Play(result.Contains("defeated")?
+                    MemeopolySfx.Reward:MemeopolySfx.Failure);
+                Persist();
+                CloseCompletedEvent();
+            }
+        }
+
+        private void CloseCompletedEvent()
+        {
+            openPanel=ScreenPanel.None;
+            popup.gameObject.SetActive(false);
             RefreshHUD();
         }
 
