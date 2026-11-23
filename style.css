@@ -570,3 +570,15 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 #boardCenter .board-city-caption{pointer-events:none;z-index:4!important;text-shadow:0 2px 5px #080e35,0 0 8px #1b1547!important}
 @media(max-width:650px){.city-plot-grid{gap:1.5%}.city-plot{border-radius:3px}.city-plot-level{padding:0 2px}.city-structure-emblem{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.city-plot.city-just-built .city-structure,.city-build-burst{animation:none!important}.city-structure{transition:none!important}}
+
+
+/* Six-landmark worlds: larger, legible construction sites on a single fitted board. */
+#boardCenter .city-plot-grid{inset:9% 7% 12%;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:5%!important}
+#boardCenter .city-plot{border-radius:clamp(5px,1vw,14px)!important;border:2px solid #a3cfff99!important;background:linear-gradient(145deg,#6259ad,#222f65)!important;box-shadow:inset 0 2px #ffffff50,0 5px 0 #11143b,0 9px 12px #05092288!important}
+#boardCenter .city-plot[data-level="0"]{background:linear-gradient(145deg,#4b528b,#293253)!important;border-style:dashed!important}
+#boardCenter .city-structure{inset:8% 13% 14%}
+#boardCenter .city-structure-emblem{font-size:clamp(13px,3.2vw,30px)!important}
+#boardCenter .city-plot-level{font-size:clamp(10px,2vw,17px)!important;padding:2px 5px!important}
+#boardCenter .city-plot[data-level="5"]{border-color:#ffe18c!important;box-shadow:0 0 17px #ffca6488,inset 0 2px #fff8,0 5px 0 #8d5c31!important}
+@media(max-width:650px){#boardCenter .city-plot-grid{inset:9% 6% 13%;gap:4%!important}#boardCenter .city-plot{border-width:1px!important}#boardCenter .city-plot-level{font-size:10px!important;padding:1px 3px!important}}
+@media(prefers-reduced-motion:reduce){#boardCenter .city-structure{transition:none!important}}

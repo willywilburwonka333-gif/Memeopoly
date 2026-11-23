@@ -367,8 +367,11 @@
   }
 ];
   const coords=[[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[1,12],[1,13],[1,14],[1,15],[1,16],[2,16],[3,16],[4,16],[5,16],[6,16],[7,16],[8,16],[9,16],[10,16],[11,16],[12,16],[13,16],[14,16],[15,16],[16,16],[16,15],[16,14],[16,13],[16,12],[16,11],[16,10],[16,9],[16,8],[16,7],[16,6],[16,5],[16,4],[16,3],[16,2],[16,1],[15,1],[14,1],[13,1],[12,1],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1]];
-  const landmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio","Viral Arcade","Cat Cafe","Stream Tower","Meme Museum","Neon Cinema","Cosplay Alley","Creator Mansion","Pixel Plaza","Dragon Dojo","Robot Factory","Fox Shrine","Hype Stadium","Skyline Studio","Anime Market","Legend Palace"];
-  const landmarkIcons=["🏠","🎤","💻","💡","🏢","🕹️","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
+  const legacyLandmarkNames=["Bedroom Setup","Cheap Mic","Gaming PC","Ring Light","Meme Studio","Viral Arcade","Cat Cafe","Stream Tower","Meme Museum","Neon Cinema","Cosplay Alley","Creator Mansion","Pixel Plaza","Dragon Dojo","Robot Factory","Fox Shrine","Hype Stadium","Skyline Studio","Anime Market","Legend Palace"];
+  const landmarkNames=["Sharko Surf Shack","Crocwing Flight Academy","Prima Mocha Café","Viral Video Tower","Meme Factory","Algorithm Palace"];
+  const BOARD_UPGRADES=landmarkNames.length*5;
+  const boardLandmark=(name)=>state.landmarks[legacyLandmarkNames.indexOf(name)%landmarkNames.length]||state.landmarks[0];
+  const landmarkIcons=["🦈","🐊","☕","📺","🏭","🏰","🐈","📡","🖼️","🎬","🎭","🏯","🌆","🐉","🤖","🦊","🏟️","🌃","🛍️","🏰"];
   const memeCards=["Doge","Pepe","NPC Streamer","Side Eye Cat","Sigma Baby","Ohio Boss","Viral Rat","Distracted Boyfriend"];
   const cardIcons=["🐕","🐸","🕺","🐈","🗿","👑","🐀","💑"];
   const districts=[
@@ -427,7 +430,7 @@
   const levelCount=s=>s.landmarks.reduce((sum,item)=>sum+item.level,0);
   const totalLevels=()=>levelCount(state);
   const worldName=()=>worlds[state.worldIndex%worlds.length];
-  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/20));
+  const currentEra=()=>Math.min(eras.length-1,Math.floor(totalLevels()/6));
   const costFor=level=>500+level*750+currentEra()*350;
   const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));$("saveStatus").textContent="✓ Progress saved";}catch(e){$("saveStatus").textContent="Save unavailable in this browser";}};
   const addLog=message=>{state.log.unshift({message,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});state.log=state.log.slice(0,40);renderLog();save();};
@@ -454,7 +457,13 @@
         state.cosmeticsOwned[kind]=[...new Set([kind==="tokens"?"creator":cosmeticDefaults[kind],cosmeticDefaults[kind],...(kind==="tokens"?["croc-aviator","coffee-ballerina"]:[]),...(Array.isArray(saved.cosmeticsOwned?.[kind])?saved.cosmeticsOwned[kind]:[]).filter(id=>valid.includes(id))])];
         const selected=saved.cosmeticsEquipped?.[kind];state.cosmeticsEquipped[kind]=state.cosmeticsOwned[kind].includes(selected)?selected:cosmeticDefaults[kind];
       }
-      state.landmarks=landmarkNames.map(name=>{const old=saved.landmarks.find(x=>x&&x.name===name);return{name,level:Math.max(0,Math.min(5,Number(old?.level)||0))};});
+      // Convert legacy 20-plot worlds into six plots without discarding earned progress.
+      // Preserve the exact original 20 levels for recovery/auditing in the same save.
+      const oldLevels=legacyLandmarkNames.map(name=>Math.max(0,Math.min(5,Number(saved.landmarks.find(x=>x&&x.name===name)?.level)||0)));
+      const migrated=Array.isArray(saved.landmarks)&&saved.landmarks.length>6;
+      if(migrated&&!state.legacyLandmarksBackup)state.legacyLandmarksBackup=saved.landmarks.map(l=>({name:l.name,level:l.level}));
+      const migratedTotal=Math.min(BOARD_UPGRADES,Math.round(oldLevels.reduce((a,b)=>a+b,0)*BOARD_UPGRADES/100));
+      state.landmarks=landmarkNames.map((name,i)=>({name,level:migrated?Math.floor(migratedTotal/6)+(i<migratedTotal%6?1:0):Math.max(0,Math.min(5,Number(saved.landmarks.find(x=>x&&x.name===name)?.level)||0))}));
       state.cards=memeCards.filter(name=>saved.cards.includes(name));
       state.districtClaims=Array.isArray(saved.districtClaims)?saved.districtClaims.filter(id=>districts.some(d=>d.id===id)):[];
       state.rivals=rivalBlueprints.map(base=>{
@@ -475,7 +484,7 @@
       state.dice=Math.min(MAX_DICE,state.dice);state.diceUpdatedAt=Math.min(Date.now(),Math.max(0,Number(state.diceUpdatedAt)||Date.now()));
       state.hype=Math.max(0,Math.min(99,Number(state.hype)||0));
       // Completion is derived from the actual empire, never trusted from an old save flag.
-      state.completed=totalLevels()>=100;
+      state.completed=totalLevels()>=BOARD_UPGRADES;
       normalizeDaily();
       if(state.completed&&!state.completionRewarded)checkCompletion();
       checkAlbumRewards();
@@ -592,7 +601,7 @@
   // Inspect a tiny board space without zooming or changing saved gameplay state.
   function inspectBoardSpace(index){
     const item=board[index];if(!item)return;
-    const property=item.type==="LANDMARK"?state.landmarks.find(l=>l.name===item.name):null;
+    const property=item.type==="LANDMARK"?boardLandmark(item.name):null;
     $("spaceInspectorTitle").textContent="Space "+(index+1)+" / "+board.length+" · "+item.name;
     $("spaceInspectorDescription").textContent=property?"Property · Level "+property.level+"/5 · "+item.description:item.description;
     $("spaceInspector").hidden=false;
@@ -649,10 +658,10 @@
       tile.style.gridRow=String(row);tile.style.gridColumn=String(col);tile.style.setProperty("--tile-index",i);
       const icon=sprite(spriteFor[item.type],"tile-icon");
       const name=document.createElement("strong");name.textContent=item.name;
-      const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
+      const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+boardLandmark(item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
       if(item.type==="LANDMARK"){
-        const level=state.landmarks.find(l=>l.name===item.name)?.level||0;
+        const level=boardLandmark(item.name)?.level||0;
         const progress=document.createElement("span");progress.className="tile-upgrade-meter";
         progress.style.setProperty("--upgrade-progress",(Math.max(0,Math.min(5,level))/5*100)+"%");
         progress.setAttribute("aria-hidden","true");tile.append(progress);
@@ -681,7 +690,7 @@
       bottom.append(cost,btn);card.append(top,scene,bar,bottom);box.append(card);
     });
     renderCharacterChoices();$("empireLevel").textContent=totalLevels();
-    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(20-totalLevels()%20)+" more upgrade(s) until the next era milestone.";
+    $("milestoneText").textContent=state.completed?"You built the ultimate Memeopoly empire!":(6-totalLevels()%6)+" more upgrade(s) until the next era milestone.";
   }
   function awardCosmetic(kind){
     const missing=cosmeticSets[kind].filter(item=>!state.cosmeticsOwned[kind].includes(item.id));
@@ -733,7 +742,7 @@
   }
   function renderWorldProgress(){
     let banner=$("worldProgressBanner");if(!banner){banner=document.createElement("section");banner.id="worldProgressBanner";banner.className="world-progress-banner";banner.setAttribute("aria-label","Board world progression");const anchor=document.querySelector(".board-viewport")||$("board");anchor.parentElement.insertBefore(banner,anchor);}
-    banner.replaceChildren();const heading=document.createElement("strong");heading.textContent="🌆 Board "+(state.worldIndex+1)+" · "+worldName();const detail=document.createElement("span");detail.textContent=totalLevels()+"/100 upgrades · "+state.worldsCompleted+" boards completed";banner.append(heading,detail);
+    banner.replaceChildren();const heading=document.createElement("strong");heading.textContent="🌆 Board "+(state.worldIndex+1)+" · "+worldName();const detail=document.createElement("span");detail.textContent=totalLevels()+"/"+BOARD_UPGRADES+" upgrades · "+state.worldsCompleted+" boards completed";banner.append(heading,detail);
     if(state.completed){const next=document.createElement("button");next.type="button";next.className="world-next-button";next.textContent="✨ Complete board · Unlock "+worlds[(state.worldIndex+1)%worlds.length];next.addEventListener("click",advanceWorld);banner.append(next);}
     document.body.dataset.worldTheme=String(state.worldIndex%worlds.length);
   }
@@ -756,7 +765,7 @@
     diceDisplay.setAttribute("title","Equipped dice: "+(cosmeticSets.dice.find(item=>item.id===diceDisplay.dataset.skin)?.name||"Arcade Cubes"));
     regenerateDice();$("dice").textContent=state.dice;$("shields").textContent=state.shields;
     $("coins").textContent=number(state.coins);$("followers").textContent=number(state.followers);$("posts").textContent=number(state.posts);$("hype").textContent=state.hype;$("turnCount").textContent=state.turn;
-    $("eraName").textContent=state.completed?worldName()+" · COMPLETE":worldName()+" · "+eras[currentEra()];$("progressText").textContent=totalLevels()+" / 100 upgrades";$("progressFill").style.width=totalLevels()/100*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/100*100)+"%";
+    $("eraName").textContent=state.completed?worldName()+" · COMPLETE":worldName()+" · "+eras[currentEra()];$("progressText").textContent=totalLevels()+" / "+BOARD_UPGRADES+" upgrades";$("progressFill").style.width=totalLevels()/BOARD_UPGRADES*100+"%";$("eraProgress").textContent=Math.round(totalLevels()/BOARD_UPGRADES*100)+"%";
     const multiplier=Number($("rollMultiplier").value)||1;$("postBtn").disabled=rolling||state.dice<multiplier||state.completed;$("postBtn").textContent=state.completed?"EMPIRE COMPLETE":rolling?"ROLLING…":"ROLL DICE";$("rollHint").textContent=state.completed?"You have conquered the board.":state.dice+" dice ready · "+(state.dice<MAX_DICE?"regenerates 1 every 5 min":"energy full");$("centerMessage").textContent=state.completed?"🏆 You are the Memeopoly champion!":"Your next viral moment starts here.";
     $("upgradeBtn").disabled=state.completed||!state.landmarks.some(l=>l.level<5);
     $("publishBtn").disabled=state.completed||state.posts<1;
@@ -935,9 +944,9 @@
   }
   function checkCompletion(){
     const levels=totalLevels();
-    if(levels>0&&levels%20===0&&levels<100){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/20]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
-    if(levels>=100&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 "+worldName()+" COMPLETED! Claim your next board in the board banner. +50,000 coins and +100,000 followers!");}
-    if(levels>=100)state.completed=true;
+    if(levels>0&&levels%6===0&&levels<BOARD_UPGRADES){state.coins+=5000;state.followers+=10000;state.posts+=5;addLog("🌍 NEW ERA: "+eras[levels/6]+" unlocked! +5,000 coins, +10,000 followers and +5 posts.");}
+    if(levels>=BOARD_UPGRADES&&!state.completionRewarded){state.completed=true;state.completionRewarded=true;state.coins+=50000;state.followers+=100000;addLog("🏆 "+worldName()+" COMPLETED! Claim your next board in the board banner. +50,000 coins and +100,000 followers!");}
+    if(levels>=BOARD_UPGRADES)state.completed=true;
   }
   function collectCard(){
     const missing=memeCards.filter(n=>!state.cards.includes(n));
@@ -1065,7 +1074,7 @@
       // The board-lap reward is paid when crossing Go; landing on Go must not pay it twice.
       case"GO":addLog("🚀 GO VIRAL! Board-lap creator bonus collected.");break;
       case"COINS":{const reward=(1000+currentEra()*500)*activeRewardMultiplier;state.coins+=reward;addLog("🪙 "+tile.name+"! +"+number(reward)+" coins.");break;}
-      case"LANDMARK":{const lm=state.landmarks.find(l=>l.name===tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
+      case"LANDMARK":{const lm=boardLandmark(tile.name);addLog("🏙️ You landed on "+tile.name+". "+(lm.level===0?"Build it in the Empire tab.":"Upgrade it in the Empire tab."));break;}
       case"CARD":collectCard();break;case"RAID":raid();break;case"ATTACK":rivalAttack();break;case"EVENT":viralEvent();break;
       case"HYPE":awardHype(30*activeRewardMultiplier);addLog("⚡ Hype boost! +"+number(30*activeRewardMultiplier)+" hype.");break;
       case"SHIELD":shieldDrop();break;
