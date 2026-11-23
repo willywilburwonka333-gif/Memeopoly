@@ -349,6 +349,11 @@ namespace Memeopoly
         {
             var panel=Rect(n,parent,min,max,offMin,offMax);
             Image image=panel.gameObject.AddComponent<Image>();
+            if(!n.Contains("overlay"))
+            {
+                image.sprite=MemeopolyUIArt.Rounded;
+                image.type=Image.Type.Sliced;
+            }
             image.color=bg;
             return panel;
         }
@@ -376,6 +381,8 @@ namespace Memeopoly
         {
             RectTransform rect=Rect(caption,parent,min,max,Vector2.zero,Vector2.zero);
             Image img=rect.gameObject.AddComponent<Image>();
+            img.sprite=MemeopolyUIArt.Rounded;
+            img.type=Image.Type.Sliced;
             img.color=bg;
             Button button=rect.gameObject.AddComponent<Button>();
             ColorBlock block=button.colors;
