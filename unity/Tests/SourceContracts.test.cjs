@@ -58,4 +58,12 @@ assert.ok(buildSettings.includes('path: Assets/Scenes/Memeopoly.unity'));
 assert.ok(buildSettings.includes('guid: '+sceneGuid),'scene is registered for cloud builds');
 assert.ok(scene.includes('m_Name: Memeopoly'),'the launch scene contains the player');
 
+// Unity's Color.Lerp accepts Color, not Material. Keep both shaded-building paths compile-safe.
+assert.match(city,/Color\.Lerp\(buildingColours\[i\],ink\.color,\.68f\)/,
+  'plot colour interpolates the ink material colour');
+assert.match(city,/Color\.Lerp\(buildingColours\[index\],cream\.color,\.48f\)/,
+  'stage colour interpolates the cream material colour');
+assert.doesNotMatch(city,/Color\.Lerp\([^\n]*,(?:ink|cream),/,
+  'never pass a UnityEngine.Material to Color.Lerp');
+
 console.log('Unity 3D migration source contracts pass: 60 spaces, 6x5 buildings, dice, track, legacy save. Unity compilation and play-mode still require the Editor.');
