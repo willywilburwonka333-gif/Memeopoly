@@ -1020,19 +1020,7 @@
   }
   // Keep the creator visible when the board is wider than the phone screen.
   // Only pan during gameplay; manual board exploration remains possible between rolls.
-  function revealBoardTile(index){
-    const viewport=document.querySelector(".board-viewport");
-    const boardElement=$("board");
-    if(!viewport||!cameraFollow)return;
-    const tile=boardElement.querySelectorAll(".tile")[index];
-    if(!tile)return;
-    const targetX=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
-    const targetY=tile.offsetTop+tile.offsetHeight/2-viewport.clientHeight/2;
-    const limitX=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
-    const limitY=Math.max(0,viewport.scrollHeight-viewport.clientHeight);
-    viewport.scrollLeft=Math.max(0,Math.min(limitX,targetX));
-    viewport.scrollTop=Math.max(0,Math.min(limitY,targetY));
-  }
+  function revealBoardTile(index){ /* Whole board is visible; no automatic camera panning. */ }
   // Travel uses a temporary fixed-position avatar; game state remains authoritative.
   // Always render the destination even when motion is disabled or unavailable.
   // Move only the token node. Rebuilding all 60 tiles after each hop caused
@@ -1236,31 +1224,13 @@
   }
   const boardCaption=document.createElement("div");boardCaption.className="board-city-caption";boardCaption.textContent="MEME STREET";boardCaption.setAttribute("aria-hidden","true");$("boardCenter").append(boardCaption);
   // Camera zoom changes only the board surface, never the HUD or save schema.
+  // The board always fits the available screen width. No zoom or camera panning.
   const cameraViewport=document.querySelector(".board-viewport");
   const cameraBoard=$("board");
   let cameraZoom=1;
-  let cameraFollow=true;
-  const cameraClamp=value=>Math.max(.3,Math.min(2,Math.round(value*10)/10));
-  const cameraFitZoom=()=>Math.min(1,Math.max(.3,cameraViewport.clientWidth/Math.max(1,cameraBoard.offsetWidth)));
-  function cameraSetZoom(value){
-    const previous=cameraZoom;
-    const centerX=cameraViewport.scrollLeft+cameraViewport.clientWidth/2;
-    const centerY=cameraViewport.scrollTop+cameraViewport.clientHeight/2;
-    cameraZoom=cameraClamp(value);
-    cameraBoard.style.zoom=String(cameraZoom);
-    $("boardZoomLabel").textContent=Math.round(cameraZoom*100)+"%";
-    const ratio=cameraZoom/previous;
-    cameraViewport.scrollLeft=Math.max(0,centerX*ratio-cameraViewport.clientWidth/2);
-    cameraViewport.scrollTop=Math.max(0,centerY*ratio-cameraViewport.clientHeight/2);
-  }
-  $("boardZoomOut").addEventListener("click",()=>cameraSetZoom(cameraZoom-.1));
-  $("boardZoomIn").addEventListener("click",()=>cameraSetZoom(cameraZoom+.1));
-  $("boardFit").addEventListener("click",()=>{cameraFollow=false;$("boardFollow").setAttribute("aria-pressed","false");cameraSetZoom(cameraFitZoom());cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
-  $("boardFollow").addEventListener("click",()=>{cameraFollow=!cameraFollow;$("boardFollow").setAttribute("aria-pressed",String(cameraFollow));if(cameraFollow)revealBoardTile(state.position);});
-  let pinchStartDistance=0,pinchStartZoom=1;
-  cameraViewport.addEventListener("touchstart",event=>{if(event.touches.length!==2)return;const [a,b]=event.touches;pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchStartZoom=cameraZoom;},{passive:true});
-  cameraViewport.addEventListener("touchmove",event=>{if(event.touches.length!==2||!pinchStartDistance)return;const [a,b]=event.touches;const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);cameraSetZoom(pinchStartZoom*distance/pinchStartDistance);event.preventDefault();},{passive:false});
-  cameraViewport.addEventListener("touchend",event=>{if(event.touches.length<2)pinchStartDistance=0;},{passive:true});
+  let cameraFollow=false;
+  function cameraSetZoom(){cameraBoard.style.removeProperty("zoom");$("boardZoomLabel").textContent="Fit";}
+  for(const id of ["boardZoomOut","boardZoomIn","boardFit","boardFollow"]){$(id).disabled=true;}
   $("jumpToDice").addEventListener("click",()=>$("dicePanel").scrollIntoView({block:"center",behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"}));
   updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
@@ -1274,7 +1244,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();cameraSetZoom(cameraFitZoom());
+  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();cameraSetZoom();
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");

@@ -492,3 +492,14 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 #boardCenter{overflow:hidden!important}
 .board-navigation .board-camera{display:flex!important}
 @media(max-width:650px){.board-navigation .board-camera{display:flex!important;flex-wrap:wrap;justify-content:center}.board-viewport{max-height:min(70vh,640px)!important;padding:4px!important}#board{width:960px!important;min-width:960px!important;height:960px!important;min-height:960px!important}#board .tile strong{display:block!important;font-size:clamp(6px,.8vw,10px)!important;line-height:1.1!important;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#board .tile .tile-icon{width:50%!important;height:50%!important}}
+
+/* FIX: One entire square board fits the phone width; no camera, zoom or panning. */
+.board-navigation{display:none!important}
+.board-viewport{display:block!important;overflow:visible!important;max-height:none!important;width:100%!important;max-width:100%!important;padding:3px!important;touch-action:auto!important;box-sizing:border-box!important}
+#board{box-sizing:border-box!important;display:grid!important;width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;aspect-ratio:1/1!important;grid-template-columns:repeat(16,minmax(0,1fr))!important;grid-template-rows:repeat(16,minmax(0,1fr))!important;gap:1px!important;padding:3px!important;zoom:1!important;transform:none!important;overflow:hidden!important}
+#boardCenter{grid-column:2/16!important;grid-row:2/16!important;min-width:0!important;min-height:0!important;overflow:hidden!important}
+#board .tile{min-width:0!important;min-height:0!important;overflow:hidden!important;padding:0!important;box-sizing:border-box!important}
+#board .tile strong,#board .tile small{display:none!important}
+#board .tile .tile-icon{width:85%!important;height:85%!important;max-width:32px!important;max-height:32px!important}
+#board .tile .token{max-width:100%!important;max-height:100%!important}
+@media(min-width:700px){.board-viewport{max-width:760px!important;margin-inline:auto!important}#board{gap:2px!important;padding:5px!important}}
