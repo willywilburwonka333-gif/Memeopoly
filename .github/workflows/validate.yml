@@ -28,7 +28,7 @@ jobs:
           const html = fs.readFileSync('index.html', 'utf8');
           const js = fs.readFileSync('game.js', 'utf8');
           const ids = [...js.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(match => match[1]);
-          const dynamicIds = new Set([...js.matchAll(/\\.id\\s*=\\s*['\"]([^'\"]+)['\"]/g)].map(match => match[1]));
+          const dynamicIds = new Set([...js.matchAll(/\.id\s*=\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
           const missing = [...new Set(ids)].filter(id => !dynamicIds.has(id) && !html.includes('id="' + id + '"') && !html.includes("id='" + id + "'"));
           if (missing.length) {
             console.error('Missing HTML elements:', missing.join(', '));
