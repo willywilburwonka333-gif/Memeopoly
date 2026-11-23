@@ -35,7 +35,7 @@ namespace Memeopoly
                 texture.wrapMode=TextureWrapMode.Clamp;
                 texture.filterMode=FilterMode.Bilinear;
                 texture.SetPixels32(pixels);
-                texture.Apply(false,true);
+                texture.Apply(false,false);
                 rounded=Sprite.Create(texture,new Rect(0,0,size,size),
                     new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,
                     new Vector4(17,17,17,17));
