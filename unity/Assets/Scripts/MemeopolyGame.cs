@@ -18,7 +18,8 @@ namespace Memeopoly
         private MemeopolyCity city;
         private Camera boardCamera;
         private readonly System.Random random = new System.Random();
-        private bool playing;\n        private bool diceSettled=true;
+        private bool playing;
+        private bool diceSettled=true;
         private int selected;
         private int multiplierIndex;
         private readonly int[] multipliers = {1,2,5,10};
@@ -367,7 +368,9 @@ namespace Memeopoly
 
         private IEnumerator RollSequence(int multiplier)
         {
-            playing=true;\n            diceSettled=false;\n            int start=save.position;
+            playing=true;
+            diceSettled=false;
+            int start=save.position;
             int a=random.Next(1,7),b=random.Next(1,7);
             TurnOutcome result=MemeopolyRules.Roll(save,multiplier,a,b,random);
             Persist();
@@ -391,7 +394,9 @@ namespace Memeopoly
             }
             city.Dice[0].localPosition=diceInitialA;
             city.Dice[1].localPosition=diceInitialB;
-            city.SetDice(a,b);\n            diceSettled=true;\n            Notify("ROLLED "+a+" + "+b+" = "+result.steps+"!"); RefreshHUD();
+            city.SetDice(a,b);
+            diceSettled=true;
+            Notify("ROLLED "+a+" + "+b+" = "+result.steps+"!"); RefreshHUD();
             yield return new WaitForSeconds(.19f);
 
             for(int step=1;step<=result.steps;step++)
