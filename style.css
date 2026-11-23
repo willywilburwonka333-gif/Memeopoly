@@ -459,3 +459,9 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #board .tile-upgrade-meter{position:absolute;bottom:1px;left:9%;width:82%;height:clamp(2px,.6vw,5px);border-radius:9px;background:linear-gradient(90deg,#ffe58b var(--upgrade-progress),#1c224d var(--upgrade-progress));box-shadow:0 0 0 1px #fff7,0 1px 3px #0009;pointer-events:none}
 #board .tile-fully-upgraded{box-shadow:inset 0 0 0 1px #ffe58b,0 0 8px #ffc766aa!important}
 @media(prefers-reduced-motion:reduce){#board .tile-upgrade-meter{transition:none}}
+
+/* Board-to-board progression: compact, accessible and distinct world palettes. */
+.world-progress-banner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:8px 0 12px;padding:12px 14px;border:1px solid #8c7aff88;border-radius:14px;background:linear-gradient(115deg,#29205c,#151e3f);color:#fff;box-shadow:0 5px 16px #0004}
+.world-progress-banner strong{font-size:clamp(13px,2vw,17px)}.world-progress-banner span{font-size:12px;color:#d7d0ff}.world-next-button{margin-left:auto;border:1px solid #ffe99a;background:linear-gradient(135deg,#ffcf69,#ff9f62);color:#25153d;border-radius:12px;font-weight:800;min-height:42px;padding:8px 14px;cursor:pointer}.world-next-button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme="2"] #board{filter:hue-rotate(45deg)}body[data-world-theme="3"] #board{filter:hue-rotate(90deg)}body[data-world-theme="4"] #board{filter:hue-rotate(140deg)}body[data-world-theme="5"] #board{filter:hue-rotate(185deg)}body[data-world-theme="6"] #board{filter:hue-rotate(235deg)}body[data-world-theme="7"] #board{filter:hue-rotate(285deg)}
+@media(max-width:650px){.world-progress-banner{padding:9px 10px;gap:5px 10px}.world-next-button{width:100%;margin:4px 0 0}}
