@@ -492,14 +492,37 @@ namespace Memeopoly
                 for(int i=0;i<2;i++)
                 {
                     Transform die=city.Dice[i];
-                    die.localRotation=Quaternion.Euler(875*t+40*i,1095*t+30*i,675*t+60*i);
+                    int rolled=i==0?a:b;
+                    Quaternion spin=Quaternion.Euler(875*.78f+40*i,1095*.78f+30*i,
+                        675*.78f+60*i);
+                    if(t<.78f)
+                    {
+                        float u=t/.78f;
+                        die.localRotation=Quaternion.Euler(875*t+40*i,
+                            1095*t+30*i,675*t+60*i);
+                        die.localScale=Vector3.one*(1f+Mathf.Sin(u*3.14159f)*.035f);
+                    }
+                    else
+                    {
+                        float u=(t-.78f)/.22f;
+                        die.localRotation=Quaternion.Slerp(spin,
+                            MemeopolyCity.DiceTop(rolled),
+                            Mathf.SmoothStep(0,1,u));
+                        die.localScale=new Vector3(1f+.12f*Mathf.Sin(u*Mathf.PI),
+                            1f-.12f*Mathf.Sin(u*Mathf.PI),
+                            1f+.12f*Mathf.Sin(u*Mathf.PI));
+                    }
                     Vector3 startPos=i==0?diceInitialA:diceInitialB;
-                    die.localPosition=startPos+Vector3.up*(Mathf.Sin(t*Mathf.PI)*1.2f);
+                    float bounce=Mathf.Abs(Mathf.Sin(t*Mathf.PI*5))*(1f-t)*.46f;
+                    die.localPosition=startPos+Vector3.up*
+                        (Mathf.Sin(t*Mathf.PI)*1.0f+bounce);
                 }
                 yield return null;
             }
             city.Dice[0].localPosition=diceInitialA;
             city.Dice[1].localPosition=diceInitialB;
+            city.Dice[0].localScale=Vector3.one;
+            city.Dice[1].localScale=Vector3.one;
             city.SetDice(a,b);
             diceSettled=true;
             Notify("ROLLED "+a+" + "+b+" = "+result.steps+"!"); RefreshHUD();
