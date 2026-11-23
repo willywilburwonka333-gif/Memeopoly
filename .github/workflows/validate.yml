@@ -28,7 +28,8 @@ jobs:
           const html = fs.readFileSync('index.html', 'utf8');
           const js = fs.readFileSync('game.js', 'utf8');
           const ids = [...js.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(match => match[1]);
-          const missing = [...new Set(ids)].filter(id => !html.includes('id="' + id + '"') && !html.includes("id='" + id + "'"));
+          const dynamicIds = new Set([...js.matchAll(/\.id\s*=\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
+          const missing = [...new Set(ids)].filter(id => !dynamicIds.has(id) && !html.includes('id="' + id + '"') && !html.includes("id='" + id + "'"));
           if (missing.length) {
             console.error('Missing HTML elements:', missing.join(', '));
             process.exit(1);
@@ -41,3 +42,5 @@ jobs:
           }
           console.log('Manifest, DOM references, save tools and progression features verified.');
           NODE
+      - name: Verify Unity 3D source contracts (not Unity compilation)
+        run: node unity/Tests/SourceContracts.test.cjs
