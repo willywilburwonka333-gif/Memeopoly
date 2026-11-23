@@ -567,6 +567,16 @@
     art.style.filter="drop-shadow(0 4px 3px #0009)";
     wrap.style.setProperty("--creator-color",style.color);wrap.append(art);return wrap;
   }
+  function equippedTokenAvatar(){
+    const selected=state.cosmeticsEquipped?.tokens||"creator";
+    const owned=state.cosmeticsOwned?.tokens||["creator"];
+    const id=owned.includes(selected)&&cosmeticSets.tokens.some(item=>item.id===selected)?selected:"creator";
+    if(id==="creator")return creatorAvatar(creatorStyles[state.creatorStyle]||creatorStyles[0]);
+    const wrap=document.createElement("span");wrap.className="creator-avatar collectible-token";wrap.dataset.token=id;
+    wrap.append(sprite("token-"+id,"creator-sprite"));
+    wrap.setAttribute("role","img");wrap.setAttribute("aria-label",cosmeticSets.tokens.find(item=>item.id===id).name);
+    return wrap;
+  }
   function renderCharacterChoices(){
     const box=$("characterChoices");box.replaceChildren();
     creatorStyles.forEach((style,i)=>{
@@ -600,7 +610,7 @@
       tile.setAttribute("aria-label","Space "+(i+1)+": "+item.name+". "+detail.textContent+". Activate for details.");
       tile.addEventListener("click",()=>inspectBoardSpace(i));
       tile.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();inspectBoardSpace(i);}});
-      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(creatorAvatar(creatorStyles[state.creatorStyle]||creatorStyles[0]));tile.append(token);}
+      if(state.position===i){tile.setAttribute("aria-current","location");const token=document.createElement("span");token.className="token";token.setAttribute("aria-label","Your token");token.append(equippedTokenAvatar());tile.append(token);}
       el.append(tile);
     });
   }
@@ -636,7 +646,7 @@
       for(const item of items){
         const owned=state.cosmeticsOwned[kind].includes(item.id),equipped=state.cosmeticsEquipped[kind]===item.id;
         const button=document.createElement("button");button.type="button";button.className="cosmetic-card"+(equipped?" equipped":"");button.disabled=!owned;button.setAttribute("aria-pressed",String(equipped));
-        const art=document.createElement("span");art.className="cosmetic-art";art.textContent=owned?item.icon:"🔒";
+        const art=document.createElement("span");art.className="cosmetic-art";if(owned&&kind==="tokens"){art.append(item.id==="creator"?creatorAvatar(creatorStyles[state.creatorStyle]||creatorStyles[0]):sprite("token-"+item.id,"collectible-preview"));}else art.textContent=owned?item.icon:"🔒";
         const name=document.createElement("strong");name.textContent=owned?item.name:"Undiscovered";
         const rarity=document.createElement("small");rarity.textContent=owned?(equipped?"EQUIPPED":item.rarity+" · Equip"):item.rarity+" · Locked";
         button.append(art,name,rarity);button.addEventListener("click",()=>{state.cosmeticsEquipped[kind]=item.id;renderUI();save();});grid.append(button);

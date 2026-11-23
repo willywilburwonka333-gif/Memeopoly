@@ -441,3 +441,15 @@ h1{font-size:clamp(30px,5vw,46px);text-shadow:0 4px 22px #0008}
 #diceIcon[data-skin="dragon"] .die-pip.visible{background:#52290e!important}
 /* Keep the dice physically compact without cancelling their tumble/landing transforms. */
 @media(max-width:650px){#diceIcon .die-face{width:25px!important;height:25px!important;flex-basis:25px!important;padding:3px!important;gap:1px!important;margin:0!important;transform:none}#diceIcon .die-pip{min-width:0;min-height:0}}
+
+/* Original anime-inspired collectible token sprites, shared between inventory and board. */
+.collectible-token{display:inline-flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 3px #05091d)}
+.collectible-token .creator-sprite{width:100%;height:100%;overflow:visible}
+.collectible-token[data-token="kitsune"]{filter:drop-shadow(0 0 5px #7ff3ff)}
+.collectible-token[data-token="mecha"]{filter:drop-shadow(0 0 5px #7aafff)}
+.collectible-token[data-token="cat"]{filter:drop-shadow(0 0 5px #ffdc7a)}
+.cosmetic-card .cosmetic-art:has(.collectible-preview){display:grid;place-items:center;width:66px;height:66px;font-size:initial}
+.cosmetic-card .collectible-preview{width:64px;height:64px;filter:drop-shadow(0 6px 4px #080d29);transition:transform .22s ease}
+.cosmetic-card:hover .collectible-preview,.cosmetic-card:focus-visible .collectible-preview{transform:translateY(-5px) scale(1.08)}
+.cosmetic-card .cosmetic-art .creator-avatar{width:62px;height:62px}
+@media(prefers-reduced-motion:reduce){.cosmetic-card .collectible-preview{transition:none}.cosmetic-card:hover .collectible-preview,.cosmetic-card:focus-visible .collectible-preview{transform:none}}
