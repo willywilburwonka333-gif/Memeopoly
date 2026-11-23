@@ -689,7 +689,7 @@
     $("achievementCount").textContent=state.achievements.length+" / "+achievements.length;
   }
   function renderWorldProgress(){
-    let banner=$("worldProgressBanner");if(!banner){banner=document.createElement("section");banner.id="worldProgressBanner";banner.className="world-progress-banner";banner.setAttribute("aria-label","Board world progression");const anchor=$("board");anchor.parentElement.insertBefore(banner,anchor);}
+    let banner=$("worldProgressBanner");if(!banner){banner=document.createElement("section");banner.id="worldProgressBanner";banner.className="world-progress-banner";banner.setAttribute("aria-label","Board world progression");const anchor=document.querySelector(".board-viewport")||$("board");anchor.parentElement.insertBefore(banner,anchor);}
     banner.replaceChildren();const heading=document.createElement("strong");heading.textContent="🌆 Board "+(state.worldIndex+1)+" · "+worldName();const detail=document.createElement("span");detail.textContent=totalLevels()+"/100 upgrades · "+state.worldsCompleted+" boards completed";banner.append(heading,detail);
     if(state.completed){const next=document.createElement("button");next.type="button";next.className="world-next-button";next.textContent="✨ Complete board · Unlock "+worlds[(state.worldIndex+1)%worlds.length];next.addEventListener("click",advanceWorld);banner.append(next);}
     document.body.dataset.worldTheme=String(state.worldIndex%worlds.length);
