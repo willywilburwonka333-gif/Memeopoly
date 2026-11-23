@@ -341,23 +341,68 @@ namespace Memeopoly
                 }
             }
             if (animate && level>0)
-                Root.GetComponentInParent<MemeopolyGame>().StartCoroutine(Construct(stage));
+                Root.GetComponentInParent<MemeopolyGame>().StartCoroutine(Construct(stage,index));
         }
 
-        private IEnumerator Construct(Transform stage)
+        private IEnumerator Construct(Transform stage,int index)
         {
-            float duration=.78f, elapsed=0;
+            Transform plot=Buildings[index];
+            var crane=new GameObject("TEMPORARY CRANE - visibly builds the landmark").transform;
+            crane.SetParent(plot,false);
+            Material cranePaint=Mat(new Color(1f,.82f,.22f),.16f);
+            Cube("tower",crane,new Vector3(1.9f,2.9f,1.6f),
+                new Vector3(.16f,5.5f,.16f),cranePaint);
+            Transform arm=new GameObject("animated crane arm").transform;
+            arm.SetParent(crane,false);
+            arm.localPosition=new Vector3(1.9f,5.5f,1.6f);
+            Cube("overhead boom",arm,new Vector3(-1.45f,0,0),
+                new Vector3(3.4f,.17f,.18f),cranePaint);
+            Cube("hanging winch",arm,new Vector3(-2.5f,-.73f,0),
+                new Vector3(.06f,1.5f,.06f),ink);
+            Sphere("shiny construction hook",arm,new Vector3(-2.5f,-1.5f,0),
+                Vector3.one*.28f,gold);
+            var particles=new GameObject("gold construction sparks").AddComponent<ParticleSystem>();
+            particles.transform.SetParent(plot,false);
+            particles.transform.localPosition=new Vector3(0,1.0f,0);
+            var main=particles.main;
+            main.duration=1.3f;
+            main.startLifetime=.78f;
+            main.startSpeed=4.0f;
+            main.startSize=.14f;
+            main.gravityModifier=.55f;
+            main.startColor=new ParticleSystem.MinMaxGradient(
+                new Color(1f,.9f,.42f), new Color(.35f,1f,.94f));
+            main.maxParticles=120;
+            var emission=particles.emission;
+            emission.rateOverTime=0;
+            var shape=particles.shape;
+            shape.shapeType=ParticleSystemShapeType.Box;
+            shape.scale=new Vector3(2f,.3f,2f);
+            particles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            float duration=1.15f, elapsed=0;
             Vector3 initial=stage.localScale;
-            stage.localScale=Vector3.one*.04f;
+            stage.localScale=new Vector3(.8f,.02f,.8f);
+            bool exploded=false;
             while(elapsed<duration && stage!=null)
             {
                 elapsed+=Time.deltaTime;
                 float t=Mathf.Clamp01(elapsed/duration);
-                float pop= t<.75f?Mathf.SmoothStep(.04f,1.17f,t/.75f):Mathf.Lerp(1.17f,1f,(t-.75f)/.25f);
-                stage.localScale=initial*pop;
+                float rising=Mathf.SmoothStep(.02f,1f,Mathf.Min(1,t/.82f));
+                float width = t<.82f?Mathf.Lerp(.8f,1.04f,t/.82f):
+                    Mathf.Lerp(1.04f,1f,(t-.82f)/.18f);
+                stage.localScale=Vector3.Scale(initial,new Vector3(width,rising,width));
+                arm.localRotation=Quaternion.Euler(0,Mathf.Sin(t*Mathf.PI*2)*25f,0);
+                if(!exploded&&t>.52f)
+                {
+                    exploded=true;
+                    particles.Emit(70);
+                }
                 yield return null;
             }
             if(stage!=null) stage.localScale=initial;
+            UnityEngine.Object.Destroy(crane.gameObject);
+            UnityEngine.Object.Destroy(particles.gameObject,1.5f);
         }
 
         private void CreateToken()
