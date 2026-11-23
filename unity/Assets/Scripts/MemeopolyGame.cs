@@ -689,6 +689,10 @@ namespace Memeopoly
                 Notify(message);
                 Persist();
                 ShowPanel(ScreenPanel.Missions);
+                // Tell the player immediately why a reward did/did not pay;
+                // the main HUD toast sits behind this full-screen dialog.
+                popupDescription.text=(claimed?"✓ ":"")+
+                    message+"\n\n"+popupDescription.text;
                 RefreshHUD();
             }
             else if(openPanel==ScreenPanel.Album)
