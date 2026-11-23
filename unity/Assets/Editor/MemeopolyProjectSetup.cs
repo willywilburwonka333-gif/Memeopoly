@@ -47,7 +47,7 @@ namespace Memeopoly.Editor
             if (!registered)
                 EditorBuildSettings.scenes = new [] { new EditorBuildSettingsScene(SceneFile, true) };
 
-            if (EditorSceneManager.GetActiveScene().path == "" && File.Exists(SceneFile))
+            if (SceneManager.GetActiveScene().path == "" && File.Exists(SceneFile))
                 EditorSceneManager.OpenScene(SceneFile, OpenSceneMode.Single);
         }
     }
