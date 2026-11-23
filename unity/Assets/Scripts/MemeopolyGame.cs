@@ -442,6 +442,7 @@ namespace Memeopoly
             MemeopolyProgression.OnBuild(save,NowMs());
             audioEngine.Play(MemeopolySfx.Build);
             city.RenderLandmark(selected,save.buildings[selected],true);
+            MemeopolyVfx.Burst(transform,city.Buildings[selected].localPosition+Vector3.up*1.1f,true,48);
             Notify(message);
             Persist(); RefreshHUD();
         }
@@ -454,6 +455,7 @@ namespace Memeopoly
             city.SetToken(0);
             ApplySelection(0);
             audioEngine.Play(MemeopolySfx.Reward);
+            MemeopolyVfx.Burst(transform,new Vector3(0,2.3f,0),true,80);
             Notify("A new meme world is unlocked. Build your next empire!");
             Persist(); RefreshHUD();
         }
@@ -545,6 +547,10 @@ namespace Memeopoly
                 if(step%2==0) audioEngine.Play(MemeopolySfx.Step);
             }
             city.SetToken(result.destination);
+            if(MemeopolyRules.TileKinds[result.destination]=="COINS" ||
+                MemeopolyRules.TileKinds[result.destination]=="CARD" ||
+                MemeopolyRules.TileKinds[result.destination]=="HYPE")
+                MemeopolyVfx.Burst(transform,city.Token.localPosition+Vector3.up*.75f,true,25);
             Notify(result.message+"   [Roll "+a+" + "+b+" = "+result.steps+"]");
             playing=false;
             if(save.pendingHeist) ShowPanel(ScreenPanel.Heist);
@@ -668,7 +674,11 @@ namespace Memeopoly
                 if(index==3) {ShowPanel(ScreenPanel.Hub);return;}
                 string message;
                 bool claimed=MemeopolyProgression.ClaimDaily(save,index,NowMs(),out message);
-                if(claimed)audioEngine.Play(MemeopolySfx.Reward);
+                if(claimed)
+                {
+                    audioEngine.Play(MemeopolySfx.Reward);
+                    MemeopolyVfx.Burst(transform,new Vector3(0,2.2f,0),true,60);
+                }
                 Notify(message);
                 Persist();
                 ShowPanel(ScreenPanel.Missions);
@@ -691,6 +701,8 @@ namespace Memeopoly
             {
                 string result=MemeopolyProgression.ResolveHeist(save,index,random);
                 Notify(result);
+                MemeopolyVfx.Burst(transform,city.Token.localPosition+Vector3.up*.8f,
+                    !result.StartsWith("HEIST BUSTED"),45);
                 audioEngine.Play(result.StartsWith("HEIST BUSTED")?
                     MemeopolySfx.Failure:MemeopolySfx.Heist);
                 Persist();
@@ -700,6 +712,8 @@ namespace Memeopoly
             {
                 string result=MemeopolyProgression.ResolveRival(save,index,random);
                 Notify(result);
+                MemeopolyVfx.Burst(transform,city.Token.localPosition+Vector3.up*.8f,
+                    result.Contains("defeated"),45);
                 audioEngine.Play(result.Contains("defeated")?
                     MemeopolySfx.Reward:MemeopolySfx.Failure);
                 Persist();
