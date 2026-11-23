@@ -517,3 +517,29 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 .meme-city-building .meme-building-icon{position:absolute;left:50%;bottom:40%;transform:translateX(-50%);font-size:clamp(8px,1.9vw,18px);filter:drop-shadow(0 2px 1px #050a35)}
 .meme-city-building[data-level="0"]{--building-growth:0;opacity:.75}.meme-city-building[data-level="1"]{--building-growth:1}.meme-city-building[data-level="2"]{--building-growth:2}.meme-city-building[data-level="3"]{--building-growth:3}.meme-city-building[data-level="4"]{--building-growth:4}.meme-city-building[data-level="5"]{--building-growth:5;filter:drop-shadow(0 0 6px #ffe58a)}
 @media(prefers-reduced-motion:reduce){.meme-city-building{transition:none!important}}
+
+
+/* BUILDABLE WORLD: direct interaction and five visibly distinct construction stages. */
+#boardCenter .meme-city-district{pointer-events:auto!important}
+#boardCenter .meme-city-district::before,#boardCenter .meme-city-road{pointer-events:none}
+.meme-city-building{--building-growth:0;transform-origin:center bottom;transition:filter .25s ease,transform .25s ease;pointer-events:auto;z-index:4}
+.meme-city-building[data-level="0"]{opacity:1}
+.meme-city-building[data-level="0"] .meme-building-face{height:15%;background:repeating-linear-gradient(90deg,#8991b6 0 20%,#464c7e 20% 40%)}
+.meme-city-building[data-level="0"] .meme-building-roof{opacity:.25}
+.meme-city-building[data-level="0"] .meme-building-windows{display:none}
+.meme-city-building[data-level="1"] .meme-building-roof{background:linear-gradient(145deg,#8cf7ff,#3779c6)}
+.meme-city-building[data-level="2"] .meme-building-roof{background:linear-gradient(145deg,#b6ffad,#50ac77)}
+.meme-city-building[data-level="3"] .meme-building-roof{background:linear-gradient(145deg,#ffc78d,#ef6b82)}
+.meme-city-building[data-level="4"] .meme-building-roof{background:linear-gradient(145deg,#f4a9ff,#8a56f5)}
+.meme-city-building[data-level="5"] .meme-building-roof{background:linear-gradient(145deg,#fff4a5,#ffad3d);box-shadow:0 0 8px #ffe480}
+.city-build-action{position:absolute;z-index:7;right:-12%;bottom:-10%;width:clamp(18px,3.7vw,32px);height:clamp(18px,3.7vw,32px);padding:0;border:2px solid #fff5ae;border-radius:50%;background:linear-gradient(145deg,#75ffb0,#129f8e);box-shadow:0 3px 0 #07545e,0 0 10px #8effbb88;color:#082d39;font-weight:1000;font-size:clamp(11px,2vw,20px);cursor:pointer;touch-action:manipulation}
+.city-build-action:disabled{background:#323d60;border-color:#8290a7;color:#a5b3ce;box-shadow:none;cursor:not-allowed}
+.city-build-action:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.city-build-action:not(:disabled):active{transform:translateY(2px);box-shadow:0 1px 0 #07545e}
+.city-build-burst{position:absolute;left:50%;top:-20%;transform:translateX(-50%);white-space:nowrap;font-size:clamp(8px,1.5vw,13px);font-weight:900;color:#fff4a5;text-shadow:0 2px 5px #000,0 0 8px #ffb938;pointer-events:none;animation:cityLevelPop 1.2s ease-out forwards;z-index:10}
+.city-just-built .meme-building-face{animation:cityConstruct .8s cubic-bezier(.2,.8,.2,1)}
+@keyframes cityConstruct{0%{transform:scaleY(.15);transform-origin:bottom;filter:brightness(2)}70%{transform:scaleY(1.08);transform-origin:bottom}100%{transform:scaleY(1);transform-origin:bottom}}
+@keyframes cityLevelPop{0%{opacity:0;transform:translate(-50%,8px) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-24px) scale(1.12)}}
+#boardCenter .board-city-caption{pointer-events:none}
+@media(max-width:650px){.city-build-action{right:-25%;bottom:-17%;width:19px;height:19px;font-size:13px;border-width:1px}.meme-city-building{width:14%}}
+@media(prefers-reduced-motion:reduce){.city-just-built .meme-building-face,.city-build-burst{animation:none!important}.meme-city-building{transition:none!important}}
