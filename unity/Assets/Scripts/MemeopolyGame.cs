@@ -25,6 +25,7 @@ namespace Memeopoly
         private readonly int[] multipliers = {1,2,5,10};
         private Font font;
         private Canvas canvas;
+        private CanvasScaler hudScaler;
         private Text title, resources, status, selection, upgradeInfo, diceInfo, worldText;
         private Button rollButton, buildButton, nextButton, multiplierButton;
         private float lastRegenCheck;
@@ -109,24 +110,52 @@ namespace Memeopoly
         // Projection-based auto-fit: no zoom, panning, tile reflow, or board flashing.
         private void FitWholeBoard()
         {
-            if(boardCamera==null)return;
-            boardCamera.rect=new Rect(0,.20f,1,.62f);
-            float aspect=(float)Math.Max(1,Screen.width)/(Math.Max(1,Screen.height)*.62f);
-            boardCamera.aspect=aspect;
-            Vector3 min=new Vector3(float.PositiveInfinity,float.PositiveInfinity,0);
-            Vector3 max=new Vector3(float.NegativeInfinity,float.NegativeInfinity,0);
-            for(int xi=-1;xi<=1;xi+=2)
-                for(int zi=-1;zi<=1;zi+=2)
-                    for(int yi=0;yi<=1;yi++)
+            if (boardCamera == null) return;
+
+            // HUD is separate from the board camera. No game geometry may be
+            // hidden beneath the top status strip or the bottom roll/build dock.
+            const float bottom = .202f;
+            const float top = .840f;
+            boardCamera.rect = new Rect(0, bottom, 1, top - bottom);
+
+            // On an embedded landscape web player, scaling UI by screen WIDTH
+            // produced enormous clipped buttons. Scale by HEIGHT instead.
+            if (hudScaler != null)
+                hudScaler.matchWidthOrHeight =
+                    Screen.width > Screen.height ? 1f : 0f;
+
+            float aspect = (float)Math.Max(1,Screen.width) /
+                (Math.Max(1,Screen.height)*(top-bottom));
+            boardCamera.aspect = Mathf.Max(.45f,aspect);
+
+            // Reset the camera before calculating its bounds; this is called
+            // again when Safari rotates/resizes. It must not drift every time.
+            boardCamera.transform.position=new Vector3(26,35,-26);
+            boardCamera.transform.LookAt(new Vector3(0,1.1f,0));
+
+            // Project the full elevated city into camera space, not merely
+            // its flat ground plane. Both dimensions must fit inside the viewport.
+            Vector2 min = new Vector2(float.PositiveInfinity,float.PositiveInfinity);
+            Vector2 max = new Vector2(float.NegativeInfinity,float.NegativeInfinity);
+            for (int x=-1; x<=1; x+=2)
+                for (int z=-1; z<=1; z+=2)
+                    for (int y=0; y<=1; y++)
                     {
-                        Vector3 world=new Vector3(xi*8.8f,yi*5.1f,zi*8.8f);
-                        Vector3 v=boardCamera.transform.InverseTransformPoint(world);
-                        min.x=Mathf.Min(min.x,v.x); max.x=Mathf.Max(max.x,v.x);
-                        min.y=Mathf.Min(min.y,v.y); max.y=Mathf.Max(max.y,v.y);
+                        Vector3 point=new Vector3(x*8.65f,y*5.3f,z*8.65f);
+                        Vector3 projected=boardCamera.transform.InverseTransformPoint(point);
+                        min=Vector2.Min(min,new Vector2(projected.x,projected.y));
+                        max=Vector2.Max(max,new Vector2(projected.x,projected.y));
                     }
-            float horizontal=(max.x-min.x)/(2*aspect);
-            float vertical=(max.y-min.y)*.5f;
-            boardCamera.orthographicSize=Mathf.Max(horizontal,vertical)*1.065f;
+            Vector2 centre=(min+max)*.5f;
+            boardCamera.transform.position +=
+                boardCamera.transform.right*centre.x +
+                boardCamera.transform.up*centre.y;
+
+            float halfWidth=(max.x-min.x)*.5f;
+            float halfHeight=(max.y-min.y)*.5f;
+            boardCamera.orthographicSize =
+                Mathf.Max(halfHeight,halfWidth/boardCamera.aspect)*1.045f;
+
             previousScreenWidth=Screen.width;
             previousScreenHeight=Screen.height;
             UpdateSafeArea();
@@ -172,6 +201,7 @@ namespace Memeopoly
         {
             selected=Mathf.Clamp(index,0,5);
             if(selection!=null) selection.text=MemeopolyRules.Landmarks[selected];
+            if(city!=null)city.HighlightSelection(selected);
         }
 
         private static Font LoadFont()
@@ -190,41 +220,61 @@ namespace Memeopoly
                 ev.AddComponent<EventSystem>();
                 ev.AddComponent<StandaloneInputModule>();
             }
-            GameObject ui=new GameObject("PLAYER HUD · phone safe area",typeof(RectTransform));
+            GameObject ui=new GameObject("MEMEOPOLY • responsive compact phone HUD",typeof(RectTransform));
             ui.transform.SetParent(transform,false);
             canvas=ui.AddComponent<Canvas>();
             canvas.renderMode=RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder=50;
-            CanvasScaler scale=ui.AddComponent<CanvasScaler>();
-            scale.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scale.referenceResolution=new Vector2(430,930);
-            scale.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scale.matchWidthOrHeight=.4f;
+            hudScaler=ui.AddComponent<CanvasScaler>();
+            hudScaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            hudScaler.referenceResolution=new Vector2(430,900);
+            hudScaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            hudScaler.matchWidthOrHeight=Screen.width>Screen.height?1f:0f;
             ui.AddComponent<GraphicRaycaster>();
-            safeRegion=Rect("iPhone / Android safe-area margins",ui.transform,
+            safeRegion=Rect("SAFE AREA",ui.transform,
                 Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
             UpdateSafeArea();
 
-            RectTransform header=Panel("Memetic header",safeRegion,
-                new Vector2(0,1),new Vector2(1,1),new Vector2(0,-144),Vector2.zero,Deep);
-            title=Label("MEMEOPOLY",header,new Vector2(.02f,.65f),new Vector2(.98f,1f),30,Gold,TextAnchor.MiddleLeft,true);
-            worldText=Label("",header,new Vector2(.02f,.40f),new Vector2(.98f,.68f),15,Aqua,TextAnchor.MiddleLeft,true);
-            resources=Label("",header,new Vector2(.02f,.03f),new Vector2(.98f,.42f),16,Pale,TextAnchor.MiddleLeft,true);
+            // The header and toast occupy fixed *non-overlapping* compact
+            // strips at the top of the screen, never board-relative anchors.
+            RectTransform header=Panel("TOP • economy and world",safeRegion,
+                new Vector2(0,1),new Vector2(1,1),
+                new Vector2(0,-92),Vector2.zero,Deep);
+            title=Label("MEMEOPOLY",header,new Vector2(.045f,.56f),
+                new Vector2(.57f,.96f),23,Gold,TextAnchor.MiddleLeft,true);
+            worldText=Label("",header,new Vector2(.56f,.56f),
+                new Vector2(.965f,.96f),13,Aqua,TextAnchor.MiddleRight,true);
+            resources=Label("",header,new Vector2(.045f,.07f),
+                new Vector2(.965f,.58f),13,Pale,TextAnchor.MiddleLeft,true);
 
-            RectTransform info=Panel("floating game message",safeRegion,
-                new Vector2(.06f,.81f),new Vector2(.94f,.88f),Vector2.zero,Vector2.zero,Navy);
-            status=Label("",info,new Vector2(.04f,.07f),new Vector2(.96f,.93f),17,Pale,TextAnchor.MiddleCenter,true);
+            RectTransform info=Panel("TOAST • below top bar",safeRegion,
+                new Vector2(0,1),new Vector2(1,1),
+                new Vector2(10,-129),new Vector2(-10,-96),Navy);
+            status=Label("",info,new Vector2(.03f,.04f),
+                new Vector2(.97f,.96f),12,Pale,TextAnchor.MiddleCenter,true);
 
-            RectTransform dock=Panel("dice and construction dock",safeRegion,
-                new Vector2(0,0),new Vector2(1,0),Vector2.zero,new Vector2(0,202),Deep);
-            diceInfo=Label("",dock,new Vector2(.04f,.77f),new Vector2(.96f,1f),20,Gold,TextAnchor.MiddleCenter,true);
-            rollButton=MakeButton("ROLL THE FEED",dock,new Vector2(.03f,.37f),new Vector2(.59f,.72f),Gold,Deep,RollClicked);
-            multiplierButton=MakeButton("x1",dock,new Vector2(.61f,.37f),new Vector2(.80f,.72f),Navy,Aqua,CycleMultiplier);
-            nextButton=MakeButton("NEXT WORLD",dock,new Vector2(.81f,.37f),new Vector2(.98f,.72f),
-                new Color(.32f,.18f,.58f),Pale,NextClicked);
-            selection=Label("",dock,new Vector2(.035f,.16f),new Vector2(.62f,.37f),17,Pale,TextAnchor.MiddleLeft,true);
-            upgradeInfo=Label("",dock,new Vector2(.035f,.02f),new Vector2(.62f,.19f),14,Aqua,TextAnchor.MiddleLeft,true);
-            buildButton=MakeButton("BUILD",dock,new Vector2(.65f,.03f),new Vector2(.98f,.34f),Aqua,Deep,BuildClicked);
+            // All controls share a compact 162-unit dock. Previous prototype
+            // had an enormous 202-unit dock plus a free-floating message
+            // that visibly covered the city on small iPhone previews.
+            RectTransform dock=Panel("BOTTOM • game controls",safeRegion,
+                new Vector2(0,0),new Vector2(1,0),
+                Vector2.zero,new Vector2(0,162),Deep);
+            diceInfo=Label("",dock,new Vector2(.03f,.79f),
+                new Vector2(.97f,.99f),16,Gold,TextAnchor.MiddleCenter,true);
+
+            rollButton=MakeButton("ROLL",dock,new Vector2(.035f,.41f),
+                new Vector2(.59f,.77f),Gold,Deep,RollClicked);
+            multiplierButton=MakeButton("x1",dock,new Vector2(.61f,.41f),
+                new Vector2(.77f,.77f),Navy,Aqua,CycleMultiplier);
+            nextButton=MakeButton("NEXT",dock,new Vector2(.79f,.41f),
+                new Vector2(.965f,.77f),new Color(.32f,.18f,.58f),Pale,NextClicked);
+
+            selection=Label("",dock,new Vector2(.04f,.18f),
+                new Vector2(.70f,.38f),13,Pale,TextAnchor.MiddleLeft,true);
+            upgradeInfo=Label("",dock,new Vector2(.04f,.035f),
+                new Vector2(.70f,.19f),12,Aqua,TextAnchor.MiddleLeft,true);
+            buildButton=MakeButton("BUILD",dock,new Vector2(.73f,.035f),
+                new Vector2(.965f,.36f),Aqua,Deep,BuildClicked);
         }
 
         private void UpdateSafeArea()
@@ -291,7 +341,7 @@ namespace Memeopoly
             button.colors=block;
             button.targetGraphic=img;
             button.onClick.AddListener(onClick);
-            Label(caption,rect,Vector2.zero,Vector2.one,19,fg,TextAnchor.MiddleCenter,true);
+            Label(caption,rect,Vector2.zero,Vector2.one,16,fg,TextAnchor.MiddleCenter,true);
             return button;
         }
 
@@ -306,15 +356,15 @@ namespace Memeopoly
             if(resources==null)return;
             int upgrades=MemeopolyRules.TotalUpgrades(save);
             string w=MemeopolyRules.Worlds[save.worldIndex%MemeopolyRules.Worlds.Length];
-            worldText.text=w+"    |    WORLD "+(save.worldIndex+1)+"    |    BUILT "+upgrades+"/30";
-            resources.text="COINS "+save.coins.ToString("N0")+"     FOLLOWERS "+save.followers.ToString("N0")+"\n"+
-                "DICE "+save.dice+"/50     SHIELDS "+save.shields+"/3     HYPE "+save.hype+"/100";
+            worldText.text="WORLD "+(save.worldIndex+1)+"  •  "+upgrades+"/30 BUILT";
+            resources.text="COINS "+save.coins.ToString("N0")+"     DICE "+save.dice+"/50"+"     SHIELDS "+save.shields+"/3"+"\n"+
+                "FANS "+save.followers.ToString("N0")+"     HYPE "+save.hype+"/100";
             selection.text=MemeopolyRules.Landmarks[selected]+"  ["+save.buildings[selected]+"/5]";
             int cost=MemeopolyRules.UpgradeCost(save,selected);
             upgradeInfo.text=cost<0?"MAX STAGE · Monument complete":"NEXT BUILD · "+cost.ToString("N0")+" coins";
             int mult=multipliers[multiplierIndex];
             multiplierButton.GetComponentInChildren<Text>().text="x"+mult;
-            diceInfo.text=diceSettled ? "DICE "+save.lastDieA+" + "+save.lastDieB+" = "+(save.lastDieA+save.lastDieB)+"     TURN "+save.turn : "DICE ROLLING...";
+            diceInfo.text=diceSettled ? "DICE "+save.lastDieA+" + "+save.lastDieB+" = "+(save.lastDieA+save.lastDieB)+"    •    TURN "+save.turn : "ROLLING THE DICE...";
             if(status!=null) status.text=toast;
             bool complete=MemeopolyRules.Completed(save);
             rollButton.interactable=!playing&&!complete&&save.dice>=mult;
@@ -323,7 +373,7 @@ namespace Memeopoly
             buildButton.GetComponentInChildren<Text>().text=
                 save.buildings[selected]>=5?"MAXED":"BUILD ↑";
             rollButton.GetComponentInChildren<Text>().text=
-                complete?"WORLD CLEARED":"ROLL THE FEED";
+                complete?"WORLD CLEARED":"ROLL";
         }
 
         private void CycleMultiplier()
