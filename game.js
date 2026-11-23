@@ -1023,12 +1023,15 @@
   function revealBoardTile(index){
     const viewport=document.querySelector(".board-viewport");
     const boardElement=$("board");
-    if(!viewport||!cameraFollow||cameraZoom===1)return;
+    if(!viewport||!cameraFollow)return;
     const tile=boardElement.querySelectorAll(".tile")[index];
     if(!tile)return;
-    const target=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
-    const limit=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
-    viewport.scrollLeft=Math.max(0,Math.min(limit,target));
+    const targetX=tile.offsetLeft+tile.offsetWidth/2-viewport.clientWidth/2;
+    const targetY=tile.offsetTop+tile.offsetHeight/2-viewport.clientHeight/2;
+    const limitX=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+    const limitY=Math.max(0,viewport.scrollHeight-viewport.clientHeight);
+    viewport.scrollLeft=Math.max(0,Math.min(limitX,targetX));
+    viewport.scrollTop=Math.max(0,Math.min(limitY,targetY));
   }
   // Travel uses a temporary fixed-position avatar; game state remains authoritative.
   // Always render the destination even when motion is disabled or unavailable.
@@ -1237,7 +1240,8 @@
   const cameraBoard=$("board");
   let cameraZoom=1;
   let cameraFollow=true;
-  const cameraClamp=value=>Math.max(.5,Math.min(2,Math.round(value*10)/10));
+  const cameraClamp=value=>Math.max(.3,Math.min(2,Math.round(value*10)/10));
+  const cameraFitZoom=()=>Math.min(1,Math.max(.3,cameraViewport.clientWidth/Math.max(1,cameraBoard.offsetWidth)));
   function cameraSetZoom(value){
     const previous=cameraZoom;
     const centerX=cameraViewport.scrollLeft+cameraViewport.clientWidth/2;
@@ -1251,13 +1255,13 @@
   }
   $("boardZoomOut").addEventListener("click",()=>cameraSetZoom(cameraZoom-.1));
   $("boardZoomIn").addEventListener("click",()=>cameraSetZoom(cameraZoom+.1));
-  $("boardFit").addEventListener("click",()=>{cameraSetZoom(1);cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
+  $("boardFit").addEventListener("click",()=>{cameraFollow=false;$("boardFollow").setAttribute("aria-pressed","false");cameraSetZoom(cameraFitZoom());cameraViewport.scrollTo({left:0,top:0,behavior:"instant"});});
   $("boardFollow").addEventListener("click",()=>{cameraFollow=!cameraFollow;$("boardFollow").setAttribute("aria-pressed",String(cameraFollow));if(cameraFollow)revealBoardTile(state.position);});
   let pinchStartDistance=0,pinchStartZoom=1;
   cameraViewport.addEventListener("touchstart",event=>{if(event.touches.length!==2)return;const [a,b]=event.touches;pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchStartZoom=cameraZoom;},{passive:true});
   cameraViewport.addEventListener("touchmove",event=>{if(event.touches.length!==2||!pinchStartDistance)return;const [a,b]=event.touches;const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);cameraSetZoom(pinchStartZoom*distance/pinchStartDistance);event.preventDefault();},{passive:false});
   cameraViewport.addEventListener("touchend",event=>{if(event.touches.length<2)pinchStartDistance=0;},{passive:true});
-  $("jumpToDice").addEventListener("click",()=>{const viewport=document.querySelector(".board-viewport");const dice=$("dicePanel");if(!viewport||!dice)return;const box=viewport.getBoundingClientRect();const target=dice.getBoundingClientRect();const desired=viewport.scrollLeft+(target.left+target.width/2-box.left-box.width/2);viewport.scrollTo({left:Math.max(0,desired),behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});});
+  $("jumpToDice").addEventListener("click",()=>$("dicePanel").scrollIntoView({block:"center",behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"}));
   updateGameOptions();
   $("postBtn").addEventListener("click",rollPost);$("publishBtn").addEventListener("click",publishPost);$("rollMultiplier").addEventListener("change",()=>renderUI());$("upgradeBtn").addEventListener("click",upgradeCheapest);$("dailyBonusBtn").addEventListener("click",claimDailyBonus);
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
@@ -1270,7 +1274,7 @@
   window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;$("installBtn").classList.remove("hidden");});
   $("installBtn").addEventListener("click",async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden");});
   if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{$("saveStatus").textContent="Offline mode unavailable";}));
-  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();cameraSetZoom(1);
+  const resumed=load();normalizeDaily();setDiceFace(1,1);renderUI();cameraSetZoom(cameraFitZoom());
   if(state.tutorialSeen)$("tutorialPanel").classList.add("hidden");
   window.setInterval(()=>{const before=state.dice;regenerateDice();if(state.dice!==before){renderUI();save();}},30000);
   if(resumed)addLog("👋 Welcome back! Your saved empire has been restored.");

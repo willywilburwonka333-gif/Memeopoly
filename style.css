@@ -485,3 +485,10 @@ body[data-world-theme="1"] #board{filter:hue-rotate(20deg)}body[data-world-theme
 .board-city-caption{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);font-size:clamp(12px,2.7vw,26px);font-weight:900;letter-spacing:.14em;white-space:nowrap;color:#fff2ae;text-shadow:0 2px 6px #090b32,0 0 12px #b85dff}
 @media(max-width:650px){.gameplay-dock{padding:10px;gap:8px}.gameplay-dock #dicePanel{flex-basis:100%;grid-template-columns:64px minmax(0,1fr)!important}.gameplay-dock .game-options button,.gameplay-dock #publishBtn{min-height:40px!important}.board-navigation .board-camera{display:none!important}.board-navigation{margin-bottom:4px!important}.board-viewport{padding:2px!important}#boardCenter{overflow:hidden!important}}
 @media(prefers-reduced-motion:reduce){#boardCenter .creator-city *{animation:none!important}}
+
+/* Board camera repair: real pannable, zoomable 60-space game surface. */
+.board-viewport{overflow:auto!important;max-height:min(74vh,760px)!important;max-width:100%!important;touch-action:pan-x pan-y!important;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#a78dff #151b36}
+#board{width:960px!important;min-width:960px!important;height:960px!important;min-height:960px!important;aspect-ratio:1/1!important;flex-shrink:0}
+#boardCenter{overflow:hidden!important}
+.board-navigation .board-camera{display:flex!important}
+@media(max-width:650px){.board-navigation .board-camera{display:flex!important;flex-wrap:wrap;justify-content:center}.board-viewport{max-height:min(70vh,640px)!important;padding:4px!important}#board{width:960px!important;min-width:960px!important;height:960px!important;min-height:960px!important}#board .tile strong{display:block!important;font-size:clamp(6px,.8vw,10px)!important;line-height:1.1!important;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#board .tile .tile-icon{width:50%!important;height:50%!important}}
