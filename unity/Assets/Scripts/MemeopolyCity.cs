@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Memeopoly
@@ -15,6 +16,20 @@ namespace Memeopoly
         private void Update() { transform.Rotate(degreesPerSecond * Time.deltaTime, Space.Self); }
     }
 
+    // Subtle ambient animation without per-frame material allocations or physics.
+    public sealed class FloatProp : MonoBehaviour
+    {
+        public float amplitude=.10f;
+        public float speed=2.1f;
+        private Vector3 start;
+        private void Start() { start=transform.localPosition; }
+        private void Update()
+        {
+            transform.localPosition=start+Vector3.up*(Mathf.Sin(Time.time*speed)*amplitude);
+            transform.Rotate(0,Time.deltaTime*8f,0,Space.Self);
+        }
+    }
+
     // One continuous 60-space tabletop, not a 60-card UI grid.
     // 3D geometry and stages are built natively so iOS/Android/WebGL see the same world.
     public sealed class MemeopolyCity
@@ -24,6 +39,8 @@ namespace Memeopoly
         private readonly Transform[] selectionFrames = new Transform[6];
         public readonly Transform[] Dice = new Transform[2];
         public Transform Token { get; private set; }
+        private readonly Transform[] tokenModels = new Transform[3];
+        private static readonly Dictionary<int,Material> materialCache = new Dictionary<int,Material>();
         public readonly Transform Root;
 
         private readonly Material[] tileMaterials = new Material[8];
@@ -70,6 +87,12 @@ namespace Memeopoly
 
         private static Material Mat(Color c, float glow=0)
         {
+            int key = (Mathf.RoundToInt(Mathf.Clamp01(c.r)*255)<<24) |
+                (Mathf.RoundToInt(Mathf.Clamp01(c.g)*255)<<16) |
+                (Mathf.RoundToInt(Mathf.Clamp01(c.b)*255)<<8) |
+                Mathf.RoundToInt(Mathf.Clamp01(glow)*255);
+            Material cached;
+            if (materialCache.TryGetValue(key,out cached)) return cached;
             Shader shader = Shader.Find("Standard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
@@ -84,6 +107,7 @@ namespace Memeopoly
             }
             if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic",.22f);
             if (mat.HasProperty("_Glossiness")) mat.SetFloat("_Glossiness",.36f);
+            materialCache[key] = mat;
             return mat;
         }
 
@@ -473,30 +497,108 @@ namespace Memeopoly
             }
         }
 
+        // Three original selectable 3D characters. Every avatar is constructed
+        // from Unity meshes so the Unity Cloud build needs NO external asset store.
         private void CreateToken()
         {
-            var token = new GameObject("Original 3D SHARKO CREATOR PLAYER").transform;
-            token.SetParent(Root,false);
-            Token=token;
-            Sphere("soft ground shadow",token,new Vector3(0,-.03f,0),
-                new Vector3(.67f,.05f,.62f),ink);
-            Sphere("sharko body",token,new Vector3(0,.45f,0),
-                new Vector3(.55f,.69f,.45f),tileMaterials[1]);
-            Sphere("sharko belly",token,new Vector3(0,.34f,-.20f),
-                new Vector3(.36f,.37f,.13f),cream);
-            Sphere("head",token,new Vector3(0,.93f,-.04f),
-                new Vector3(.57f,.51f,.52f),tileMaterials[1]);
-            for (int side=-1;side<=1;side+=2)
+            Token=new GameObject("PLAYER AVATAR • saved skin").transform;
+            Token.SetParent(Root,false);
+            Token.localPosition=Path[0]+Vector3.up*.11f;
+            Sphere("shadow under hero",Token,new Vector3(0,-.07f,0),
+                new Vector3(.78f,.05f,.73f),ink);
+
+            Transform shark=new GameObject("SHARKO • mascot").transform;
+            shark.SetParent(Token,false);
+            tokenModels[0]=shark;
+            shark.gameObject.AddComponent<FloatProp>().amplitude=.075f;
+            Material blue=tileMaterials[1];
+            Sphere("sharko body",shark,new Vector3(0,.43f,0),
+                new Vector3(.72f,.76f,.57f),blue);
+            Sphere("sharko belly",shark,new Vector3(0,.31f,-.30f),
+                new Vector3(.49f,.47f,.15f),cream);
+            Sphere("friendly shark head",shark,new Vector3(0,1.02f,-.06f),
+                new Vector3(.78f,.69f,.67f),blue);
+            Sphere("shark snout",shark,new Vector3(0,.87f,-.42f),
+                new Vector3(.52f,.26f,.35f),cream);
+            for(int side=-1;side<=1;side+=2)
             {
-                Sphere("eye",token,new Vector3(side*.17f,1.01f,-.29f),
-                    Vector3.one*.14f,cream);
-                Sphere("pupil",token,new Vector3(side*.17f,1.01f,-.36f),
-                    Vector3.one*.07f,ink);
+                Sphere("eye socket",shark,new Vector3(side*.25f,1.09f,-.36f),
+                    Vector3.one*.21f,cream);
+                Sphere("eye pupil",shark,new Vector3(side*.25f,1.09f,-.47f),
+                    Vector3.one*.105f,ink);
+                var sidefin=Sphere("hero side fin",shark,new Vector3(side*.48f,.58f,.06f),
+                    new Vector3(.45f,.16f,.30f),blue);
+                sidefin.transform.localRotation=Quaternion.Euler(0,0,side*30);
             }
-            var fin=Cylinder("signature blue shark fin",token,new Vector3(0,1.36f,.05f),
-                new Vector3(.18f,.29f,.26f),tileMaterials[1]);
-            fin.transform.localRotation=Quaternion.Euler(0,0,22);
-            Token.localPosition=Path[0]+new Vector3(0,.12f,0);
+            var fin=Cylinder("hero dorsal fin",shark,new Vector3(0,1.49f,.14f),
+                new Vector3(.24f,.31f,.38f),blue);
+            fin.transform.localRotation=Quaternion.Euler(0,0,18);
+            Cube("sharko golden collar",shark,new Vector3(0,.66f,-.33f),
+                new Vector3(.47f,.10f,.11f),gold);
+
+            Transform croc=new GameObject("CROCWING • flying crocodile").transform;
+            croc.SetParent(Token,false);
+            tokenModels[1]=croc;
+            croc.gameObject.AddComponent<FloatProp>().amplitude=.14f;
+            Material green=tileMaterials[0];
+            Sphere("croc belly",croc,new Vector3(0,.49f,0),
+                new Vector3(.77f,.69f,.60f),green);
+            Sphere("croc grinning head",croc,new Vector3(0,1.01f,-.16f),
+                new Vector3(.82f,.47f,.73f),green);
+            Sphere("long croc snout",croc,new Vector3(0,.81f,-.56f),
+                new Vector3(.62f,.21f,.53f),cream);
+            for(int side=-1;side<=1;side+=2)
+            {
+                Sphere("eye crest",croc,new Vector3(side*.23f,1.22f,-.37f),
+                    new Vector3(.23f,.27f,.23f),green);
+                Sphere("eye",croc,new Vector3(side*.23f,1.22f,-.50f),
+                    Vector3.one*.13f,ink);
+                var wing=Cube("emerald flyer wing",croc,
+                    new Vector3(side*.75f,.60f,.09f),new Vector3(1.0f,.10f,.51f),green);
+                wing.transform.localRotation=Quaternion.Euler(0,0,side*20f);
+            }
+            var tail=Sphere("swishing tail",croc,new Vector3(0,.36f,.55f),
+                new Vector3(.29f,.25f,.86f),green);
+            tail.transform.localRotation=Quaternion.Euler(16,0,0);
+            Cube("croc golden pilot goggles",croc,new Vector3(0,1.34f,-.20f),
+                new Vector3(.68f,.08f,.25f),gold);
+
+            Transform cat=new GameObject("VIRAL CAT • streamer").transform;
+            cat.SetParent(Token,false);
+            tokenModels[2]=cat;
+            cat.gameObject.AddComponent<FloatProp>().amplitude=.065f;
+            Material pink=tileMaterials[6];
+            Sphere("cat body",cat,new Vector3(0,.45f,0),
+                new Vector3(.68f,.74f,.52f),pink);
+            Sphere("cat face",cat,new Vector3(0,1.02f,-.13f),
+                new Vector3(.79f,.68f,.65f),pink);
+            for(int side=-1;side<=1;side+=2)
+            {
+                var ear=Cube("pointy cat ear",cat,
+                    new Vector3(side*.36f,1.51f,-.07f),
+                    new Vector3(.27f,.40f,.22f),pink);
+                ear.transform.localRotation=Quaternion.Euler(0,0,side*-20);
+                Sphere("cat eye",cat,new Vector3(side*.22f,1.03f,-.47f),
+                    new Vector3(.13f,.18f,.10f),ink);
+                Cube("cat whisker",cat,new Vector3(side*.44f,.81f,-.49f),
+                    new Vector3(.38f,.025f,.025f),cream);
+            }
+            Sphere("cat nose",cat,new Vector3(0,.89f,-.52f),
+                new Vector3(.12f,.10f,.10f),gold);
+            var tail2=Cylinder("cat tail",cat,new Vector3(.41f,.53f,.49f),
+                new Vector3(.12f,.50f,.12f),pink);
+            tail2.transform.localRotation=Quaternion.Euler(32,0,-30);
+            Cube("streamer gold headset",cat,new Vector3(0,1.50f,-.06f),
+                new Vector3(.65f,.09f,.24f),gold);
+
+            SelectToken(0);
+        }
+
+        public void SelectToken(int index)
+        {
+            int chosen=Mathf.Clamp(index,0,tokenModels.Length-1);
+            for(int i=0;i<tokenModels.Length;i++)
+                if(tokenModels[i]!=null)tokenModels[i].gameObject.SetActive(i==chosen);
         }
 
         private void CreateDice(int index, Vector3 position)
