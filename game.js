@@ -466,7 +466,7 @@
       state.completedAlbums=Array.isArray(saved.completedAlbums)?saved.completedAlbums.filter(id=>albumBlueprints.some(a=>a.id===id)):[];
       state.log=Array.isArray(saved.log)?saved.log.filter(x=>x&&typeof x.message==="string").slice(0,40).map(x=>({message:x.message.slice(0,300),time:typeof x.time==="string"?x.time.slice(0,20):""})):[];
       state.achievements=Array.isArray(saved.achievements)?saved.achievements.filter(id=>achievements.some(a=>a.id===id)):[];
-      state.position=Math.max(0,Math.min(15,Number(state.position)||0));
+      state.position=Math.max(0,Math.min(board.length-1,Math.floor(Number(state.position)||0)));
       for(const key of ["coins","followers","posts","turn","dice","shields","totalPostsPublished"])state[key]=Math.max(0,Math.min(1000000000,Math.floor(Number(state[key])||0)));
       state.shields=Math.min(3,state.shields);state.dailyBonusDate=typeof state.dailyBonusDate==="string"?state.dailyBonusDate:"";
       state.tutorialSeen=Boolean(state.tutorialSeen);state.completionRewarded=Boolean(saved.completionRewarded||saved.completed);
@@ -606,6 +606,13 @@
       const name=document.createElement("strong");name.textContent=item.name;
       const detail=document.createElement("small");detail.textContent=item.type==="LANDMARK"?"Lv "+state.landmarks.find(l=>l.name===item.name).level+"/5":item.description;
       tile.append(icon,name,detail);
+      if(item.type==="LANDMARK"){
+        const level=state.landmarks.find(l=>l.name===item.name)?.level||0;
+        const progress=document.createElement("span");progress.className="tile-upgrade-meter";
+        progress.style.setProperty("--upgrade-progress",(Math.max(0,Math.min(5,level))/5*100)+"%");
+        progress.setAttribute("aria-hidden","true");tile.append(progress);
+        tile.classList.toggle("tile-fully-upgraded",level===5);
+      }
       tile.setAttribute("role","button");tile.tabIndex=0;
       tile.setAttribute("aria-label","Space "+(i+1)+": "+item.name+". "+detail.textContent+". Activate for details.");
       tile.addEventListener("click",()=>inspectBoardSpace(i));
